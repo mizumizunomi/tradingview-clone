@@ -28,6 +28,7 @@ export const endpoints = {
   positions: "/trading/positions",
   closedPositions: "/trading/positions/closed",
   closePosition: (id: string) => `/trading/positions/${id}/close`,
+  cancelOrder: (id: string) => `/trading/orders/${id}`,
   wallet: "/wallet",
   deposit: "/wallet/deposit",
   withdraw: "/wallet/withdraw",

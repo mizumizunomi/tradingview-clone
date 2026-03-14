@@ -17,16 +17,9 @@ export interface Asset {
 }
 
 export type AssetCategory =
-  | "CRYPTO"
-  | "FOREX"
-  | "STOCKS"
-  | "FUTURES"
-  | "INDICES"
-  | "COMMODITIES"
-  | "FUNDS"
-  | "BONDS"
-  | "ECONOMY"
-  | "OPTIONS";
+  | "CRYPTO" | "FOREX" | "STOCKS" | "FUTURES"
+  | "INDICES" | "COMMODITIES" | "FUNDS" | "BONDS"
+  | "ECONOMY" | "OPTIONS";
 
 export type Timeframe = "1m" | "5m" | "15m" | "30m" | "1h" | "4h" | "1D" | "1W" | "1M";
 
@@ -41,7 +34,9 @@ export interface CandleData {
 
 export interface Order {
   id: string;
+  assetId?: string;
   symbol: string;
+  assetName?: string;
   side: "BUY" | "SELL";
   type: "MARKET" | "LIMIT" | "STOP_LOSS" | "TAKE_PROFIT";
   quantity: number;
@@ -116,4 +111,59 @@ export interface TradeRequest {
   stopLoss?: number;
   takeProfit?: number;
   limitPrice?: number;
+}
+
+export interface Toast {
+  id: string;
+  message: string;
+  type: "success" | "error" | "info" | "warning";
+  duration?: number;
+}
+
+export interface PriceAlert {
+  id: string;
+  symbol: string;
+  price: number;
+  condition: "above" | "below";
+  message?: string;
+  triggered: boolean;
+  createdAt: number;
+}
+
+export interface OrderBookEntry {
+  price: number;
+  size: number;
+  total: number;
+}
+
+export type ChartLayout = "1x1" | "2x1" | "2x2" | "3x1";
+
+export interface ChartPanelConfig {
+  id: string;
+  symbol: string;
+  timeframe: Timeframe;
+}
+
+export interface CalendarEvent {
+  id: string;
+  date: string;
+  time: string;
+  country: string;
+  flag: string;
+  event: string;
+  impact: "high" | "medium" | "low";
+  forecast?: string;
+  previous?: string;
+  actual?: string;
+}
+
+export interface ChartSettings {
+  bgColor: string;
+  gridColor: string;
+  upColor: string;
+  downColor: string;
+  wickUpColor: string;
+  wickDownColor: string;
+  logScale: boolean;
+  percentScale: boolean;
 }

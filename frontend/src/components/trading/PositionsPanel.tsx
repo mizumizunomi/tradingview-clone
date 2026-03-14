@@ -1,15 +1,41 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTradingStore } from "@/store/trading.store";
 import { api, endpoints } from "@/lib/api";
-import { formatPrice, formatPnL } from "@/lib/utils";
-import { Position } from "@/types";
-import { TrendingUp, TrendingDown, Clock, History } from "lucide-react";
+import { formatPrice } from "@/lib/utils";
+import { Position, Order } from "@/types";
+import { TrendingUp, Clock, History, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function PositionsPanel() {
-  const { positions, setPositions, setWallet, activeBottomTab, setActiveBottomTab, prices } = useTradingStore();
+  const { positions, setPositions, setWallet, activeBottomTab, setActiveBottomTab, prices, addToast } = useTradingStore();
   const [closingId, setClosingId] = useState<string | null>(null);
+  const [pendingOrders, setPendingOrders] = useState<Order[]>([]);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (activeBottomTab === "orders") {
+      api.get(endpoints.orders).then((res) => {
+        const pending = res.data
+          .filter((o: any) => o.status === "PENDING")
+          .map((o: any) => ({ ...o, symbol: o.asset?.symbol || o.symbol, assetName: o.asset?.name }));
+        setPendingOrders(pending);
+      }).catch(() => {});
+    }
+  }, [activeBottomTab]);
+
+  const handleCancelOrder = async (orderId: string) => {
+    setCancellingId(orderId);
+    try {
+      await api.delete(endpoints.cancelOrder(orderId));
+      setPendingOrders((prev) => prev.filter((o) => o.id !== orderId));
+      addToast({ type: "info", message: "Order cancelled" });
+    } catch {
+      addToast({ type: "error", message: "Failed to cancel order" });
+    } finally {
+      setCancellingId(null);
+    }
+  };
 
   const openPositions = positions.filter((p) => p.isOpen);
   const closedPositions = positions.filter((p) => !p.isOpen);
@@ -46,14 +72,14 @@ export function PositionsPanel() {
 
   const tabs = [
     { key: "positions" as const, label: "Positions", count: openPositions.length, icon: TrendingUp },
-    { key: "orders" as const, label: "Orders", count: 0, icon: Clock },
+    { key: "orders" as const, label: "Orders", count: pendingOrders.length, icon: Clock },
     { key: "history" as const, label: "History", count: closedPositions.length, icon: History },
   ];
 
   return (
-    <div className="flex h-full flex-col bg-[#131722]">
+    <div className="flex h-full flex-col" style={{ background: "var(--tv-bg)" }}>
       {/* Tab bar */}
-      <div className="flex items-center border-b border-[#363a45] bg-[#1e222d] px-1">
+      <div className="flex items-center border-b px-1" style={{ borderColor: "var(--tv-border)", background: "var(--tv-bg2)" }}>
         {tabs.map(({ key, label, count, icon: Icon }) => (
           <button
             key={key}
@@ -178,10 +204,54 @@ export function PositionsPanel() {
         )}
 
         {activeBottomTab === "orders" && (
-          <div className="flex h-full flex-col items-center justify-center gap-2 text-[#5d6673]">
-            <Clock className="h-8 w-8 opacity-30" />
-            <div className="text-sm">No pending orders</div>
-          </div>
+          pendingOrders.length === 0 ? (
+            <div className="flex h-full flex-col items-center justify-center gap-2" style={{ color: "var(--tv-muted)" }}>
+              <Clock className="h-8 w-8 opacity-30" />
+              <div className="text-sm">No pending orders</div>
+              <div className="text-xs opacity-60">Limit orders will appear here</div>
+            </div>
+          ) : (
+            <table className="w-full">
+              <thead>
+                <tr className="border-b" style={{ borderColor: "var(--tv-border)", background: "var(--tv-bg2)" }}>
+                  {["Symbol","Side","Type","Qty","Lev","Limit Price","Created",""].map((h) => (
+                    <th key={h} className={cn("px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider whitespace-nowrap", h === "" || h === "Limit Price" ? "text-right" : "text-left")}
+                      style={{ color: "var(--tv-muted)" }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {pendingOrders.map((order) => (
+                  <tr key={order.id} className="group border-b hover:bg-[var(--tv-bg3)] transition-colors"
+                    style={{ borderColor: "var(--tv-border)" }}>
+                    <td className="px-3 py-2 text-xs font-bold" style={{ color: "var(--tv-text-light)" }}>{order.symbol}</td>
+                    <td className="px-3 py-2">
+                      <span className={cn("inline-flex rounded px-1.5 py-0.5 text-[10px] font-bold uppercase",
+                        order.side === "BUY" ? "bg-[#26a69a20] text-[#26a69a]" : "bg-[#ef535020] text-[#ef5350]")}>
+                        {order.side}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 text-xs" style={{ color: "var(--tv-text)" }}>{order.type}</td>
+                    <td className="px-3 py-2 text-xs font-mono" style={{ color: "var(--tv-text-light)" }}>{order.quantity}</td>
+                    <td className="px-3 py-2 text-xs" style={{ color: "var(--tv-text)" }}>{order.leverage}×</td>
+                    <td className="px-3 py-2 text-right font-mono text-xs" style={{ color: "var(--tv-text-light)" }}>
+                      {order.limitPrice ? formatPrice(order.limitPrice) : "—"}
+                    </td>
+                    <td className="px-3 py-2 text-[11px]" style={{ color: "var(--tv-muted)" }}>
+                      {new Date(order.createdAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                    </td>
+                    <td className="px-3 py-2 text-right">
+                      <button onClick={() => handleCancelOrder(order.id)} disabled={cancellingId === order.id}
+                        className="rounded border px-2 py-0.5 text-[10px] font-medium opacity-0 group-hover:opacity-100 transition-all hover:bg-[#ef5350] hover:text-white hover:border-[#ef5350]"
+                        style={{ borderColor: "#ef535040", color: "#ef5350" }}>
+                        {cancellingId === order.id ? "..." : "Cancel"}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )
         )}
 
         {activeBottomTab === "history" && (
