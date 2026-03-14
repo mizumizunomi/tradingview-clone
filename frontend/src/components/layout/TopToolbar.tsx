@@ -97,7 +97,7 @@ export function TopToolbar() {
 
         {/* Timeframes */}
         <div className="flex items-center gap-0 shrink-0">
-          {TIMEFRAMES.slice(0, 6).map((tf) => (
+          {TIMEFRAMES.slice(0, 4).map((tf) => (
             <button
               key={tf}
               onClick={() => setTimeframe(tf as any)}
@@ -111,15 +111,15 @@ export function TopToolbar() {
             <button
               onClick={() => setShowTfMenu(!showTfMenu)}
               className="flex items-center gap-0.5 rounded px-2 py-1 text-xs hover:bg-[var(--tv-bg3)]"
-              style={{ color: TIMEFRAMES.slice(6).includes(timeframe) ? "#2962ff" : "var(--tv-muted)" }}
+              style={{ color: TIMEFRAMES.slice(4).includes(timeframe) ? "#2962ff" : "var(--tv-muted)" }}
             >
-              {TIMEFRAMES.slice(6).includes(timeframe) ? timeframe : "···"}
+              {TIMEFRAMES.slice(4).includes(timeframe) ? timeframe : "···"}
               <ChevronDown className="h-3 w-3" />
             </button>
             {showTfMenu && (
               <div className="absolute top-8 left-0 z-20 rounded-lg border py-1 shadow-xl min-w-[80px]"
                 style={{ background: "var(--tv-bg2)", borderColor: "var(--tv-border)" }}>
-                {TIMEFRAMES.slice(6).map((tf) => (
+                {TIMEFRAMES.slice(4).map((tf) => (
                   <button key={tf} onClick={() => { setTimeframe(tf as any); setShowTfMenu(false); }}
                     className={cn("block w-full px-4 py-1.5 text-left text-xs hover:bg-[var(--tv-bg3)]")}
                     style={{ color: timeframe === tf ? "#2962ff" : "var(--tv-text-light)" }}>

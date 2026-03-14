@@ -4,11 +4,11 @@ import { useTradingStore } from "@/store/trading.store";
 import { api, endpoints } from "@/lib/api";
 import { formatPrice } from "@/lib/utils";
 import { Position, Order } from "@/types";
-import { TrendingUp, Clock, History, X } from "lucide-react";
+import { TrendingUp, Clock, History, X, Bell, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function PositionsPanel() {
-  const { positions, setPositions, setWallet, activeBottomTab, setActiveBottomTab, prices, addToast } = useTradingStore();
+  const { positions, setPositions, setWallet, activeBottomTab, setActiveBottomTab, prices, addToast, alerts, removeAlert } = useTradingStore();
   const [closingId, setClosingId] = useState<string | null>(null);
   const [pendingOrders, setPendingOrders] = useState<Order[]>([]);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
@@ -74,6 +74,7 @@ export function PositionsPanel() {
     { key: "positions" as const, label: "Positions", count: openPositions.length, icon: TrendingUp },
     { key: "orders" as const, label: "Orders", count: pendingOrders.length, icon: Clock },
     { key: "history" as const, label: "History", count: closedPositions.length, icon: History },
+    { key: "alerts" as const, label: "Alerts", count: alerts.filter((a) => !a.triggered).length, icon: Bell },
   ];
 
   return (
@@ -245,6 +246,50 @@ export function PositionsPanel() {
                         className="rounded border px-2 py-0.5 text-[10px] font-medium opacity-0 group-hover:opacity-100 transition-all hover:bg-[#ef5350] hover:text-white hover:border-[#ef5350]"
                         style={{ borderColor: "#ef535040", color: "#ef5350" }}>
                         {cancellingId === order.id ? "..." : "Cancel"}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )
+        )}
+
+        {activeBottomTab === "alerts" && (
+          alerts.length === 0 ? (
+            <div className="flex h-full flex-col items-center justify-center gap-2" style={{ color: "var(--tv-muted)" }}>
+              <Bell className="h-8 w-8 opacity-30" />
+              <div className="text-sm">No alerts set</div>
+              <div className="text-xs opacity-60">Right-click on the chart to add a price alert</div>
+            </div>
+          ) : (
+            <table className="w-full">
+              <thead>
+                <tr className="border-b" style={{ borderColor: "var(--tv-border)", background: "var(--tv-bg2)" }}>
+                  {["Symbol", "Price", "Condition", "Status", ""].map((h) => (
+                    <th key={h} className={cn("px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider whitespace-nowrap", h === "" ? "text-right" : "text-left")}
+                      style={{ color: "var(--tv-muted)" }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {alerts.map((alert) => (
+                  <tr key={alert.id} className="group border-b hover:bg-[var(--tv-bg3)] transition-colors"
+                    style={{ borderColor: "var(--tv-border)" }}>
+                    <td className="px-3 py-2 text-xs font-bold" style={{ color: "var(--tv-text-light)" }}>{alert.symbol}</td>
+                    <td className="px-3 py-2 font-mono text-xs" style={{ color: "var(--tv-text-light)" }}>{alert.price?.toFixed(2) ?? "—"}</td>
+                    <td className="px-3 py-2 text-xs" style={{ color: "var(--tv-text)" }}>{alert.condition ?? "—"}</td>
+                    <td className="px-3 py-2">
+                      <span className={cn("inline-flex rounded px-1.5 py-0.5 text-[10px] font-bold uppercase",
+                        alert.triggered ? "bg-[#ef535020] text-[#ef5350]" : "bg-[#26a69a20] text-[#26a69a]")}>
+                        {alert.triggered ? "Triggered" : "Active"}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 text-right">
+                      <button onClick={() => removeAlert(alert.id)}
+                        className="rounded p-1 opacity-0 group-hover:opacity-100 hover:bg-[#ef535020] transition-all"
+                        style={{ color: "#ef5350" }}>
+                        <Trash2 className="h-3 w-3" />
                       </button>
                     </td>
                   </tr>

@@ -88,8 +88,8 @@ interface TradingState {
   setLimitPrice: (lp: string) => void;
 
   // Tabs
-  activeBottomTab: "positions" | "orders" | "history";
-  setActiveBottomTab: (tab: "positions" | "orders" | "history") => void;
+  activeBottomTab: "positions" | "orders" | "history" | "alerts";
+  setActiveBottomTab: (tab: "positions" | "orders" | "history" | "alerts") => void;
 
   // Theme
   theme: "dark" | "light";
@@ -167,6 +167,14 @@ interface TradingState {
   // DOM panel
   showDOMPanel: boolean;
   setShowDOMPanel: (show: boolean) => void;
+
+  // Order panel collapse
+  showOrderPanel: boolean;
+  setShowOrderPanel: (v: boolean) => void;
+
+  // Keyboard shortcuts modal
+  showKeyboardShortcuts: boolean;
+  setShowKeyboardShortcuts: (v: boolean) => void;
 }
 
 const DEFAULT_CHART_PANELS: ChartPanelConfig[] = [
@@ -260,16 +268,25 @@ export const useTradingStore = create<TradingState>((set, get) => ({
 
   activeTool: "cursor",
   setActiveTool: (activeTool) => set({ activeTool }),
-  drawings: [],
+  drawings: typeof window !== "undefined" ? JSON.parse(localStorage.getItem("tv_drawings") || "[]") : [],
   drawingHistory: [],
-  addDrawing: (drawing) =>
+  addDrawing: (drawing) => {
     set((state) => ({
       drawingHistory: [...state.drawingHistory.slice(-20), state.drawings],
       drawings: [...state.drawings, drawing],
-    })),
+    }));
+    if (typeof window !== "undefined") {
+      localStorage.setItem("tv_drawings", JSON.stringify([...get().drawings]));
+    }
+  },
   updateDrawing: (id, patch) =>
     set((state) => ({ drawings: state.drawings.map((d) => d.id === id ? { ...d, ...patch } : d) })),
-  removeDrawing: (id) => set((state) => ({ drawings: state.drawings.filter((d) => d.id !== id) })),
+  removeDrawing: (id) => {
+    set((state) => ({ drawings: state.drawings.filter((d) => d.id !== id) }));
+    if (typeof window !== "undefined") {
+      localStorage.setItem("tv_drawings", JSON.stringify(get().drawings));
+    }
+  },
   clearDrawings: () => set((state) => ({ drawingHistory: [...state.drawingHistory.slice(-20), state.drawings], drawings: [] })),
   undoDrawing: () =>
     set((state) => {
@@ -362,4 +379,12 @@ export const useTradingStore = create<TradingState>((set, get) => ({
   // DOM panel
   showDOMPanel: false,
   setShowDOMPanel: (showDOMPanel) => set({ showDOMPanel }),
+
+  // Order panel collapse
+  showOrderPanel: true,
+  setShowOrderPanel: (showOrderPanel) => set({ showOrderPanel }),
+
+  // Keyboard shortcuts modal
+  showKeyboardShortcuts: false,
+  setShowKeyboardShortcuts: (showKeyboardShortcuts) => set({ showKeyboardShortcuts }),
 }));
