@@ -17,6 +17,7 @@ import { Watchlist } from "@/components/trading/Watchlist";
 import { DOMPanel } from "@/components/trading/DOMPanel";
 import { AlertModal } from "@/components/alerts/AlertModal";
 import { ToastContainer } from "@/components/ui/ToastContainer";
+import { KeyboardShortcutsModal } from "@/components/ui/KeyboardShortcutsModal";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useAlertChecker } from "@/hooks/useAlertChecker";
 import { useChartKeyboardShortcuts } from "@/hooks/useChartKeyboardShortcuts";
@@ -91,6 +92,7 @@ export default function TradePage() {
 
       {/* Global toast notifications */}
       <ToastContainer />
+      <KeyboardShortcutsModal />
     </div>
   );
 }

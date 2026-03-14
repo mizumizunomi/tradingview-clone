@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { AlertCircle, CheckCircle2, ChevronDown } from "lucide-react";
+import { AlertCircle, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useTradingStore } from "@/store/trading.store";
 import { api, endpoints } from "@/lib/api";
 import { formatPrice } from "@/lib/utils";
@@ -15,6 +15,7 @@ export function OrderPanel() {
     setOrderSide, setOrderType, setQuantity, setLeverage,
     setStopLoss, setTakeProfit, setLimitPrice,
     setWallet, setPositions,
+    showOrderPanel, setShowOrderPanel,
   } = useTradingStore();
 
   const [loading, setLoading] = useState(false);
@@ -61,11 +62,31 @@ export function OrderPanel() {
     }
   };
 
+  if (!showOrderPanel) {
+    return (
+      <div
+        className="flex h-full flex-col items-center justify-start pt-2 bg-[#1e222d] cursor-pointer"
+        style={{ width: 24, minWidth: 24, borderLeft: "1px solid #363a45" }}
+        onClick={() => setShowOrderPanel(true)}
+        title="Open Order Panel"
+      >
+        <ChevronLeft className="h-4 w-4 text-[#5d6673] hover:text-white transition-colors mt-1" />
+      </div>
+    );
+  }
+
   return (
     <div
       className="flex h-full flex-col bg-[#1e222d]"
       style={{ width: 240, minWidth: 200, borderLeft: "1px solid #363a45" }}
     >
+      {/* Panel header with collapse button */}
+      <div className="flex items-center justify-between px-3 pt-2 pb-1">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-[#5d6673]">Order Panel</span>
+        <button onClick={() => setShowOrderPanel(false)} title="Collapse" className="p-0.5 rounded hover:bg-[#363a45] text-[#5d6673] hover:text-white transition-colors">
+          <ChevronRight className="h-3.5 w-3.5" />
+        </button>
+      </div>
       {/* Bid/Ask header */}
       <div className="px-3 pt-3 pb-2">
         {priceData ? (

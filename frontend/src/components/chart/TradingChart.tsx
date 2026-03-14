@@ -16,7 +16,7 @@ import {
 import { ChartContextMenu } from "./ChartContextMenu";
 import { ReplayControls } from "./ReplayControls";
 import { ObjectTreePanel } from "./ObjectTreePanel";
-import { Maximize2, Camera, BarChart2 } from "lucide-react";
+import { Maximize2, Camera, BarChart2, Table2 } from "lucide-react";
 
 // ── Drawing helpers ─────────────────────────────────────────────────────────
 type Pt = { x: number; y: number };
@@ -84,6 +84,14 @@ export function TradingChart() {
   const [legendValues, setLegendValues] = useState<{ label: string; value: string; color: string }[]>([]);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; price: number; time: number } | null>(null);
   const [showChartTypeMenu, setShowChartTypeMenu] = useState(false);
+  const [showDataWindow, setShowDataWindow] = useState(false);
+
+  const fmtOHLC = (p: number | undefined) => {
+    if (!p && p !== 0) return "—";
+    if (selectedAsset?.category === "FOREX" || p < 1) return p.toFixed(5);
+    if (p < 10) return p.toFixed(4);
+    return p.toFixed(2);
+  };
 
   // ── Coordinate helpers ──
   const toPixel = useCallback((time: number, price: number): Pt | null => {
@@ -426,7 +434,8 @@ export function TradingChart() {
       if (param.seriesData) {
         const d = param.seriesData.get(mainSeries) as any;
         if (d) {
-          const c = { time: d.time, open: d.open ?? d.value, high: d.high ?? d.value, low: d.low ?? d.value, close: d.close ?? d.value };
+          const volData = param.seriesData.get(vol) as any;
+          const c = { time: d.time, open: d.open ?? d.value, high: d.high ?? d.value, low: d.low ?? d.value, close: d.close ?? d.value, volume: volData?.value };
           setOhlc(c);
           updateLegend(typeof d.time === "number" ? d.time : 0);
         } else if (lastCandleRef.current) { setOhlc(lastCandleRef.current); setLegendValues([]); }
@@ -568,15 +577,16 @@ export function TradingChart() {
     <div className="flex h-full flex-col overflow-hidden" style={{ background: chartSettings.bgColor }}>
       {/* Top bar */}
       {selectedAsset && (
-        <div className="flex items-center gap-2 border-b px-3 py-1 shrink-0 overflow-hidden"
+        <div className="relative z-10 flex items-center gap-2 border-b px-3 py-1 shrink-0"
           style={{ borderColor: "var(--tv-border)", background: "var(--tv-bg2)" }}>
+          <div className="flex items-center gap-2.5 min-w-0 flex-1 overflow-x-auto">
           {/* OHLC */}
           {ohlc && (
             <div className="flex items-center gap-2.5 text-[11px] shrink-0">
-              <span style={{ color: "var(--tv-text)" }}>O <span className="font-mono" style={{ color: "var(--tv-text-light)" }}>{ohlc.open?.toFixed(2)}</span></span>
-              <span style={{ color: "var(--tv-text)" }}>H <span className="font-mono text-[#26a69a]">{ohlc.high?.toFixed(2)}</span></span>
-              <span style={{ color: "var(--tv-text)" }}>L <span className="font-mono text-[#ef5350]">{ohlc.low?.toFixed(2)}</span></span>
-              <span style={{ color: "var(--tv-text)" }}>C <span className={`font-mono ${isPositive ? "text-[#26a69a]" : "text-[#ef5350]"}`}>{ohlc.close?.toFixed(2)}</span></span>
+              <span style={{ color: "var(--tv-text)" }}>O <span className="font-mono" style={{ color: "var(--tv-text-light)" }}>{fmtOHLC(ohlc.open)}</span></span>
+              <span style={{ color: "var(--tv-text)" }}>H <span className="font-mono text-[#26a69a]">{fmtOHLC(ohlc.high)}</span></span>
+              <span style={{ color: "var(--tv-text)" }}>L <span className="font-mono text-[#ef5350]">{fmtOHLC(ohlc.low)}</span></span>
+              <span style={{ color: "var(--tv-text)" }}>C <span className={`font-mono ${isPositive ? "text-[#26a69a]" : "text-[#ef5350]"}`}>{fmtOHLC(ohlc.close)}</span></span>
             </div>
           )}
 
@@ -594,8 +604,7 @@ export function TradingChart() {
               {ind.label}({Object.values(ind.params).join(",")})
             </span>
           ))}
-
-          <div className="flex-1" />
+          </div>
 
           {/* Toolbar buttons */}
           <div className="flex items-center gap-1 shrink-0">
@@ -615,7 +624,7 @@ export function TradingChart() {
                 <span>{CHART_TYPES.find((t) => t.id === chartType)?.label}</span>
               </button>
               {showChartTypeMenu && (
-                <div className="absolute top-full right-0 mt-1 z-20 rounded-lg border py-1 shadow-xl min-w-[140px]"
+                <div className="absolute top-full right-0 mt-1 z-50 rounded-lg border py-1 shadow-xl min-w-[140px]"
                   style={{ background: "var(--tv-bg2)", borderColor: "var(--tv-border)" }}>
                   {CHART_TYPES.map((t) => (
                     <button key={t.id} onClick={() => { setChartType(t.id); setShowChartTypeMenu(false); }}
@@ -627,6 +636,10 @@ export function TradingChart() {
                 </div>
               )}
             </div>
+            {/* Data Window */}
+            <button onClick={() => setShowDataWindow(!showDataWindow)} title="Data Window" className={`p-1 rounded transition-colors hover:bg-[var(--tv-bg3)]`} style={{ color: showDataWindow ? "#2962ff" : "var(--tv-muted)" }}>
+              <Table2 className="h-3.5 w-3.5" />
+            </button>
             {/* Indicators */}
             <button onClick={() => setShowIndicatorsModal(true)} className="flex items-center gap-1 rounded px-2 py-0.5 text-[11px] border hover:bg-[var(--tv-bg3)]"
               style={{ borderColor: "var(--tv-border)", color: "var(--tv-text)" }}>
@@ -654,6 +667,25 @@ export function TradingChart() {
           <ReplayControls totalCandles={allCandlesRef.current.length} />
           {/* Object tree (inside chart area) */}
           {showObjectTree && <ObjectTreePanel />}
+          {/* Data Window */}
+          {showDataWindow && ohlc && (
+            <div className="absolute top-2 right-14 z-20 rounded-lg border px-3 py-2 text-[11px] font-mono shadow-xl"
+              style={{ background: "var(--tv-bg2)88", borderColor: "var(--tv-border)", backdropFilter: "blur(4px)" }}>
+              <div className="text-[10px] font-bold mb-1" style={{ color: "var(--tv-muted)" }}>DATA WINDOW</div>
+              {[
+                { label: "O", value: fmtOHLC(ohlc.open), color: "var(--tv-text-light)" },
+                { label: "H", value: fmtOHLC(ohlc.high), color: "#26a69a" },
+                { label: "L", value: fmtOHLC(ohlc.low), color: "#ef5350" },
+                { label: "C", value: fmtOHLC(ohlc.close), color: ohlc.close >= ohlc.open ? "#26a69a" : "#ef5350" },
+                { label: "V", value: ohlc.volume ? ohlc.volume.toLocaleString() : "—", color: "var(--tv-text)" },
+              ].map(({ label, value, color }) => (
+                <div key={label} className="flex items-center justify-between gap-4">
+                  <span style={{ color: "var(--tv-muted)" }}>{label}</span>
+                  <span style={{ color }}>{value}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       ) : (
         <div className="flex h-full items-center justify-center">
