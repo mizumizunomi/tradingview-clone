@@ -19,8 +19,8 @@ export function SymbolInfoBar() {
 
   return (
     <div
-      className="flex items-center gap-4 px-4 h-7 border-b shrink-0 overflow-x-auto"
-      style={{ background: "var(--tv-bg2)", borderColor: "var(--tv-border)" }}
+      className="relative z-20 flex items-center gap-4 px-4 h-7 border-b shrink-0 overflow-x-auto"
+      style={{ background: "var(--tv-bg2)", borderColor: "var(--tv-border)", isolation: "isolate" }}
     >
       {/* Category badge */}
       <span

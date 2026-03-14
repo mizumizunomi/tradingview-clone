@@ -1,16 +1,19 @@
 "use client";
 import { useState } from "react";
-import { AlertCircle, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { AlertCircle, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { useTradingStore } from "@/store/trading.store";
 import { api, endpoints } from "@/lib/api";
 import { formatPrice } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { getPlanConfig } from "@/lib/planConfig";
+import { useRouter } from "next/navigation";
 
 const LEVERAGE_PRESETS = [1, 5, 10, 25, 50, 100];
 
 export function OrderPanel() {
+  const router = useRouter();
   const {
-    selectedAsset, prices, wallet,
+    selectedAsset, prices, wallet, user,
     orderSide, orderType, quantity, leverage, stopLoss, takeProfit, limitPrice,
     setOrderSide, setOrderType, setQuantity, setLeverage,
     setStopLoss, setTakeProfit, setLimitPrice,
@@ -21,6 +24,9 @@ export function OrderPanel() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
+  const planConfig = getPlanConfig(user?.plan);
+  const maxLeverage = planConfig.maxLeverage;
+
   const priceData = selectedAsset ? prices[selectedAsset.symbol] : null;
   const currentPrice = priceData ? (orderSide === "BUY" ? priceData.ask : priceData.bid) : 0;
   const notionalValue = currentPrice * quantity;
@@ -29,6 +35,9 @@ export function OrderPanel() {
   const spread = (priceData?.ask || 0) - (priceData?.bid || 0);
   const spreadPoints = spread * 100000;
   const isBuy = orderSide === "BUY";
+
+  // Enforce plan leverage limit
+  const effectiveLeverage = Math.min(leverage, maxLeverage);
 
   const handlePlaceOrder = async () => {
     if (!selectedAsset) return setMessage({ type: "error", text: "Select a symbol first" });
@@ -163,8 +172,19 @@ export function OrderPanel() {
             className="w-full rounded border border-[#363a45] bg-[#2a2e39] px-2 py-1.5 text-xs text-[#d1d4dc] outline-none hover:border-[#434651] focus:border-[#2962ff] cursor-pointer"
           >
             <option value="MARKET">Market Order</option>
-            <option value="LIMIT">Limit Order</option>
+            {(planConfig.orderTypes as readonly string[]).includes("LIMIT") && (
+              <option value="LIMIT">Limit Order</option>
+            )}
           </select>
+          {!(planConfig.orderTypes as readonly string[]).includes("LIMIT") && (
+            <button
+              onClick={() => router.push("/plans")}
+              className="mt-1 flex w-full items-center justify-center gap-1 rounded px-2 py-1 text-[10px] text-[#5d6673] bg-[#2a2e39] hover:bg-[#363a45] transition-colors border border-[#363a45]"
+            >
+              Limit orders require Gold plan
+              <ArrowRight className="h-2.5 w-2.5" />
+            </button>
+          )}
         </div>
 
         {/* Quantity */}
@@ -205,14 +225,23 @@ export function OrderPanel() {
           <input
             type="range"
             min="1"
-            max="100"
-            value={leverage}
+            max={maxLeverage}
+            value={Math.min(leverage, maxLeverage)}
             onChange={(e) => setLeverage(parseInt(e.target.value))}
             className="w-full"
             style={{
-              background: `linear-gradient(to right, #2962ff ${leverage}%, #363a45 ${leverage}%)`,
+              background: `linear-gradient(to right, #2962ff ${(Math.min(leverage, maxLeverage) / maxLeverage) * 100}%, #363a45 ${(Math.min(leverage, maxLeverage) / maxLeverage) * 100}%)`,
             }}
           />
+          {leverage > maxLeverage && (
+            <button
+              onClick={() => router.push("/plans")}
+              className="mt-1 flex w-full items-center justify-center gap-1 rounded px-2 py-1 text-[10px] text-[#f59e0b] bg-[#f59e0b15] hover:bg-[#f59e0b22] transition-colors"
+            >
+              {leverage}x requires {leverage <= 50 ? "Gold" : "Platinum"} plan
+              <ArrowRight className="h-2.5 w-2.5" />
+            </button>
+          )}
           <div className="mt-1.5 flex gap-1">
             {LEVERAGE_PRESETS.map((l) => (
               <button
