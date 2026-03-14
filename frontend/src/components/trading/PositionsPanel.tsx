@@ -1,0 +1,247 @@
+"use client";
+import { useState } from "react";
+import { useTradingStore } from "@/store/trading.store";
+import { api, endpoints } from "@/lib/api";
+import { formatPrice, formatPnL } from "@/lib/utils";
+import { Position } from "@/types";
+import { TrendingUp, TrendingDown, Clock, History } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+export function PositionsPanel() {
+  const { positions, setPositions, setWallet, activeBottomTab, setActiveBottomTab, prices } = useTradingStore();
+  const [closingId, setClosingId] = useState<string | null>(null);
+
+  const openPositions = positions.filter((p) => p.isOpen);
+  const closedPositions = positions.filter((p) => !p.isOpen);
+
+  const getPositionPnL = (p: Position) => {
+    const pd = prices[p.symbol];
+    if (!pd) return p.unrealizedPnL;
+    const diff = p.side === "BUY" ? pd.price - p.entryPrice : p.entryPrice - pd.price;
+    return diff * p.quantity * p.leverage - p.commission;
+  };
+
+  const totalPnL = openPositions.reduce((sum, p) => sum + getPositionPnL(p), 0);
+
+  const handleClose = async (position: Position) => {
+    setClosingId(position.id);
+    try {
+      await api.post(endpoints.closePosition(position.id));
+      const [posRes, closedRes, walletRes] = await Promise.all([
+        api.get(endpoints.positions),
+        api.get(endpoints.closedPositions),
+        api.get(endpoints.wallet),
+      ]);
+      setPositions([
+        ...posRes.data.map((p: any) => ({ ...p, symbol: p.asset.symbol, assetName: p.asset.name })),
+        ...closedRes.data.map((p: any) => ({ ...p, symbol: p.asset.symbol, assetName: p.asset.name })),
+      ]);
+      setWallet(walletRes.data);
+    } catch (err: any) {
+      console.error("Failed to close position:", err);
+    } finally {
+      setClosingId(null);
+    }
+  };
+
+  const tabs = [
+    { key: "positions" as const, label: "Positions", count: openPositions.length, icon: TrendingUp },
+    { key: "orders" as const, label: "Orders", count: 0, icon: Clock },
+    { key: "history" as const, label: "History", count: closedPositions.length, icon: History },
+  ];
+
+  return (
+    <div className="flex h-full flex-col bg-[#131722]">
+      {/* Tab bar */}
+      <div className="flex items-center border-b border-[#363a45] bg-[#1e222d] px-1">
+        {tabs.map(({ key, label, count, icon: Icon }) => (
+          <button
+            key={key}
+            onClick={() => setActiveBottomTab(key)}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors border-b-2 -mb-px",
+              activeBottomTab === key
+                ? "border-[#2962ff] text-white"
+                : "border-transparent text-[#5d6673] hover:text-[#b2b5be]"
+            )}
+          >
+            <Icon className="h-3.5 w-3.5" />
+            {label}
+            {count > 0 && (
+              <span className={cn(
+                "rounded px-1.5 py-0.5 text-[10px] font-bold leading-none",
+                activeBottomTab === key ? "bg-[#2962ff] text-white" : "bg-[#2a2e39] text-[#5d6673]"
+              )}>
+                {count}
+              </span>
+            )}
+          </button>
+        ))}
+
+        {/* Total P&L */}
+        <div className="ml-auto flex items-center gap-2 pr-3">
+          {openPositions.length > 0 && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] text-[#5d6673]">Total P&L</span>
+              <span className={cn(
+                "font-mono text-xs font-bold",
+                totalPnL >= 0 ? "text-[#26a69a]" : "text-[#ef5350]"
+              )}>
+                {totalPnL >= 0 ? "+" : ""}${formatPrice(Math.abs(totalPnL))}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-auto">
+        {activeBottomTab === "positions" && (
+          openPositions.length === 0 ? (
+            <div className="flex h-full flex-col items-center justify-center gap-2 text-[#5d6673]">
+              <TrendingUp className="h-8 w-8 opacity-30" />
+              <div className="text-sm">No open positions</div>
+              <div className="text-xs opacity-60">Place a trade to get started</div>
+            </div>
+          ) : (
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-[#363a45] bg-[#1e222d]">
+                  {["Symbol", "Side", "Qty", "Lev", "Entry", "Current", "P&L", "Margin", "S/L", "T/P", ""].map((h) => (
+                    <th key={h} className={cn(
+                      "px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#5d6673] whitespace-nowrap",
+                      h === "" || h === "P&L" || h === "Current" || h === "Entry" ? "text-right" : "text-left"
+                    )}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#1e222d]">
+                {openPositions.map((pos) => {
+                  const pnl = getPositionPnL(pos);
+                  const currentPrice = prices[pos.symbol]?.price || pos.currentPrice;
+                  const isProfit = pnl >= 0;
+                  const isBuy = pos.side === "BUY";
+                  return (
+                    <tr key={pos.id} className="group hover:bg-[#1e222d] transition-colors">
+                      <td className="px-3 py-2">
+                        <div className="text-xs font-bold text-white">{pos.symbol}</div>
+                        <div className="text-[10px] text-[#5d6673] truncate max-w-[80px]">{pos.assetName?.split(" ").slice(0, 2).join(" ")}</div>
+                      </td>
+                      <td className="px-3 py-2">
+                        <span className={cn(
+                          "inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold uppercase",
+                          isBuy ? "bg-[#26a69a20] text-[#26a69a]" : "bg-[#ef535020] text-[#ef5350]"
+                        )}>
+                          {pos.side}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 text-xs font-mono text-[#d1d4dc]">{pos.quantity}</td>
+                      <td className="px-3 py-2 text-xs text-[#b2b5be]">{pos.leverage}×</td>
+                      <td className="px-3 py-2 text-right font-mono text-xs text-[#d1d4dc]">
+                        {pos.entryPrice < 10 ? pos.entryPrice.toFixed(5) : formatPrice(pos.entryPrice)}
+                      </td>
+                      <td className="px-3 py-2 text-right font-mono text-xs text-white font-medium">
+                        {currentPrice < 10 ? currentPrice.toFixed(5) : formatPrice(currentPrice)}
+                      </td>
+                      <td className="px-3 py-2 text-right">
+                        <div className={cn("font-mono text-xs font-bold", isProfit ? "text-[#26a69a]" : "text-[#ef5350]")}>
+                          {isProfit ? "+" : ""}${formatPrice(Math.abs(pnl))}
+                        </div>
+                        <div className={cn("text-[10px]", isProfit ? "text-[#26a69a]" : "text-[#ef5350]")}>
+                          {pos.entryPrice > 0
+                            ? `${isProfit ? "+" : ""}${(((pnl / (pos.margin || 1)) * 100)).toFixed(1)}%`
+                            : ""}
+                        </div>
+                      </td>
+                      <td className="px-3 py-2 text-right font-mono text-xs text-[#b2b5be]">${formatPrice(pos.margin)}</td>
+                      <td className="px-3 py-2 text-right font-mono text-xs text-[#ef5350]">
+                        {pos.stopLoss ? (pos.stopLoss < 10 ? pos.stopLoss.toFixed(5) : formatPrice(pos.stopLoss)) : <span className="text-[#5d6673]">—</span>}
+                      </td>
+                      <td className="px-3 py-2 text-right font-mono text-xs text-[#26a69a]">
+                        {pos.takeProfit ? (pos.takeProfit < 10 ? pos.takeProfit.toFixed(5) : formatPrice(pos.takeProfit)) : <span className="text-[#5d6673]">—</span>}
+                      </td>
+                      <td className="px-3 py-2 text-right">
+                        <button
+                          onClick={() => handleClose(pos)}
+                          disabled={closingId === pos.id}
+                          className="rounded border border-[#ef535040] px-2 py-0.5 text-[10px] font-medium text-[#ef5350] opacity-0 group-hover:opacity-100 hover:bg-[#ef5350] hover:text-white hover:border-[#ef5350] disabled:opacity-50 transition-all"
+                        >
+                          {closingId === pos.id ? "..." : "Close"}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )
+        )}
+
+        {activeBottomTab === "orders" && (
+          <div className="flex h-full flex-col items-center justify-center gap-2 text-[#5d6673]">
+            <Clock className="h-8 w-8 opacity-30" />
+            <div className="text-sm">No pending orders</div>
+          </div>
+        )}
+
+        {activeBottomTab === "history" && (
+          closedPositions.length === 0 ? (
+            <div className="flex h-full flex-col items-center justify-center gap-2 text-[#5d6673]">
+              <History className="h-8 w-8 opacity-30" />
+              <div className="text-sm">No trade history yet</div>
+            </div>
+          ) : (
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-[#363a45] bg-[#1e222d]">
+                  {["Symbol", "Side", "Qty", "Entry", "Close", "P&L", "Commission", "Closed At"].map((h) => (
+                    <th key={h} className={cn(
+                      "px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#5d6673]",
+                      ["Entry", "Close", "P&L", "Commission", "Closed At"].includes(h) ? "text-right" : "text-left"
+                    )}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#1e222d]">
+                {closedPositions.map((pos) => {
+                  const isProfit = pos.realizedPnL >= 0;
+                  return (
+                    <tr key={pos.id} className="hover:bg-[#1e222d] transition-colors">
+                      <td className="px-3 py-2">
+                        <div className="text-xs font-bold text-white">{pos.symbol}</div>
+                      </td>
+                      <td className="px-3 py-2">
+                        <span className={cn(
+                          "inline-flex rounded px-1.5 py-0.5 text-[10px] font-bold uppercase",
+                          pos.side === "BUY" ? "bg-[#26a69a20] text-[#26a69a]" : "bg-[#ef535020] text-[#ef5350]"
+                        )}>{pos.side}</span>
+                      </td>
+                      <td className="px-3 py-2 text-xs font-mono text-[#d1d4dc]">{pos.quantity}</td>
+                      <td className="px-3 py-2 text-right font-mono text-xs text-[#d1d4dc]">
+                        {pos.entryPrice < 10 ? pos.entryPrice.toFixed(5) : formatPrice(pos.entryPrice)}
+                      </td>
+                      <td className="px-3 py-2 text-right font-mono text-xs text-[#d1d4dc]">
+                        {pos.currentPrice < 10 ? pos.currentPrice.toFixed(5) : formatPrice(pos.currentPrice)}
+                      </td>
+                      <td className="px-3 py-2 text-right">
+                        <span className={cn("font-mono text-xs font-bold", isProfit ? "text-[#26a69a]" : "text-[#ef5350]")}>
+                          {isProfit ? "+" : ""}${formatPrice(Math.abs(pos.realizedPnL))}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 text-right font-mono text-xs text-[#5d6673]">
+                        ${formatPrice(pos.commission)}
+                      </td>
+                      <td className="px-3 py-2 text-right text-[11px] text-[#5d6673]">
+                        {pos.closedAt ? new Date(pos.closedAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "—"}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )
+        )}
+      </div>
+    </div>
+  );
+}

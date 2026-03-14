@@ -1,0 +1,282 @@
+// Prisma Schema for TradingView Clone
+// Database: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ========== USER & AUTHENTICATION ==========
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  username      String   @unique
+  password      String   // Hashed with bcrypt
+  firstName     String?
+  lastName      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  wallet        Wallet?
+  orders        Order[]
+  positions     Position[]
+  trades        Trade[]
+  watchlist     WatchlistItem[]
+  
+  @@map("users")
+}
+
+// ========== WALLET & BALANCE ==========
+model Wallet {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  balance       Float    @default(10000.00)  // Starting balance $10,000
+  equity        Float    @default(10000.00)  // Balance + Unrealized P&L
+  margin        Float    @default(0.00)      // Used margin
+  freeMargin    Float    @default(10000.00)  // Available for trading
+  marginLevel   Float    @default(0.00)      // (Equity/Margin) * 100
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  transactions  Transaction[]
+  
+  @@map("wallets")
+}
+
+model Transaction {
+  id            String   @id @default(uuid())
+  walletId      String
+  wallet        Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  
+  type          TransactionType
+  method        PaymentMethod
+  amount        Float
+  status        TransactionStatus @default(COMPLETED)
+  
+  createdAt     DateTime @default(now())
+  
+  @@map("transactions")
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+}
+
+enum PaymentMethod {
+  WIRE_TRANSFER
+  DEBIT_CARD
+  CRYPTO
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+// ========== ASSETS & SYMBOLS ==========
+model Asset {
+  id            String   @id @default(uuid())
+  symbol        String   @unique    // e.g., "BTCUSD", "XAUUSD", "AAPL"
+  name          String              // e.g., "Bitcoin / U.S. dollar"
+  category      AssetCategory
+  broker        String              // e.g., "BINANCE", "PEPPERSTONE", "NYSE"
+  baseAsset     String?             // e.g., "BTC"
+  quoteAsset    String?             // e.g., "USD"
+  
+  // Trading parameters
+  minOrderSize  Float    @default(0.01)
+  maxLeverage   Int      @default(100)
+  spread        Float    @default(0.0001)  // 1 pip = 0.0001
+  commission    Float    @default(0.0005)  // 0.05%
+  
+  // For API mapping
+  apiSymbol     String?             // Symbol format for external API
+  dataSource    DataSource
+  
+  isActive      Boolean  @default(true)
+  isFeatured    Boolean  @default(false)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  orders        Order[]
+  positions     Position[]
+  trades        Trade[]
+  watchlist     WatchlistItem[]
+  
+  @@map("assets")
+}
+
+enum AssetCategory {
+  CRYPTO
+  FOREX
+  STOCKS
+  FUTURES
+  INDICES
+  COMMODITIES
+  FUNDS
+  BONDS
+  ECONOMY
+  OPTIONS
+}
+
+enum DataSource {
+  BINANCE
+  YAHOO_FINANCE
+  TWELVE_DATA
+  MOCK
+}
+
+// ========== TRADING & ORDERS ==========
+model Order {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assetId       String
+  asset         Asset    @relation(fields: [assetId], references: [id])
+  
+  type          OrderType
+  side          OrderSide
+  quantity      Float
+  leverage      Int      @default(1)
+  
+  // Prices
+  entryPrice    Float?
+  stopLoss      Float?
+  takeProfit    Float?
+  limitPrice    Float?
+  
+  // Status
+  status        OrderStatus @default(PENDING)
+  
+  // Filled information
+  filledAt      DateTime?
+  filledPrice   Float?
+  
+  // Costs
+  margin        Float?
+  commission    Float?
+  spread        Float?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  position      Position?
+  
+  @@map("orders")
+}
+
+enum OrderType {
+  MARKET
+  LIMIT
+  STOP_LOSS
+  TAKE_PROFIT
+}
+
+enum OrderSide {
+  BUY
+  SELL
+}
+
+enum OrderStatus {
+  PENDING
+  FILLED
+  PARTIALLY_FILLED
+  CANCELLED
+  REJECTED
+}
+
+// ========== POSITIONS ==========
+model Position {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assetId       String
+  asset         Asset    @relation(fields: [assetId], references: [id])
+  orderId       String   @unique
+  order         Order    @relation(fields: [orderId], references: [id])
+  
+  side          OrderSide
+  quantity      Float
+  leverage      Int
+  
+  entryPrice    Float
+  currentPrice  Float
+  stopLoss      Float?
+  takeProfit    Float?
+  
+  // Profit & Loss
+  unrealizedPnL Float    @default(0.00)
+  realizedPnL   Float    @default(0.00)
+  
+  // Costs
+  margin        Float
+  commission    Float
+  spread        Float
+  swap          Float    @default(0.00)  // Overnight/rollover fee
+  
+  isOpen        Boolean  @default(true)
+  
+  openedAt      DateTime @default(now())
+  closedAt      DateTime?
+  
+  updatedAt     DateTime @updatedAt
+  
+  trades        Trade[]
+  
+  @@map("positions")
+}
+
+// ========== TRADE HISTORY ==========
+model Trade {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assetId       String
+  asset         Asset    @relation(fields: [assetId], references: [id])
+  positionId    String?
+  position      Position? @relation(fields: [positionId], references: [id])
+  
+  type          TradeType
+  side          OrderSide
+  quantity      Float
+  price         Float
+  
+  pnl           Float    @default(0.00)
+  commission    Float
+  
+  executedAt    DateTime @default(now())
+  
+  @@map("trades")
+}
+
+enum TradeType {
+  OPEN
+  CLOSE
+  PARTIAL_CLOSE
+}
+
+// ========== WATCHLIST ==========
+model WatchlistItem {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assetId       String
+  asset         Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  
+  order         Int      @default(0)
+  
+  createdAt     DateTime @default(now())
+  
+  @@unique([userId, assetId])
+  @@map("watchlist")
+}
