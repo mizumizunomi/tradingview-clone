@@ -66,7 +66,7 @@ export function TopToolbar() {
 
   return (
     <>
-      <div className="flex h-[38px] items-center border-b px-2 gap-1 overflow-x-auto shrink-0"
+      <div className="relative z-20 flex h-[38px] items-center border-b px-2 gap-1 overflow-x-auto shrink-0"
         style={{ borderColor: "var(--tv-border)", background: "var(--tv-bg2)" }}>
 
         {/* Symbol selector */}

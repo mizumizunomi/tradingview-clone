@@ -33,4 +33,6 @@ export const endpoints = {
   deposit: "/wallet/deposit",
   withdraw: "/wallet/withdraw",
   transactions: "/wallet/transactions",
+  updatePlan: "/auth/plan",
+  updateProfile: "/auth/profile",
 };

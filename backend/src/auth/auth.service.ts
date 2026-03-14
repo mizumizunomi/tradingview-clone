@@ -1,8 +1,16 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto, RegisterDto } from './dto/auth.dto';
+
+const PLAN_BALANCES: Record<string, number> = {
+  silver: 500,
+  gold: 50000,
+  platinum: 1000000,
+};
+
+const VALID_PLANS = ['silver', 'gold', 'platinum'];
 
 @Injectable()
 export class AuthService {
@@ -25,12 +33,13 @@ export class AuthService {
         password,
         firstName: dto.firstName,
         lastName: dto.lastName,
+        plan: 'silver',
         wallet: {
           create: {
-            balance: 10000,
-            equity: 10000,
+            balance: PLAN_BALANCES.silver,
+            equity: PLAN_BALANCES.silver,
             margin: 0,
-            freeMargin: 10000,
+            freeMargin: PLAN_BALANCES.silver,
             marginLevel: 0,
           },
         },
@@ -64,6 +73,45 @@ export class AuthService {
       include: { wallet: true },
     });
     if (!user) throw new UnauthorizedException();
+    const { password: _, ...userWithoutPassword } = user;
+    return userWithoutPassword;
+  }
+
+  async updatePlan(userId: string, plan: string) {
+    if (!VALID_PLANS.includes(plan)) {
+      throw new BadRequestException(`Invalid plan. Must be one of: ${VALID_PLANS.join(', ')}`);
+    }
+
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data: { plan },
+      include: { wallet: true },
+    });
+
+    // Update wallet balance to the plan's starting balance (only if upgrading)
+    const newBalance = PLAN_BALANCES[plan];
+    const wallet = user.wallet;
+    if (wallet && wallet.balance < newBalance) {
+      await this.prisma.wallet.update({
+        where: { userId },
+        data: {
+          balance: newBalance,
+          equity: newBalance,
+          freeMargin: newBalance - wallet.margin,
+        },
+      });
+    }
+
+    const { password: _, ...userWithoutPassword } = user;
+    return userWithoutPassword;
+  }
+
+  async updateProfile(userId: string, data: { firstName?: string; lastName?: string; bio?: string; avatar?: string }) {
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data,
+      include: { wallet: true },
+    });
     const { password: _, ...userWithoutPassword } = user;
     return userWithoutPassword;
   }

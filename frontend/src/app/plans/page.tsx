@@ -1,9 +1,9 @@
 "use client";
-import { useRouter } from "next/navigation";
 import { SideNav } from "@/components/layout/SideNav";
 import { Check, Zap, Shield, Crown, Star, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useTradingStore } from "@/store/trading.store";
+import { api, endpoints } from "@/lib/api";
 
 const PLANS = [
   {
@@ -102,8 +102,22 @@ const COMPARISON_ROWS = [
 ];
 
 export default function PlansPage() {
-  const router = useRouter();
-  const [activePlan, setActivePlan] = useState("gold");
+  const { user, setUser, addToast } = useTradingStore();
+  const activePlan = user?.plan || "silver";
+
+  const handleUpgrade = async (planId: string) => {
+    if (planId === activePlan) return;
+    try {
+      await api.patch(endpoints.updatePlan, { plan: planId });
+      if (user) {
+        setUser({ ...user, plan: planId as "silver" | "gold" | "platinum" });
+      }
+      const plan = PLANS.find((p) => p.id === planId);
+      addToast({ type: "success", message: `Upgraded to ${plan?.name || planId} plan!` });
+    } catch {
+      addToast({ type: "error", message: "Failed to update plan. Please try again." });
+    }
+  };
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#131722]">
@@ -140,11 +154,17 @@ export default function PlansPage() {
                     isActive && "ring-2 ring-[#2962ff] ring-offset-2 ring-offset-[#131722]"
                   )}
                   style={{ boxShadow: plan.popular ? `0 0 40px ${plan.bgGlow}` : undefined }}
-                  onClick={() => setActivePlan(plan.id)}
                 >
                   {plan.popular && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#f59e0b] px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#131722]">
                       Most Popular
+                    </div>
+                  )}
+
+                  {/* Current plan badge */}
+                  {isActive && (
+                    <div className="absolute top-3 right-3 rounded-full bg-[#2962ff] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+                      Current Plan
                     </div>
                   )}
 
@@ -164,7 +184,7 @@ export default function PlansPage() {
                   <div className="mb-4 pb-4 border-b border-[#363a45]">
                     <div className="text-2xl font-bold text-white">{plan.price}</div>
                     <div className="text-xs text-[#5d6673]">
-                      Min. deposit: <span className="text-[#b2b5be] font-medium">${plan.minDeposit.toLocaleString()}</span>
+                      Min. deposit: <span className="text-[#b2b5be] font-medium">${plan.minDeposit.toLocaleString("en-US")}</span>
                     </div>
                   </div>
 
@@ -196,17 +216,19 @@ export default function PlansPage() {
                   </ul>
 
                   <button
-                    onClick={() => router.push("/wallet")}
+                    onClick={() => handleUpgrade(plan.id)}
+                    disabled={isActive}
                     className={cn(
                       "flex w-full items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-bold uppercase tracking-wider transition-all",
+                      isActive && "opacity-50 cursor-not-allowed"
                     )}
                     style={{
-                      background: plan.popular ? plan.color : `${plan.color}20`,
-                      color: plan.popular ? "#000" : plan.color,
+                      background: isActive ? "#2962ff" : plan.popular ? plan.color : `${plan.color}20`,
+                      color: isActive ? "white" : plan.popular ? "#000" : plan.color,
                     }}
                   >
-                    {plan.cta}
-                    <ArrowRight className="h-3.5 w-3.5" />
+                    {isActive ? "Current Plan" : plan.cta}
+                    {!isActive && <ArrowRight className="h-3.5 w-3.5" />}
                   </button>
                 </div>
               );
@@ -224,6 +246,9 @@ export default function PlansPage() {
                     {PLANS.map((p) => (
                       <th key={p.id} className="px-4 py-3 text-center text-xs font-bold" style={{ color: p.color }}>
                         {p.name}
+                        {activePlan === p.id && (
+                          <span className="ml-1.5 rounded px-1 py-0.5 text-[8px] bg-[#2962ff] text-white">You</span>
+                        )}
                       </th>
                     ))}
                   </tr>
