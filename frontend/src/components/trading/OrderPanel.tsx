@@ -23,6 +23,8 @@ export function OrderPanel() {
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  // Local string state for quantity input to allow free typing
+  const [qtyInput, setQtyInput] = useState<string>(String(quantity));
 
   const planConfig = getPlanConfig(user?.plan);
   const maxLeverage = planConfig.maxLeverage;
@@ -31,7 +33,7 @@ export function OrderPanel() {
   const currentPrice = priceData ? (orderSide === "BUY" ? priceData.ask : priceData.bid) : 0;
   const notionalValue = currentPrice * quantity;
   const marginRequired = leverage > 0 ? notionalValue / leverage : notionalValue;
-  const commission = notionalValue * (selectedAsset?.commission || 0.0005);
+  const commission = notionalValue * planConfig.commission;
   const spread = (priceData?.ask || 0) - (priceData?.bid || 0);
   const spreadPoints = spread * 100000;
   const isBuy = orderSide === "BUY";
@@ -194,21 +196,42 @@ export function OrderPanel() {
           </label>
           <div className="flex rounded border border-[#363a45] overflow-hidden hover:border-[#434651] focus-within:border-[#2962ff]">
             <button
-              onClick={() => setQuantity(Math.max(0.01, parseFloat((quantity - 0.01).toFixed(2))))}
+              onClick={() => {
+                const next = Math.max(0.01, parseFloat((quantity - 0.01).toFixed(2)));
+                setQuantity(next);
+                setQtyInput(String(next));
+              }}
               className="px-2.5 bg-[#2a2e39] text-[#b2b5be] hover:bg-[#363a45] hover:text-white text-base leading-none select-none"
             >
               −
             </button>
             <input
-              type="number"
-              value={quantity}
-              onChange={(e) => setQuantity(parseFloat(e.target.value) || 0.01)}
-              min="0.01"
-              step="0.01"
+              type="text"
+              inputMode="decimal"
+              value={qtyInput}
+              onChange={(e) => {
+                const v = e.target.value;
+                // Allow typing freely — only restrict to numeric pattern
+                if (/^(\d*\.?\d*)$/.test(v)) {
+                  setQtyInput(v);
+                  const num = parseFloat(v);
+                  if (!isNaN(num) && num > 0) setQuantity(num);
+                }
+              }}
+              onBlur={() => {
+                const num = parseFloat(qtyInput);
+                const valid = isNaN(num) || num <= 0 ? 0.01 : parseFloat(num.toFixed(2));
+                setQuantity(valid);
+                setQtyInput(String(valid));
+              }}
               className="flex-1 bg-[#2a2e39] px-2 py-1.5 text-center text-xs font-mono text-white outline-none w-0"
             />
             <button
-              onClick={() => setQuantity(parseFloat((quantity + 0.01).toFixed(2)))}
+              onClick={() => {
+                const next = parseFloat((quantity + 0.01).toFixed(2));
+                setQuantity(next);
+                setQtyInput(String(next));
+              }}
               className="px-2.5 bg-[#2a2e39] text-[#b2b5be] hover:bg-[#363a45] hover:text-white text-base leading-none select-none"
             >
               +
@@ -316,7 +339,7 @@ export function OrderPanel() {
               { label: "Entry Price", value: currentPrice > 0 ? (currentPrice < 10 ? currentPrice.toFixed(5) : currentPrice.toFixed(2)) : "—" },
               { label: "Notional", value: `$${formatPrice(notionalValue)}` },
               { label: "Margin Req.", value: `$${formatPrice(marginRequired)}`, highlight: true },
-              { label: "Commission", value: `$${formatPrice(commission)}` },
+              { label: `Commission (${(planConfig.commission * 100).toFixed(3)}%)`, value: `$${formatPrice(commission)}` },
               { label: "Spread", value: `${spreadPoints.toFixed(1)} pts` },
             ].map(({ label, value, highlight }) => (
               <div key={label} className="flex justify-between px-2.5 py-1.5">

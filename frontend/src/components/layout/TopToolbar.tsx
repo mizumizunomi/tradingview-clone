@@ -1,6 +1,6 @@
 "use client";
-import { useState } from "react";
-import { ChevronDown, Bookmark, Sun, Moon, Bell, Settings, Layers, PlayCircle, LayoutGrid, BookOpen } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { ChevronDown, Sun, Moon, Bell, Settings, Layers, PlayCircle, LayoutGrid, BookOpen } from "lucide-react";
 import { useTradingStore } from "@/store/trading.store";
 import { SymbolSearch } from "@/components/trading/SymbolSearch";
 import { formatPrice } from "@/lib/utils";
@@ -23,14 +23,45 @@ const LAYOUTS: { id: ChartLayout; icon: string; label: string }[] = [
 
 export function TopToolbar() {
   const [showSearch, setShowSearch] = useState(false);
-  const [showTfMenu, setShowTfMenu] = useState(false);
-  const [showLayoutMenu, setShowLayoutMenu] = useState(false);
+  // For fixed-position dropdowns: store the anchor rect
+  const [tfMenuRect, setTfMenuRect] = useState<DOMRect | null>(null);
+  const [layoutMenuRect, setLayoutMenuRect] = useState<DOMRect | null>(null);
+  const tfBtnRef = useRef<HTMLButtonElement | null>(null);
+  const layoutBtnRef = useRef<HTMLButtonElement | null>(null);
+
   const {
     selectedAsset, timeframe, setTimeframe, prices, wallet, positions,
     theme, toggleTheme, alerts, setShowAlertModal, setShowChartSettings,
     showObjectTree, setShowObjectTree, replayMode, setReplayMode,
     chartLayout, setChartLayout, showDOMPanel, setShowDOMPanel,
   } = useTradingStore();
+
+  // Close dropdowns on outside click or Escape
+  useEffect(() => {
+    const handler = (e: MouseEvent | KeyboardEvent) => {
+      if (e instanceof KeyboardEvent && e.key !== "Escape") return;
+      setTfMenuRect(null);
+      setLayoutMenuRect(null);
+    };
+    document.addEventListener("mousedown", handler as EventListener);
+    document.addEventListener("keydown", handler as EventListener);
+    return () => {
+      document.removeEventListener("mousedown", handler as EventListener);
+      document.removeEventListener("keydown", handler as EventListener);
+    };
+  }, []);
+
+  const openTfMenu = () => {
+    if (tfMenuRect) { setTfMenuRect(null); return; }
+    const rect = tfBtnRef.current?.getBoundingClientRect();
+    if (rect) setTfMenuRect(rect);
+  };
+
+  const openLayoutMenu = () => {
+    if (layoutMenuRect) { setLayoutMenuRect(null); return; }
+    const rect = layoutBtnRef.current?.getBoundingClientRect();
+    if (rect) setLayoutMenuRect(rect);
+  };
 
   const priceData = selectedAsset ? prices[selectedAsset.symbol] : null;
   const totalUnrealizedPnL = positions
@@ -43,8 +74,10 @@ export function TopToolbar() {
     }, 0);
 
   const activeAlerts = alerts.filter((a) => !a.triggered).length;
-  const iconBtn = (onClick: () => void, icon: React.ReactNode, title: string, active = false, badge?: number) => (
+
+  const iconBtn = (onClick: () => void, icon: React.ReactNode, title: string, active = false, badge?: number, btnRef?: React.RefObject<HTMLButtonElement | null>) => (
     <button
+      ref={btnRef}
       onClick={onClick}
       title={title}
       className="relative rounded p-1.5 shrink-0 transition-colors"
@@ -66,9 +99,10 @@ export function TopToolbar() {
 
   return (
     <>
-      <div className="relative z-20 flex h-[38px] items-center border-b px-2 gap-1 overflow-x-auto shrink-0"
-        style={{ borderColor: "var(--tv-border)", background: "var(--tv-bg2)" }}>
-
+      <div
+        className="relative z-20 flex h-[38px] items-center border-b px-2 gap-1 overflow-x-auto shrink-0"
+        style={{ borderColor: "var(--tv-border)", background: "var(--tv-bg2)" }}
+      >
         {/* Symbol selector */}
         <button
           onClick={() => setShowSearch(true)}
@@ -95,7 +129,7 @@ export function TopToolbar() {
 
         <div className="h-5 w-px shrink-0 mx-1" style={{ background: "var(--tv-border)" }} />
 
-        {/* Timeframes */}
+        {/* Timeframes — first 4 always visible */}
         <div className="flex items-center gap-0 shrink-0">
           {TIMEFRAMES.slice(0, 4).map((tf) => (
             <button
@@ -107,51 +141,22 @@ export function TopToolbar() {
               {tf}
             </button>
           ))}
-          <div className="relative">
-            <button
-              onClick={() => setShowTfMenu(!showTfMenu)}
-              className="flex items-center gap-0.5 rounded px-2 py-1 text-xs hover:bg-[var(--tv-bg3)]"
-              style={{ color: TIMEFRAMES.slice(4).includes(timeframe) ? "#2962ff" : "var(--tv-muted)" }}
-            >
-              {TIMEFRAMES.slice(4).includes(timeframe) ? timeframe : "···"}
-              <ChevronDown className="h-3 w-3" />
-            </button>
-            {showTfMenu && (
-              <div className="absolute top-8 left-0 z-20 rounded-lg border py-1 shadow-xl min-w-[80px]"
-                style={{ background: "var(--tv-bg2)", borderColor: "var(--tv-border)" }}>
-                {TIMEFRAMES.slice(4).map((tf) => (
-                  <button key={tf} onClick={() => { setTimeframe(tf as any); setShowTfMenu(false); }}
-                    className={cn("block w-full px-4 py-1.5 text-left text-xs hover:bg-[var(--tv-bg3)]")}
-                    style={{ color: timeframe === tf ? "#2962ff" : "var(--tv-text-light)" }}>
-                    {tf}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          {/* "···" button — more timeframes, uses fixed dropdown */}
+          <button
+            ref={tfBtnRef}
+            onClick={openTfMenu}
+            className="flex items-center gap-0.5 rounded px-2 py-1 text-xs hover:bg-[var(--tv-bg3)]"
+            style={{ color: TIMEFRAMES.slice(4).includes(timeframe) ? "#2962ff" : "var(--tv-muted)" }}
+          >
+            {TIMEFRAMES.slice(4).includes(timeframe) ? timeframe : "···"}
+            <ChevronDown className="h-3 w-3" />
+          </button>
         </div>
 
         <div className="h-5 w-px shrink-0 mx-1" style={{ background: "var(--tv-border)" }} />
 
-        {/* Bookmark */}
-        {iconBtn(() => {}, <Bookmark className="h-3.5 w-3.5" />, "Watchlist")}
-
-        {/* Layout picker */}
-        <div className="relative">
-          {iconBtn(() => setShowLayoutMenu(!showLayoutMenu), <LayoutGrid className="h-3.5 w-3.5" />, "Chart Layout", showLayoutMenu)}
-          {showLayoutMenu && (
-            <div className="absolute top-8 left-0 z-20 rounded-lg border py-1 shadow-xl min-w-[160px]"
-              style={{ background: "var(--tv-bg2)", borderColor: "var(--tv-border)" }}>
-              {LAYOUTS.map((l) => (
-                <button key={l.id} onClick={() => { setChartLayout(l.id); setShowLayoutMenu(false); }}
-                  className="flex items-center gap-2 w-full px-3 py-1.5 text-xs hover:bg-[var(--tv-bg3)]"
-                  style={{ color: chartLayout === l.id ? "#2962ff" : "var(--tv-text-light)" }}>
-                  <span>{l.icon}</span><span>{l.label}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* Chart Layout — uses fixed dropdown */}
+        {iconBtn(openLayoutMenu, <LayoutGrid className="h-3.5 w-3.5" />, "Chart Layout", !!layoutMenuRect, undefined, layoutBtnRef)}
 
         {/* Replay */}
         {iconBtn(() => setReplayMode(!replayMode), <PlayCircle className="h-3.5 w-3.5" />, "Bar Replay", replayMode)}
@@ -195,6 +200,45 @@ export function TopToolbar() {
           </div>
         )}
       </div>
+
+      {/* Fixed-position dropdowns — rendered outside the overflow-x-auto container */}
+      {tfMenuRect && (
+        <div
+          className="rounded-lg border py-1 shadow-xl min-w-[80px]"
+          style={{ background: "var(--tv-bg2)", borderColor: "var(--tv-border)", position: "fixed", top: tfMenuRect.bottom + 4, left: tfMenuRect.left, zIndex: 9999 }}
+          onMouseDown={(e) => e.stopPropagation()}
+        >
+          {TIMEFRAMES.slice(4).map((tf) => (
+            <button
+              key={tf}
+              onClick={() => { setTimeframe(tf as any); setTfMenuRect(null); }}
+              className={cn("block w-full px-4 py-1.5 text-left text-xs hover:bg-[var(--tv-bg3)]")}
+              style={{ color: timeframe === tf ? "#2962ff" : "var(--tv-text-light)" }}
+            >
+              {tf}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {layoutMenuRect && (
+        <div
+          className="rounded-lg border py-1 shadow-xl min-w-[160px]"
+          style={{ background: "var(--tv-bg2)", borderColor: "var(--tv-border)", position: "fixed", top: layoutMenuRect.bottom + 4, left: layoutMenuRect.left, zIndex: 9999 }}
+          onMouseDown={(e) => e.stopPropagation()}
+        >
+          {LAYOUTS.map((l) => (
+            <button
+              key={l.id}
+              onClick={() => { setChartLayout(l.id); setLayoutMenuRect(null); }}
+              className="flex items-center gap-2 w-full px-3 py-1.5 text-xs hover:bg-[var(--tv-bg3)]"
+              style={{ color: chartLayout === l.id ? "#2962ff" : "var(--tv-text-light)" }}
+            >
+              <span>{l.icon}</span><span>{l.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {showSearch && <SymbolSearch onClose={() => setShowSearch(false)} />}
     </>
