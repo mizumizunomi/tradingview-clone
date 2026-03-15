@@ -412,13 +412,16 @@ export function TradingChart() {
     finally { setLoading(false); }
   }, [selectedAsset, timeframe, chartType, rebuildIndicators]);
 
-  // ── Create chart ──
+  // ── Create chart (only when chartType changes; theme/settings applied in separate effect) ──
   useEffect(() => {
     if (!containerRef.current) return;
-    const bg = chartSettings.bgColor;
-    const textCol = theme === "dark" ? "#b2b5be" : "#434651";
-    const grid = chartSettings.gridColor;
-    const border = theme === "dark" ? "#363a45" : "#d1d4dc";
+    const state = useTradingStore.getState();
+    const t = state.theme;
+    const cs = state.chartSettings;
+    const bg = cs.bgColor;
+    const textCol = t === "dark" ? "#b2b5be" : "#434651";
+    const grid = cs.gridColor;
+    const border = t === "dark" ? "#363a45" : "#d1d4dc";
 
     const chart = createChart(containerRef.current, {
       layout: { background: { type: ColorType.Solid, color: bg }, textColor: textCol, fontSize: 11 },
@@ -433,8 +436,8 @@ export function TradingChart() {
     let mainSeries: ISeriesApi<any>;
     if (chartType === "line") mainSeries = chart.addSeries(LineSeries, { color: "#2962ff", lineWidth: 2 as any });
     else if (chartType === "area") mainSeries = chart.addSeries(AreaSeries, { topColor: "#2962ff44", bottomColor: "#2962ff04", lineColor: "#2962ff", lineWidth: 2 as any });
-    else if (chartType === "bar") mainSeries = chart.addSeries(BarSeries, { upColor: chartSettings.upColor, downColor: chartSettings.downColor });
-    else mainSeries = chart.addSeries(CandlestickSeries, { upColor: chartSettings.upColor, downColor: chartSettings.downColor, borderUpColor: chartSettings.upColor, borderDownColor: chartSettings.downColor, wickUpColor: chartSettings.wickUpColor, wickDownColor: chartSettings.wickDownColor });
+    else if (chartType === "bar") mainSeries = chart.addSeries(BarSeries, { upColor: cs.upColor, downColor: cs.downColor });
+    else mainSeries = chart.addSeries(CandlestickSeries, { upColor: cs.upColor, downColor: cs.downColor, borderUpColor: cs.upColor, borderDownColor: cs.downColor, wickUpColor: cs.wickUpColor, wickDownColor: cs.wickDownColor });
 
     const vol = chart.addSeries(HistogramSeries, { priceFormat: { type: "volume" }, priceScaleId: "volume" });
     chart.priceScale("volume").applyOptions({ scaleMargins: { top: 0.85, bottom: 0 } });
@@ -464,16 +467,31 @@ export function TradingChart() {
     mainSeriesRef.current = mainSeries;
     volumeSeriesRef.current = vol;
 
+    let resizeTid: ReturnType<typeof setTimeout>;
     const ro = new ResizeObserver(() => {
       if (!containerRef.current) return;
-      const w = containerRef.current.clientWidth, h = containerRef.current.clientHeight;
-      chart.applyOptions({ width: w, height: h });
-      if (canvasRef.current) { canvasRef.current.width = w; canvasRef.current.height = h; }
-      renderDrawings();
+      clearTimeout(resizeTid);
+      resizeTid = setTimeout(() => {
+        if (!containerRef.current) return;
+        const w = containerRef.current.clientWidth;
+        const h = containerRef.current.clientHeight;
+        chart.applyOptions({ width: w, height: h });
+        if (canvasRef.current) {
+          canvasRef.current.width = w;
+          canvasRef.current.height = h;
+        }
+        requestAnimationFrame(renderDrawings);
+      }, 120);
     });
     ro.observe(containerRef.current);
-    return () => { ro.disconnect(); cancelAnimationFrame(frameRef.current); indicatorSeriesRef.current.clear(); try { chart.remove(); } catch {} };
-  }, [theme, chartType, chartSettings.bgColor]);
+    return () => {
+      ro.disconnect();
+      clearTimeout(resizeTid);
+      cancelAnimationFrame(frameRef.current);
+      indicatorSeriesRef.current.clear();
+      try { chart.remove(); } catch {}
+    };
+  }, [chartType]);
 
   useEffect(() => { loadCandles(); }, [loadCandles]);
   useEffect(() => { if (allCandlesRef.current.length > 0) rebuildIndicators(allCandlesRef.current); }, [indicators, rebuildIndicators]);
@@ -686,16 +704,33 @@ export function TradingChart() {
         </div>
       )}
 
-      <div ref={containerRef} className="relative flex-1 overflow-hidden">
+      <div className="relative flex-1 overflow-hidden min-h-0">
+        <div
+          ref={containerRef}
+          className="absolute inset-0 transition-opacity duration-200 ease-out"
+          style={{ opacity: loading ? 0.5 : 1 }}
+        />
         <canvas
           ref={canvasRef}
           className="absolute inset-0 z-10"
-          style={{ cursor: getCursor(), pointerEvents: activeTool === "cursor" ? "none" : "all" }}
+          style={{ cursor: getCursor(), pointerEvents: activeTool === "cursor" ? "none" : "auto" }}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseLeave={() => { mouseRef.current = { x: 0, y: 0 }; }}
           onContextMenu={handleContextMenu}
         />
+        {/* Loading overlay */}
+        {loading && (
+          <div
+            className="absolute inset-0 z-30 flex items-center justify-center transition-opacity duration-200 ease-out"
+            style={{ background: "var(--tv-bg)" }}
+          >
+            <div className="flex flex-col items-center gap-2">
+              <div className="h-6 w-6 rounded-full border-2 border-[var(--tv-border)] border-t-[var(--tv-blue)] animate-spin" />
+              <span className="text-xs" style={{ color: "var(--tv-muted)" }}>Loading chart…</span>
+            </div>
+          </div>
+        )}
         {/* Replay controls */}
         <ReplayControls totalCandles={allCandlesRef.current.length} />
         {/* Object tree (inside chart area) */}
@@ -719,12 +754,12 @@ export function TradingChart() {
             ))}
           </div>
         )}
-        {/* No-asset overlay — rendered on top while chart initialises in background */}
+        {/* No-asset overlay */}
         {!selectedAsset && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center" style={{ background: "var(--tv-bg)" }}>
-            <div className="text-center">
-              <div className="text-5xl mb-4">📊</div>
-              <div className="text-lg font-medium mb-1" style={{ color: "var(--tv-text-light)" }}>Select a symbol to start</div>
+          <div className="absolute inset-0 z-20 flex items-center justify-center transition-opacity duration-200" style={{ background: "var(--tv-bg)" }}>
+            <div className="text-center px-6">
+              <div className="text-5xl mb-4 opacity-90">📊</div>
+              <div className="text-base font-semibold mb-1.5" style={{ color: "var(--tv-text-light)" }}>Select a symbol to start</div>
               <div className="text-sm" style={{ color: "var(--tv-muted)" }}>Click the symbol selector or pick from the watchlist</div>
             </div>
           </div>

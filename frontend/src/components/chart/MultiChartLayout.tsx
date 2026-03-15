@@ -39,7 +39,7 @@ export function MultiChartLayout() {
           <div className="relative">
             <button
               onClick={() => setShowLayoutPicker((v) => !v)}
-              className="flex items-center gap-1 px-2 py-1 rounded text-[10px] border"
+              className="flex items-center gap-1 px-2 py-1 rounded text-[10px] border transition-colors duration-150 hover:bg-[var(--tv-bg3)]"
               style={{ background: "var(--tv-bg2)", borderColor: "var(--tv-border)", color: "var(--tv-muted)" }}
             >
               {LAYOUTS.find((l) => l.id === chartLayout)?.icon}
@@ -66,13 +66,14 @@ export function MultiChartLayout() {
         </div>
       )}
 
-      {/* Grid — use inline styles to avoid Tailwind purging dynamic classes */}
+      {/* Grid */}
       <div
+        className="min-h-0"
         style={{
           display: "grid",
           ...getGridStyle(chartLayout),
           height: "100%",
-          gap: "1px",
+          gap: "2px",
           background: "var(--tv-border)",
         }}
       >
@@ -82,10 +83,10 @@ export function MultiChartLayout() {
           return (
             <div
               key={panel.id}
-              className="relative overflow-hidden"
+              className="relative overflow-hidden chart-panel transition-all duration-150 ease-out"
               style={{
                 background: "var(--tv-bg)",
-                outline: isActive && chartLayout !== "1x1" ? "2px solid #2962ff" : "none",
+                outline: isActive && chartLayout !== "1x1" ? "2px solid var(--tv-blue)" : "2px solid transparent",
                 outlineOffset: "-2px",
               }}
               onClick={() => handlePanelActivate(panel.id)}
@@ -96,7 +97,7 @@ export function MultiChartLayout() {
               )}
 
               {/* Chart content */}
-              <div className={!isMain ? "h-[calc(100%-28px)]" : "h-full"}>
+              <div className={!isMain ? "h-[calc(100%-2rem)]" : "h-full"}>
                 {isMain ? (
                   <TradingChart />
                 ) : (
@@ -115,28 +116,28 @@ function PanelHeader({ panel, updateChartPanel, assets }: any) {
   const TIMEFRAMES = ["1m", "5m", "15m", "30m", "1h", "4h", "1D", "1W"];
   return (
     <div
-      className="flex items-center gap-1 px-2 border-b h-7 shrink-0 overflow-hidden"
+      className="flex items-center gap-2 px-2 border-b h-8 shrink-0 overflow-hidden"
       style={{ borderColor: "var(--tv-border)", background: "var(--tv-bg2)" }}
     >
       <select
         value={panel.symbol}
         onChange={(e) => updateChartPanel(panel.id, { symbol: e.target.value })}
         onClick={(e) => e.stopPropagation()}
-        className="text-[10px] rounded px-1 py-0.5 border outline-none max-w-[80px]"
+        className="text-[10px] rounded px-2 py-1 border outline-none max-w-[90px] transition-colors duration-150"
         style={{ background: "var(--tv-bg3)", borderColor: "var(--tv-border)", color: "var(--tv-text-light)" }}
       >
         {assets.slice(0, 30).map((a: any) => (
           <option key={a.symbol} value={a.symbol}>{a.symbol}</option>
         ))}
       </select>
-      <div className="flex gap-px">
+      <div className="flex gap-0.5">
         {TIMEFRAMES.map((tf) => (
           <button
             key={tf}
             onClick={(e) => { e.stopPropagation(); updateChartPanel(panel.id, { timeframe: tf }); }}
-            className="px-1.5 py-0.5 rounded text-[9px] transition-colors"
+            className="px-2 py-1 rounded text-[9px] font-medium transition-all duration-150"
             style={{
-              background: panel.timeframe === tf ? "#2962ff" : "transparent",
+              background: panel.timeframe === tf ? "var(--tv-blue)" : "transparent",
               color: panel.timeframe === tf ? "white" : "var(--tv-muted)",
             }}
           >
