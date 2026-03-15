@@ -1,12 +1,10 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { Search, X, Lock } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { api, endpoints } from "@/lib/api";
 import { useTradingStore } from "@/store/trading.store";
 import { Asset } from "@/types";
 import { cn } from "@/lib/utils";
-import { getPlanConfig } from "@/lib/planConfig";
-import { useRouter } from "next/navigation";
 
 const TABS = [
   { label: "All", value: "ALL" },
@@ -44,15 +42,9 @@ export function SymbolSearch({ onClose }: SymbolSearchProps) {
   const [activeTab, setActiveTab] = useState("ALL");
   const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(false);
-  const { setSelectedAsset, prices, user } = useTradingStore();
-  const router = useRouter();
+  const { setSelectedAsset, prices } = useTradingStore();
   const inputRef = useRef<HTMLInputElement>(null);
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  // Map of assetId -> global index (determined from unfiltered fetch)
-  const globalIndexMap = useRef<Map<string, number>>(new Map());
-
-  const planConfig = getPlanConfig(user?.plan);
-  const maxAssets = planConfig.maxAssets;
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -62,14 +54,6 @@ export function SymbolSearch({ onClose }: SymbolSearchProps) {
   const fetchAssets = async (q: string, category: string) => {
     setLoading(true);
     try {
-      // Always fetch all assets first to build global index map
-      if (globalIndexMap.current.size === 0) {
-        const allRes = await api.get(`${endpoints.assets}?category=`);
-        allRes.data.forEach((asset: Asset, idx: number) => {
-          globalIndexMap.current.set(asset.id, idx);
-        });
-      }
-
       const url = q
         ? `${endpoints.assets}/search?q=${encodeURIComponent(q)}&category=${category}`
         : `${endpoints.assets}?category=${category === "ALL" ? "" : category}`;
@@ -93,18 +77,7 @@ export function SymbolSearch({ onClose }: SymbolSearchProps) {
     fetchAssets(query, tab);
   };
 
-  const isLocked = (asset: Asset) => {
-    const idx = globalIndexMap.current.get(asset.id);
-    if (idx === undefined) return false;
-    return idx >= maxAssets;
-  };
-
   const handleSelect = (asset: Asset) => {
-    if (isLocked(asset)) {
-      router.push("/plans");
-      onClose();
-      return;
-    }
     setSelectedAsset(asset);
     onClose();
   };
@@ -141,19 +114,6 @@ export function SymbolSearch({ onClose }: SymbolSearchProps) {
           </button>
         </div>
 
-        {/* Plan info bar */}
-        <div className="flex items-center justify-between px-4 py-1.5 bg-[#131722] border-b border-[#363a45]">
-          <span className="text-[10px] text-[#5d6673]">
-            Your <span className="font-semibold capitalize" style={{ color: planConfig.color }}>{user?.plan || "silver"}</span> plan: access to <span className="text-[#b2b5be] font-semibold">{maxAssets} assets</span>
-          </span>
-          <button
-            onClick={() => { router.push("/plans"); onClose(); }}
-            className="text-[10px] text-[#2962ff] hover:underline"
-          >
-            Upgrade →
-          </button>
-        </div>
-
         {/* Category tabs */}
         <div className="flex gap-0 border-b border-[#363a45] bg-[#1e222d] px-2 overflow-x-auto">
           {TABS.map((tab) => (
@@ -185,17 +145,11 @@ export function SymbolSearch({ onClose }: SymbolSearchProps) {
                 const pd = prices[asset.symbol];
                 const isPositive = (pd?.changePercent ?? 0) >= 0;
                 const color = CATEGORY_COLOR[asset.category] || "#b2b5be";
-                const locked = isLocked(asset);
                 return (
                   <button
                     key={asset.id}
                     onClick={() => handleSelect(asset)}
-                    className={cn(
-                      "flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors group",
-                      locked
-                        ? "opacity-50 hover:bg-[#f59e0b08] cursor-not-allowed"
-                        : "hover:bg-[#2a2e39]"
-                    )}
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors group hover:bg-[#2a2e39]"
                   >
                     {/* Category badge */}
                     <div
@@ -215,43 +169,28 @@ export function SymbolSearch({ onClose }: SymbolSearchProps) {
                         >
                           {asset.category}
                         </span>
-                        {locked && (
-                          <span className="flex items-center gap-0.5 rounded px-1 py-0.5 text-[9px] font-bold uppercase bg-[#f59e0b20] text-[#f59e0b]">
-                            <Lock className="h-2.5 w-2.5" />
-                            Upgrade
-                          </span>
-                        )}
                       </div>
                       <div className="truncate text-xs text-[#5d6673]">{asset.name}</div>
                     </div>
 
-                    {/* Broker + Price / Lock */}
+                    {/* Broker + Price */}
                     <div className="text-right shrink-0">
-                      {locked ? (
-                        <div className="flex flex-col items-end gap-0.5">
-                          <Lock className="h-3.5 w-3.5 text-[#f59e0b]" />
-                          <span className="text-[9px] text-[#f59e0b]">Locked</span>
-                        </div>
-                      ) : (
+                      <div className="text-[10px] text-[#5d6673] mb-0.5">{asset.broker}</div>
+                      {pd ? (
                         <>
-                          <div className="text-[10px] text-[#5d6673] mb-0.5">{asset.broker}</div>
-                          {pd ? (
-                            <>
-                              <div className="font-mono text-xs font-medium text-white">
-                                {pd.price >= 1000
-                                  ? pd.price.toLocaleString("en-US", { maximumFractionDigits: 0 })
-                                  : pd.price < 10
-                                  ? pd.price.toFixed(5)
-                                  : pd.price.toFixed(2)}
-                              </div>
-                              <div className={cn("text-[10px] font-medium", isPositive ? "text-[#26a69a]" : "text-[#ef5350]")}>
-                                {isPositive ? "+" : ""}{pd.changePercent.toFixed(2)}%
-                              </div>
-                            </>
-                          ) : (
-                            <div className="text-xs text-[#5d6673]">—</div>
-                          )}
+                          <div className="font-mono text-xs font-medium text-white">
+                            {pd.price >= 1000
+                              ? pd.price.toLocaleString("en-US", { maximumFractionDigits: 0 })
+                              : pd.price < 10
+                              ? pd.price.toFixed(5)
+                              : pd.price.toFixed(2)}
+                          </div>
+                          <div className={cn("text-[10px] font-medium", isPositive ? "text-[#26a69a]" : "text-[#ef5350]")}>
+                            {isPositive ? "+" : ""}{pd.changePercent.toFixed(2)}%
+                          </div>
                         </>
+                      ) : (
+                        <div className="text-xs text-[#5d6673]">—</div>
                       )}
                     </div>
                   </button>
