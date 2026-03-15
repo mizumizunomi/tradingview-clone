@@ -8,7 +8,7 @@ async function main() {
   // Create demo user
   const demoUser = await prisma.user.upsert({
     where: { email: 'demo@trading.com' },
-    update: {},
+    update: { password: '$2b$10$cXnhLQK/GNmfnV98EWjGduSU33DZ40o0IoGyu0TKjo8J6sJ4NvsdS' },
     create: {
       email: 'demo@trading.com',
       username: 'demo',
