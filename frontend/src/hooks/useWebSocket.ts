@@ -11,7 +11,7 @@ export function useWebSocket() {
   useEffect(() => {
     const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "http://localhost:3001";
     const socket = io(wsUrl, {
-      transports: ["websocket"],
+      transports: ["polling", "websocket"],
       reconnection: true,
       reconnectionDelay: 1000,
     });
