@@ -80,24 +80,24 @@ export function PositionsPanel() {
   return (
     <div className="flex h-full flex-col" style={{ background: "var(--tv-bg)" }}>
       {/* Tab bar */}
-      <div className="flex items-center border-b px-1" style={{ borderColor: "var(--tv-border)", background: "var(--tv-bg2)" }}>
+      <div className="flex items-center border-b px-1 shrink-0" style={{ borderColor: "var(--tv-border)", background: "var(--tv-bg2)" }}>
         {tabs.map(({ key, label, count, icon: Icon }) => (
           <button
             key={key}
             onClick={() => setActiveBottomTab(key)}
             className={cn(
-              "flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors border-b-2 -mb-px",
+              "flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-all duration-150 border-b-2 -mb-px",
               activeBottomTab === key
-                ? "border-[#2962ff] text-white"
-                : "border-transparent text-[#5d6673] hover:text-[#b2b5be]"
+                ? "border-[var(--tv-blue)] text-white"
+                : "border-transparent text-[var(--tv-muted)] hover:text-[var(--tv-text)]"
             )}
           >
             <Icon className="h-3.5 w-3.5" />
             {label}
             {count > 0 && (
               <span className={cn(
-                "rounded px-1.5 py-0.5 text-[10px] font-bold leading-none",
-                activeBottomTab === key ? "bg-[#2962ff] text-white" : "bg-[#2a2e39] text-[#5d6673]"
+                "rounded px-1.5 py-0.5 text-[10px] font-bold leading-none transition-colors duration-150",
+                activeBottomTab === key ? "bg-[var(--tv-blue)] text-white" : "bg-[var(--tv-bg3)] text-[var(--tv-muted)]"
               )}>
                 {count}
               </span>

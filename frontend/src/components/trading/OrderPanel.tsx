@@ -78,20 +78,20 @@ export function OrderPanel() {
   if (!showOrderPanel) {
     return (
       <div
-        className="flex h-full flex-col items-center justify-start pt-2 bg-[#1e222d] cursor-pointer"
-        style={{ width: 24, minWidth: 24, borderLeft: "1px solid #363a45" }}
+        className="flex h-full flex-col items-center justify-start pt-2 cursor-pointer transition-colors duration-150"
+        style={{ width: 24, minWidth: 24, borderLeft: "1px solid var(--tv-border)", background: "var(--tv-bg2)" }}
         onClick={() => setShowOrderPanel(true)}
         title="Open Order Panel"
       >
-        <ChevronLeft className="h-4 w-4 text-[#5d6673] hover:text-white transition-colors mt-1" />
+        <ChevronLeft className="h-4 w-4 text-[var(--tv-muted)] hover:text-white transition-colors mt-1" />
       </div>
     );
   }
 
   return (
     <div
-      className="flex h-full flex-col bg-[#1e222d]"
-      style={{ width: 240, minWidth: 200, borderLeft: "1px solid #363a45" }}
+      className="flex h-full flex-col transition-colors duration-150"
+      style={{ width: 240, minWidth: 200, borderLeft: "1px solid var(--tv-border)", background: "var(--tv-bg2)" }}
     >
       {/* Panel header with collapse button */}
       <div className="flex items-center justify-between px-3 pt-2 pb-1">

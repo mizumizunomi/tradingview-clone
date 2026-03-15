@@ -62,8 +62,8 @@ export function SideNav() {
               key={href}
               onClick={() => router.push(href)}
               title={label}
-              className="group relative flex h-9 w-9 items-center justify-center rounded-lg transition-all"
-              style={isActive ? { background: "#2962ff", color: "white" } : { color: "var(--tv-muted)" }}
+              className="group relative flex h-9 w-9 items-center justify-center rounded-lg transition-all duration-150"
+              style={isActive ? { background: "var(--tv-blue)", color: "white" } : { color: "var(--tv-muted)" }}
               onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.background = "var(--tv-bg3)"; e.currentTarget.style.color = "var(--tv-text-light)"; } }}
               onMouseLeave={(e) => { if (!isActive) { e.currentTarget.style.background = ""; e.currentTarget.style.color = "var(--tv-muted)"; } }}
             >
