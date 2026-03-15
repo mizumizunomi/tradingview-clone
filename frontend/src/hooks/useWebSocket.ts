@@ -9,64 +9,72 @@ export function useWebSocket() {
   const { updatePrice, setWallet, setPositions, positions, wallet, user } = useTradingStore();
 
   useEffect(() => {
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL
-      ? (process.env.NEXT_PUBLIC_WS_URL.startsWith("http") ? process.env.NEXT_PUBLIC_WS_URL : "https://" + process.env.NEXT_PUBLIC_WS_URL)
-      : "http://localhost:3001";
-    const socket = io(wsUrl, {
-      transports: ["polling", "websocket"],
-      reconnection: true,
-      reconnectionDelay: 1000,
-    });
+    let socket: Socket;
+    let cancelled = false;
 
-    socketRef.current = socket;
-
-    socket.on("connect", () => {
-      // Authenticate socket so backend can push user-specific events
-      const storeUser = useTradingStore.getState().user;
-      if (storeUser?.id) {
-        socket.emit("auth", storeUser.id);
-      }
-    });
-
-    socket.on("prices:all", (prices: any[]) => {
-      prices.forEach((p) => updatePrice(p));
-    });
-
-    socket.on("price:update", (data: any) => {
-      updatePrice(data);
-    });
-
-    // Real-time wallet equity updates
-    socket.on("wallet:update", (data: { equity: number; freeMargin: number; margin: number }) => {
-      const currentWallet = useTradingStore.getState().wallet;
-      if (currentWallet) {
-        useTradingStore.getState().setWallet({ ...currentWallet, ...data });
-      }
-    });
-
-    // Position auto-closed (SL/TP triggered)
-    socket.on("position:closed", async (data: { positionId: string; pnl: number }) => {
-      // Refresh positions and wallet from server
+    async function connect() {
+      // Fetch WS URL from server at runtime — avoids build-time NEXT_PUBLIC_ baking issue
+      let wsUrl = "http://localhost:3001";
       try {
-        const [posRes, closedRes, walletRes] = await Promise.all([
-          api.get(endpoints.positions),
-          api.get(endpoints.closedPositions),
-          api.get(endpoints.wallet),
-        ]);
-        useTradingStore.getState().setPositions([
-          ...posRes.data.map((p: any) => ({ ...p, symbol: p.asset.symbol, assetName: p.asset.name })),
-          ...closedRes.data.map((p: any) => ({ ...p, symbol: p.asset.symbol, assetName: p.asset.name })),
-        ]);
-        useTradingStore.getState().setWallet(walletRes.data);
+        const res = await fetch("/api/config");
+        const cfg = await res.json();
+        if (cfg.wsUrl) wsUrl = cfg.wsUrl;
       } catch {}
-    });
+
+      if (cancelled) return;
+
+      socket = io(wsUrl, {
+        transports: ["polling", "websocket"],
+        reconnection: true,
+        reconnectionDelay: 1000,
+      });
+
+      socketRef.current = socket;
+
+      socket.on("connect", () => {
+        const storeUser = useTradingStore.getState().user;
+        if (storeUser?.id) socket.emit("auth", storeUser.id);
+      });
+
+      socket.on("prices:all", (prices: any[]) => {
+        prices.forEach((p) => updatePrice(p));
+      });
+
+      socket.on("price:update", (data: any) => {
+        updatePrice(data);
+      });
+
+      socket.on("wallet:update", (data: { equity: number; freeMargin: number; margin: number }) => {
+        const currentWallet = useTradingStore.getState().wallet;
+        if (currentWallet) {
+          useTradingStore.getState().setWallet({ ...currentWallet, ...data });
+        }
+      });
+
+      socket.on("position:closed", async () => {
+        try {
+          const [posRes, closedRes, walletRes] = await Promise.all([
+            api.get(endpoints.positions),
+            api.get(endpoints.closedPositions),
+            api.get(endpoints.wallet),
+          ]);
+          useTradingStore.getState().setPositions([
+            ...posRes.data.map((p: any) => ({ ...p, symbol: p.asset.symbol, assetName: p.asset.name })),
+            ...closedRes.data.map((p: any) => ({ ...p, symbol: p.asset.symbol, assetName: p.asset.name })),
+          ]);
+          useTradingStore.getState().setWallet(walletRes.data);
+        } catch {}
+      });
+    }
+
+    connect();
 
     return () => {
-      socket.disconnect();
+      cancelled = true;
+      socketRef.current?.disconnect();
     };
   }, [updatePrice]);
 
-  // Re-auth when user changes
   useEffect(() => {
     if (user?.id && socketRef.current?.connected) {
       socketRef.current.emit("auth", user.id);
