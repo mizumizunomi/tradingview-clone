@@ -14,13 +14,10 @@ import {
   ChevronUp,
   Plus,
   Search,
-  Lock,
 } from "lucide-react";
 import { useTradingStore } from "@/store/trading.store";
 import { Asset, Toast } from "@/types";
 import { cn } from "@/lib/utils";
-import { getPlanConfig } from "@/lib/planConfig";
-import { useRouter } from "next/navigation";
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -332,7 +329,6 @@ interface SymbolRowProps {
   price: { price: number; changePercent: number; bid: number; ask: number } | undefined;
   isSelected: boolean;
   tagColor: string | undefined;
-  locked?: boolean;
   onSelect: () => void;
   onContextMenu: (e: MouseEvent<HTMLDivElement>) => void;
 }
@@ -343,7 +339,6 @@ function SymbolRow({
   price,
   isSelected,
   tagColor,
-  locked = false,
   onSelect,
   onContextMenu,
 }: SymbolRowProps) {
@@ -370,8 +365,7 @@ function SymbolRow({
       onClick={onSelect}
       onContextMenu={onContextMenu}
       className={cn(
-        "flex items-center select-none transition-colors",
-        locked ? "cursor-not-allowed opacity-50" : "cursor-pointer",
+        "flex items-center select-none transition-colors cursor-pointer",
         flashClass,
         isSelected
           ? "border-l-2 border-[#2962ff] bg-[#2962ff0f]"
@@ -397,10 +391,8 @@ function SymbolRow({
         </span>
       </div>
 
-      {/* Price + change / Lock */}
-      {locked ? (
-        <Lock className="h-3 w-3 ml-1 shrink-0 text-[#f59e0b]" />
-      ) : price ? (
+      {/* Price + change */}
+      {price ? (
         <div className="ml-1 flex items-center gap-1.5 shrink-0">
           <span className="font-mono text-[10px] text-[var(--tv-text-light)] leading-none tabular-nums">
             {formatWatchPrice(price.price)}
@@ -656,14 +648,8 @@ export function Watchlist() {
   const [sections, setSections] = useState<WatchlistSection[]>(loadSections);
   const [tagColors, setTagColors] = useState<Record<string, string>>({});
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
-  const router = useRouter();
 
-  const { assets, prices, setSelectedAsset, selectedAsset, addToast, user } = useTradingStore();
-
-  const planConfig = getPlanConfig(user?.plan);
-  const maxAssets = planConfig.maxAssets;
-  // Build a global index map from the ordered assets array
-  const globalIndexMap = new Map<string, number>(assets.map((a, i) => [a.symbol, i]));
+  const { assets, prices, setSelectedAsset, selectedAsset, addToast } = useTradingStore();
 
   // Persist sections to localStorage whenever they change
   useEffect(() => {
@@ -799,9 +785,6 @@ export function Watchlist() {
                 const priceData = prices[symbol];
                 const isSelected = selectedAsset?.symbol === symbol;
 
-                const globalIdx = globalIndexMap.get(symbol) ?? 0;
-                const locked = globalIdx >= maxAssets;
-
                 return (
                   <SymbolRow
                     key={symbol}
@@ -810,12 +793,7 @@ export function Watchlist() {
                     price={priceData}
                     isSelected={isSelected}
                     tagColor={tagColors[symbol]}
-                    locked={locked}
                     onSelect={() => {
-                      if (locked) {
-                        router.push("/plans");
-                        return;
-                      }
                       if (asset) setSelectedAsset(asset);
                     }}
                     onContextMenu={(e) => handleContextMenu(e, symbol, section.id)}

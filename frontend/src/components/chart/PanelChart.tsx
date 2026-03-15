@@ -13,10 +13,17 @@ interface PanelChartProps {
   timeframe: string;
 }
 
+function getBarTime(tf: string): number {
+  const intervals: Record<string, number> = { '1m':60,'5m':300,'15m':900,'30m':1800,'1h':3600,'4h':14400,'1D':86400,'1W':604800 };
+  const sec = intervals[tf] || 3600;
+  return Math.floor(Date.now() / 1000 / sec) * sec;
+}
+
 export function PanelChart({ symbol, timeframe }: PanelChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<any> | null>(null);
+  const currentBarRef = useRef<{time:number, open:number, high:number, low:number} | null>(null);
   const { theme, prices, chartSettings } = useTradingStore();
 
   // Create chart on mount
@@ -80,6 +87,7 @@ export function PanelChart({ symbol, timeframe }: PanelChartProps) {
         seriesRef.current.setData(
           candles.map((c: any) => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close }))
         );
+        currentBarRef.current = null;
         chartRef.current?.timeScale().fitContent();
       })
       .catch(() => {});
@@ -89,11 +97,27 @@ export function PanelChart({ symbol, timeframe }: PanelChartProps) {
   useEffect(() => {
     const pd = prices[symbol];
     if (!pd || !seriesRef.current) return;
-    const now = Math.floor(Date.now() / 1000);
+
+    const barTime = getBarTime(timeframe);
+
+    if (!currentBarRef.current || currentBarRef.current.time !== barTime) {
+      currentBarRef.current = { time: barTime, open: pd.price, high: pd.price, low: pd.price };
+    } else {
+      currentBarRef.current.high = Math.max(currentBarRef.current.high, pd.price);
+      currentBarRef.current.low = Math.min(currentBarRef.current.low, pd.price);
+    }
+
+    const bar = currentBarRef.current;
     try {
-      seriesRef.current.update({ time: now as any, open: pd.price, high: pd.price, low: pd.price, close: pd.price });
+      seriesRef.current.update({
+        time: barTime as any,
+        open: bar.open,
+        high: bar.high,
+        low: bar.low,
+        close: pd.price,
+      });
     } catch {}
-  }, [prices, symbol]);
+  }, [prices, symbol, timeframe]);
 
   return (
     <div className="relative h-full w-full">
