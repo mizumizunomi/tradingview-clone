@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { useTradingStore } from "@/store/trading.store";
@@ -19,20 +19,47 @@ import { AlertModal } from "@/components/alerts/AlertModal";
 import { ToastContainer } from "@/components/ui/ToastContainer";
 import { KeyboardShortcutsModal } from "@/components/ui/KeyboardShortcutsModal";
 import { useWebSocket } from "@/hooks/useWebSocket";
+import { ConnectionStatus } from "@/components/layout/ConnectionStatus";
 import { useAlertChecker } from "@/hooks/useAlertChecker";
 import { useChartKeyboardShortcuts } from "@/hooks/useChartKeyboardShortcuts";
 import { api, endpoints } from "@/lib/api";
+
+const PRICES_POLL_MS = 60_000;
 
 export default function TradePage() {
   const router = useRouter();
   const {
     token, setUser, setWallet, setPositions, setAssets, setSelectedAsset,
-    showAlertModal, showChartSettings, showDOMPanel,
+    showAlertModal, showChartSettings, showDOMPanel, updatePrice,
   } = useTradingStore();
+  const pricesPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  useWebSocket();
+  const { connected } = useWebSocket();
   useAlertChecker();
   useChartKeyboardShortcuts();
+
+  // REST fallback for prices (works when WebSocket is slow or fails, e.g. production)
+  useEffect(() => {
+    if (!token) return;
+    let cancelled = false;
+    const fetchPrices = async () => {
+      try {
+        const res = await api.get(endpoints.prices);
+        const list = Array.isArray(res.data) ? res.data : [];
+        list.forEach((p: { symbol: string; price: number; bid: number; ask: number; change: number; changePercent: number; timestamp: number }) => {
+          if (!cancelled) updatePrice(p);
+        });
+      } catch {
+        // ignore
+      }
+    };
+    fetchPrices();
+    pricesPollRef.current = setInterval(fetchPrices, PRICES_POLL_MS);
+    return () => {
+      cancelled = true;
+      if (pricesPollRef.current) clearInterval(pricesPollRef.current);
+    };
+  }, [token, updatePrice]);
 
   useEffect(() => {
     if (!token) { router.replace("/auth/login"); return; }
@@ -52,8 +79,11 @@ export default function TradePage() {
           ...closedRes.data.map((p: any) => ({ ...p, symbol: p.asset.symbol, assetName: p.asset.name })),
         ]);
         setAssets(assetsRes.data);
-        const btc = assetsRes.data.find((a: any) => a.symbol === "BTCUSD");
-        if (btc) setSelectedAsset(btc);
+        const assets = assetsRes.data as { symbol: string; [k: string]: unknown }[];
+        const btc = assets.find((a) => a.symbol === "BTCUSD");
+        const first = assets[0];
+        if (btc) setSelectedAsset(btc as any);
+        else if (first) setSelectedAsset(first as any);
       } catch { router.replace("/auth/login"); }
     };
     init();
@@ -63,6 +93,7 @@ export default function TradePage() {
     <div className="flex h-screen flex-col overflow-hidden" style={{ background: "var(--tv-bg)" }}>
       <TopToolbar />
       <SymbolInfoBar />
+      <ConnectionStatus connected={connected} />
       <div className="flex flex-1 overflow-hidden">
         <SideNav />
         <Watchlist />
