@@ -109,15 +109,31 @@ select {
 .tv-blue { color: var(--tv-blue); }
 .tv-muted { color: var(--tv-muted); }
 
-/* Smooth transitions */
-button, input, select { transition: background-color 0.1s, border-color 0.1s, color 0.1s; }
+/* Smooth transitions — consistent 150–200ms for UI clarity */
+button, input, select, a {
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+}
+[role="tab"], [data-state="active"] {
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+/* Chart and panel containers */
+.chart-container, .chart-panel {
+  transition: opacity 0.2s ease-out, outline-color 0.15s ease;
+}
 
 /* Focus visible */
-button:focus-visible, input:focus-visible { outline: 1px solid #2962ff; outline-offset: 1px; }
+button:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 1px solid var(--tv-blue);
+  outline-offset: 1px;
+}
 
 /* Theme transition */
-html { transition: background-color 0.2s, color 0.2s; }
+html {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
 
+/* Price flash animations */
 @keyframes flashGreen { 0% { background: #26a69a33; } 100% { background: transparent; } }
 @keyframes flashRed { 0% { background: #ef535033; } 100% { background: transparent; } }
 .flash-green { animation: flashGreen 0.5s ease-out; }

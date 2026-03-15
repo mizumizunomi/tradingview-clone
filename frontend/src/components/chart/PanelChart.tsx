@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   createChart, IChartApi, ISeriesApi,
   CandlestickSeries, HistogramSeries,
@@ -25,6 +25,7 @@ export function PanelChart({ symbol, timeframe }: PanelChartProps) {
   const seriesRef = useRef<ISeriesApi<any> | null>(null);
   const currentBarRef = useRef<{time:number, open:number, high:number, low:number} | null>(null);
   const { theme, prices, chartSettings } = useTradingStore();
+  const [loading, setLoading] = useState(true);
 
   // Create chart on mount
   useEffect(() => {
@@ -62,15 +63,20 @@ export function PanelChart({ symbol, timeframe }: PanelChartProps) {
     chartRef.current = chart;
     seriesRef.current = series;
 
+    let resizeTid: ReturnType<typeof setTimeout>;
     const ro = new ResizeObserver(() => {
-      if (containerRef.current) {
+      if (!containerRef.current) return;
+      clearTimeout(resizeTid);
+      resizeTid = setTimeout(() => {
+        if (!containerRef.current) return;
         chart.applyOptions({ width: containerRef.current.clientWidth, height: containerRef.current.clientHeight });
-      }
+      }, 100);
     });
     ro.observe(containerRef.current);
 
     return () => {
       ro.disconnect();
+      clearTimeout(resizeTid);
       chart.remove();
       chartRef.current = null;
       seriesRef.current = null;
@@ -80,6 +86,7 @@ export function PanelChart({ symbol, timeframe }: PanelChartProps) {
   // Load candles when symbol or timeframe changes
   useEffect(() => {
     if (!seriesRef.current || !chartRef.current || !symbol) return;
+    setLoading(true);
     api.get(endpoints.candles(symbol, timeframe))
       .then((res) => {
         const candles = res.data;
@@ -90,7 +97,8 @@ export function PanelChart({ symbol, timeframe }: PanelChartProps) {
         currentBarRef.current = null;
         chartRef.current?.timeScale().fitContent();
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, [symbol, timeframe]);
 
   // Live price update for last candle
@@ -120,9 +128,17 @@ export function PanelChart({ symbol, timeframe }: PanelChartProps) {
   }, [prices, symbol, timeframe]);
 
   return (
-    <div className="relative h-full w-full">
-      <div ref={containerRef} className="h-full w-full" />
-      {/* Symbol label */}
+    <div className="relative h-full w-full min-h-0">
+      <div
+        ref={containerRef}
+        className="h-full w-full transition-opacity duration-200 ease-out"
+        style={{ opacity: loading ? 0.5 : 1 }}
+      />
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ background: "var(--tv-bg)" }}>
+          <div className="h-5 w-5 rounded-full border-2 border-[var(--tv-border)] border-t-[var(--tv-blue)] animate-spin" />
+        </div>
+      )}
       <div className="absolute top-1 left-2 text-[10px] font-bold pointer-events-none" style={{ color: "var(--tv-muted)" }}>
         {symbol} · {timeframe}
       </div>
