@@ -9,7 +9,9 @@ export function useWebSocket() {
   const { updatePrice, setWallet, setPositions, positions, wallet, user } = useTradingStore();
 
   useEffect(() => {
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "http://localhost:3001";
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL
+      ? (process.env.NEXT_PUBLIC_WS_URL.startsWith("http") ? process.env.NEXT_PUBLIC_WS_URL : "https://" + process.env.NEXT_PUBLIC_WS_URL)
+      : "http://localhost:3001";
     const socket = io(wsUrl, {
       transports: ["polling", "websocket"],
       reconnection: true,
