@@ -64,6 +64,7 @@ export function TradingChart() {
   const volumeSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
   const indicatorSeriesRef = useRef<Map<string, ISeriesApi<any>[]>>(new Map());
   const lastCandleRef = useRef<CandleData | null>(null);
+  const currentBarRef = useRef<{ time: number; open: number; high: number; low: number } | null>(null);
   const allCandlesRef = useRef<CandleData[]>([]);
   const drawingStartRef = useRef<{ time: number; price: number } | null>(null);
   const mouseRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -91,6 +92,13 @@ export function TradingChart() {
     if (selectedAsset?.category === "FOREX" || p < 1) return p.toFixed(5);
     if (p < 10) return p.toFixed(4);
     return p.toFixed(2);
+  };
+
+  // ── Bar time alignment helper ──
+  const getBarTime = (tf: string): number => {
+    const intervals: Record<string, number> = { '1m': 60, '5m': 300, '15m': 900, '30m': 1800, '1h': 3600, '4h': 14400, '1D': 86400, '1W': 604800 };
+    const sec = intervals[tf] || 3600;
+    return Math.floor(Date.now() / 1000 / sec) * sec;
   };
 
   // ── Coordinate helpers ──
@@ -388,6 +396,7 @@ export function TradingChart() {
       if (candles.length === 0) return;
       allCandlesRef.current = candles;
       lastCandleRef.current = candles[candles.length - 1];
+      currentBarRef.current = null;
       setOhlc(candles[candles.length - 1]);
 
       const display = chartType === "heikin-ashi" ? calculateHeikinAshi(candles) : candles;
@@ -489,16 +498,41 @@ export function TradingChart() {
     if (!selectedAsset || !mainSeriesRef.current || replayMode) return;
     const pd = prices[selectedAsset.symbol];
     if (!pd) return;
-    const now = Math.floor(Date.now() / 1000);
-    const last = lastCandleRef.current;
-    const updated: CandleData = { time: now, open: last?.close || pd.price, high: Math.max(last?.close || pd.price, pd.price), low: Math.min(last?.close || pd.price, pd.price), close: pd.price };
+
+    const barTime = getBarTime(timeframe);
+    const lastCandle = lastCandleRef.current;
+
+    if (!currentBarRef.current || currentBarRef.current.time !== barTime) {
+      // New timeframe period: initialize bar from last candle's close
+      currentBarRef.current = {
+        time: barTime,
+        open: lastCandle?.close ?? pd.price,
+        high: pd.price,
+        low: pd.price,
+      };
+    } else {
+      // Same period: accumulate high/low
+      currentBarRef.current.high = Math.max(currentBarRef.current.high, pd.price);
+      currentBarRef.current.low = Math.min(currentBarRef.current.low, pd.price);
+    }
+
+    const bar = currentBarRef.current;
     try {
       const isLineType = chartType === "line" || chartType === "area" || chartType === "baseline";
-      if (isLineType) mainSeriesRef.current.update({ time: now as any, value: pd.price });
-      else mainSeriesRef.current.update({ time: now as any, open: updated.open, high: updated.high, low: updated.low, close: updated.close });
-      setOhlc(updated);
+      if (isLineType) {
+        mainSeriesRef.current.update({ time: barTime as any, value: pd.price });
+      } else {
+        mainSeriesRef.current.update({
+          time: barTime as any,
+          open: bar.open,
+          high: bar.high,
+          low: bar.low,
+          close: pd.price,
+        });
+      }
+      setOhlc({ time: barTime, open: bar.open, high: bar.high, low: bar.low, close: pd.price, volume: lastCandle?.volume });
     } catch {}
-  }, [prices, selectedAsset, chartType, replayMode]);
+  }, [prices, selectedAsset, chartType, replayMode, timeframe]);
 
   // ── Canvas handlers ──
   const needsTwoPts = (t: DrawingTool) =>
