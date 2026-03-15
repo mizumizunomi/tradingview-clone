@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
+const rawBackendUrl = process.env.BACKEND_URL || "http://localhost:3001";
+const BACKEND_URL = rawBackendUrl.startsWith("http") ? rawBackendUrl : `https://${rawBackendUrl}`;
 
 const nextConfig: NextConfig = {
   eslint: { ignoreDuringBuilds: true },
