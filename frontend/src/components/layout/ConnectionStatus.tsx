@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 export function ConnectionStatus({ connected }: { connected: boolean }) {
   return (
     <div
-      className="fixed bottom-2 right-2 z-50 flex items-center gap-1.5 rounded px-2 py-1 text-[10px] font-medium shadow-lg"
+      className="fixed bottom-3 right-3 z-50 flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[11px] font-medium shadow-lg transition-opacity duration-200"
       style={{
         background: "var(--tv-bg2)",
         border: "1px solid var(--tv-border)",
@@ -14,8 +14,8 @@ export function ConnectionStatus({ connected }: { connected: boolean }) {
     >
       <span
         className={cn(
-          "h-1.5 w-1.5 shrink-0 rounded-full",
-          connected ? "bg-[#26a69a]" : "animate-pulse bg-[#f59e0b]"
+          "h-2 w-2 shrink-0 rounded-full transition-colors duration-200",
+          connected ? "bg-[var(--tv-green)]" : "animate-pulse bg-[var(--tv-yellow)]"
         )}
       />
       {connected ? "Live" : "Connecting…"}
