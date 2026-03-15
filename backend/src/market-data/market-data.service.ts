@@ -15,6 +15,7 @@ export interface PriceData {
 export class MarketDataService implements OnModuleInit {
   private readonly logger = new Logger(MarketDataService.name);
   private prices: Map<string, PriceData> = new Map();
+  private prevPrices: Map<string, number> = new Map();
   private ws: any = null;
   private subscribers: Map<string, Set<(data: PriceData) => void>> = new Map();
 
@@ -68,8 +69,11 @@ export class MarketDataService implements OnModuleInit {
     this.initPrices();
     if (this.KEY) {
       this.logger.log('Twelve Data key found — loading real market data');
-      this.fetchSnapshot();
-      this.connectWS();
+      this.fetchSnapshot().then(() => {
+        this.connectWS();
+        // Periodic REST snapshot refresh every 60 seconds to stay in sync if WS drops
+        setInterval(() => this.fetchSnapshot(), 60_000);
+      });
     } else {
       this.logger.warn('No TWELVE_DATA_API_KEY — falling back to mock prices');
       this.startMockUpdates();
@@ -84,12 +88,21 @@ export class MarketDataService implements OnModuleInit {
   }
 
   private setPrice(symbol: string, price: number, change: number, changePercent: number) {
+    // Use prevPrices if available, else fall back to seed baseline
+    const prev = this.prevPrices.get(symbol) ?? this.SEED[symbol] ?? price;
+    const computedChange = price - prev;
+    const computedChangePercent = prev !== 0 ? (computedChange / prev) * 100 : 0;
+
+    // Store current price as previous for the next tick
+    this.prevPrices.set(symbol, price);
+
     const spread = price * 0.0001;
     const data: PriceData = {
       symbol, price,
       bid: price - spread / 2,
       ask: price + spread / 2,
-      change, changePercent,
+      change: computedChange,
+      changePercent: computedChangePercent,
       timestamp: Date.now(),
     };
     this.prices.set(symbol, data);
@@ -109,8 +122,10 @@ export class MarketDataService implements OnModuleInit {
         if (entry?.price) {
           const price = parseFloat(entry.price);
           if (!isNaN(price) && price > 0) {
-            const seed = this.SEED[ourSymbol] || price;
-            this.setPrice(ourSymbol, price, price - seed, ((price - seed) / seed) * 100);
+            // Update prevPrices so the first WS tick computes change correctly against snapshot
+            this.prevPrices.set(ourSymbol, price);
+            this.setPrice(ourSymbol, price, 0, 0);
+            // Re-set prevPrices to price after setPrice (setPrice overwrites it, which is correct)
             updated++;
           }
         }
@@ -143,8 +158,8 @@ export class MarketDataService implements OnModuleInit {
           if (!ourSymbol) return;
           const price = parseFloat(msg.price);
           if (isNaN(price) || price <= 0) return;
-          const seed = this.SEED[ourSymbol] || price;
-          this.setPrice(ourSymbol, price, price - seed, ((price - seed) / seed) * 100);
+          // change/changePercent are computed inside setPrice using prevPrices
+          this.setPrice(ourSymbol, price, 0, 0);
         } catch {}
       });
 
@@ -165,8 +180,7 @@ export class MarketDataService implements OnModuleInit {
       for (const [symbol, data] of this.prices.entries()) {
         const delta = (Math.random() - 0.5) * data.price * 0.0003;
         const price = Math.max(data.price + delta, 0.0001);
-        const seed = this.SEED[symbol] || price;
-        this.setPrice(symbol, price, price - seed, ((price - seed) / seed) * 100);
+        this.setPrice(symbol, price, 0, 0);
       }
     }, 2000);
   }
