@@ -23,7 +23,7 @@ export default function LoginPage() {
       setUser(res.data.user);
       router.push("/trade");
     } catch (err: any) {
-      setError(err.response?.data?.message || "Invalid credentials");
+      setError(err.response?.data?.message || err.message || "Invalid credentials");
     } finally {
       setLoading(false);
     }
