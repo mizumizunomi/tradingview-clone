@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const backendUrl = process.env.BACKEND_URL || "http://localhost:3001";
-  return NextResponse.json({ wsUrl: backendUrl });
+  const raw = process.env.BACKEND_URL || "http://localhost:3001";
+  const wsUrl = raw.startsWith("http") ? raw : `https://${raw}`;
+  return NextResponse.json({ wsUrl });
 }
