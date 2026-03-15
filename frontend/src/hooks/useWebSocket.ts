@@ -1,19 +1,19 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { useTradingStore } from "@/store/trading.store";
 import { api, endpoints } from "@/lib/api";
 
-export function useWebSocket() {
+export function useWebSocket(): { socketRef: React.RefObject<Socket | null>; connected: boolean } {
   const socketRef = useRef<Socket | null>(null);
-  const { updatePrice, setWallet, setPositions, positions, wallet, user } = useTradingStore();
+  const [connected, setConnected] = useState(false);
+  const { updatePrice, user } = useTradingStore();
 
   useEffect(() => {
     let socket: Socket;
     let cancelled = false;
 
     async function connect() {
-      // Fetch WS URL from server at runtime — avoids build-time NEXT_PUBLIC_ baking issue
       let wsUrl = "http://localhost:3001";
       try {
         const res = await fetch("/api/config");
@@ -32,9 +32,12 @@ export function useWebSocket() {
       socketRef.current = socket;
 
       socket.on("connect", () => {
+        setConnected(true);
         const storeUser = useTradingStore.getState().user;
         if (storeUser?.id) socket.emit("auth", storeUser.id);
       });
+
+      socket.on("disconnect", () => setConnected(false));
 
       socket.on("prices:all", (prices: any[]) => {
         prices.forEach((p) => updatePrice(p));
@@ -71,6 +74,7 @@ export function useWebSocket() {
 
     return () => {
       cancelled = true;
+      setConnected(false);
       socketRef.current?.disconnect();
     };
   }, [updatePrice]);
@@ -81,5 +85,5 @@ export function useWebSocket() {
     }
   }, [user?.id]);
 
-  return socketRef;
+  return { socketRef, connected };
 }
