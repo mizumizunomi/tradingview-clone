@@ -9,7 +9,11 @@ import {
 import { Server, Socket } from 'socket.io';
 import { MarketDataService } from './market-data.service';
 
-@WebSocketGateway({ cors: { origin: '*' }, namespace: '/' })
+@WebSocketGateway({
+  cors: { origin: '*', credentials: false },
+  namespace: '/',
+  transports: ['polling', 'websocket'],
+})
 export class MarketDataGateway implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
   @WebSocketServer() server: Server;
 
