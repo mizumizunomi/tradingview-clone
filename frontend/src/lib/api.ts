@@ -23,6 +23,7 @@ export const endpoints = {
   asset: (id: string) => `/assets/${id}`,
   candles: (symbol: string, timeframe: string) =>
     `/market-data/candles/${symbol}?timeframe=${timeframe}`,
+  prices: "/market-data/prices",
   orders: "/trading/orders",
   placeOrder: "/trading/orders",
   positions: "/trading/positions",
