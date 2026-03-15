@@ -1,0 +1,107 @@
+"use client";
+import { useEffect, useRef } from "react";
+import {
+  createChart, IChartApi, ISeriesApi,
+  CandlestickSeries, HistogramSeries,
+  ColorType, LineStyle, CrosshairMode,
+} from "lightweight-charts";
+import { useTradingStore } from "@/store/trading.store";
+import { api, endpoints } from "@/lib/api";
+
+interface PanelChartProps {
+  symbol: string;
+  timeframe: string;
+}
+
+export function PanelChart({ symbol, timeframe }: PanelChartProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<IChartApi | null>(null);
+  const seriesRef = useRef<ISeriesApi<any> | null>(null);
+  const { theme, prices, chartSettings } = useTradingStore();
+
+  // Create chart on mount
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const bg = chartSettings?.bgColor ?? (theme === "dark" ? "#131722" : "#ffffff");
+    const textCol = theme === "dark" ? "#b2b5be" : "#434651";
+    const grid = chartSettings?.gridColor ?? (theme === "dark" ? "#1e222d" : "#f0f3fa");
+    const border = theme === "dark" ? "#363a45" : "#d1d4dc";
+
+    const chart = createChart(containerRef.current, {
+      layout: { background: { type: ColorType.Solid, color: bg }, textColor: textCol, fontSize: 10 },
+      grid: { vertLines: { color: grid }, horzLines: { color: grid } },
+      crosshair: { mode: CrosshairMode.Normal, vertLine: { color: border, width: 1, style: LineStyle.Dashed }, horzLine: { color: border, width: 1, style: LineStyle.Dashed } },
+      rightPriceScale: { borderColor: border },
+      timeScale: { borderColor: border, timeVisible: true, secondsVisible: false },
+      width: containerRef.current.clientWidth,
+      height: containerRef.current.clientHeight,
+    });
+
+    const upColor = chartSettings?.upColor ?? "#26a69a";
+    const downColor = chartSettings?.downColor ?? "#ef5350";
+    const series = chart.addSeries(CandlestickSeries, {
+      upColor, downColor,
+      borderUpColor: upColor, borderDownColor: downColor,
+      wickUpColor: upColor, wickDownColor: downColor,
+    });
+
+    chart.addSeries(HistogramSeries, {
+      priceFormat: { type: "volume" },
+      priceScaleId: "volume",
+    });
+    chart.priceScale("volume").applyOptions({ scaleMargins: { top: 0.85, bottom: 0 } });
+
+    chartRef.current = chart;
+    seriesRef.current = series;
+
+    const ro = new ResizeObserver(() => {
+      if (containerRef.current) {
+        chart.applyOptions({ width: containerRef.current.clientWidth, height: containerRef.current.clientHeight });
+      }
+    });
+    ro.observe(containerRef.current);
+
+    return () => {
+      ro.disconnect();
+      chart.remove();
+      chartRef.current = null;
+      seriesRef.current = null;
+    };
+  }, [theme]);
+
+  // Load candles when symbol or timeframe changes
+  useEffect(() => {
+    if (!seriesRef.current || !chartRef.current || !symbol) return;
+    api.get(endpoints.candles(symbol, timeframe))
+      .then((res) => {
+        const candles = res.data;
+        if (!candles.length || !seriesRef.current) return;
+        seriesRef.current.setData(
+          candles.map((c: any) => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close }))
+        );
+        chartRef.current?.timeScale().fitContent();
+      })
+      .catch(() => {});
+  }, [symbol, timeframe]);
+
+  // Live price update for last candle
+  useEffect(() => {
+    const pd = prices[symbol];
+    if (!pd || !seriesRef.current) return;
+    const now = Math.floor(Date.now() / 1000);
+    try {
+      seriesRef.current.update({ time: now as any, open: pd.price, high: pd.price, low: pd.price, close: pd.price });
+    } catch {}
+  }, [prices, symbol]);
+
+  return (
+    <div className="relative h-full w-full">
+      <div ref={containerRef} className="h-full w-full" />
+      {/* Symbol label */}
+      <div className="absolute top-1 left-2 text-[10px] font-bold pointer-events-none" style={{ color: "var(--tv-muted)" }}>
+        {symbol} · {timeframe}
+      </div>
+    </div>
+  );
+}

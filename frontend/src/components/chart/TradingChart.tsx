@@ -652,50 +652,50 @@ export function TradingChart() {
         </div>
       )}
 
-      {selectedAsset ? (
-        <div ref={containerRef} className="relative flex-1 overflow-hidden">
-          <canvas
-            ref={canvasRef}
-            className="absolute inset-0 z-10"
-            style={{ cursor: getCursor(), pointerEvents: activeTool === "cursor" ? "none" : "all" }}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseLeave={() => { mouseRef.current = { x: 0, y: 0 }; }}
-            onContextMenu={handleContextMenu}
-          />
-          {/* Replay controls */}
-          <ReplayControls totalCandles={allCandlesRef.current.length} />
-          {/* Object tree (inside chart area) */}
-          {showObjectTree && <ObjectTreePanel />}
-          {/* Data Window */}
-          {showDataWindow && ohlc && (
-            <div className="absolute top-2 right-14 z-20 rounded-lg border px-3 py-2 text-[11px] font-mono shadow-xl"
-              style={{ background: "var(--tv-bg2)88", borderColor: "var(--tv-border)", backdropFilter: "blur(4px)" }}>
-              <div className="text-[10px] font-bold mb-1" style={{ color: "var(--tv-muted)" }}>DATA WINDOW</div>
-              {[
-                { label: "O", value: fmtOHLC(ohlc.open), color: "var(--tv-text-light)" },
-                { label: "H", value: fmtOHLC(ohlc.high), color: "#26a69a" },
-                { label: "L", value: fmtOHLC(ohlc.low), color: "#ef5350" },
-                { label: "C", value: fmtOHLC(ohlc.close), color: ohlc.close >= ohlc.open ? "#26a69a" : "#ef5350" },
-                { label: "V", value: ohlc.volume ? ohlc.volume.toLocaleString() : "—", color: "var(--tv-text)" },
-              ].map(({ label, value, color }) => (
-                <div key={label} className="flex items-center justify-between gap-4">
-                  <span style={{ color: "var(--tv-muted)" }}>{label}</span>
-                  <span style={{ color }}>{value}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="flex h-full items-center justify-center">
-          <div className="text-center">
-            <div className="text-5xl mb-4">📊</div>
-            <div className="text-lg font-medium mb-1" style={{ color: "var(--tv-text-light)" }}>Select a symbol to start</div>
-            <div className="text-sm" style={{ color: "var(--tv-muted)" }}>Click the symbol selector or pick from the watchlist</div>
+      <div ref={containerRef} className="relative flex-1 overflow-hidden">
+        <canvas
+          ref={canvasRef}
+          className="absolute inset-0 z-10"
+          style={{ cursor: getCursor(), pointerEvents: activeTool === "cursor" ? "none" : "all" }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={() => { mouseRef.current = { x: 0, y: 0 }; }}
+          onContextMenu={handleContextMenu}
+        />
+        {/* Replay controls */}
+        <ReplayControls totalCandles={allCandlesRef.current.length} />
+        {/* Object tree (inside chart area) */}
+        {showObjectTree && <ObjectTreePanel />}
+        {/* Data Window */}
+        {showDataWindow && ohlc && (
+          <div className="absolute top-2 right-14 z-20 rounded-lg border px-3 py-2 text-[11px] font-mono shadow-xl"
+            style={{ background: "var(--tv-bg2)88", borderColor: "var(--tv-border)", backdropFilter: "blur(4px)" }}>
+            <div className="text-[10px] font-bold mb-1" style={{ color: "var(--tv-muted)" }}>DATA WINDOW</div>
+            {[
+              { label: "O", value: fmtOHLC(ohlc.open), color: "var(--tv-text-light)" },
+              { label: "H", value: fmtOHLC(ohlc.high), color: "#26a69a" },
+              { label: "L", value: fmtOHLC(ohlc.low), color: "#ef5350" },
+              { label: "C", value: fmtOHLC(ohlc.close), color: ohlc.close >= ohlc.open ? "#26a69a" : "#ef5350" },
+              { label: "V", value: ohlc.volume ? ohlc.volume.toLocaleString() : "—", color: "var(--tv-text)" },
+            ].map(({ label, value, color }) => (
+              <div key={label} className="flex items-center justify-between gap-4">
+                <span style={{ color: "var(--tv-muted)" }}>{label}</span>
+                <span style={{ color }}>{value}</span>
+              </div>
+            ))}
           </div>
-        </div>
-      )}
+        )}
+        {/* No-asset overlay — rendered on top while chart initialises in background */}
+        {!selectedAsset && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center" style={{ background: "var(--tv-bg)" }}>
+            <div className="text-center">
+              <div className="text-5xl mb-4">📊</div>
+              <div className="text-lg font-medium mb-1" style={{ color: "var(--tv-text-light)" }}>Select a symbol to start</div>
+              <div className="text-sm" style={{ color: "var(--tv-muted)" }}>Click the symbol selector or pick from the watchlist</div>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Context menu */}
       {contextMenu && (
