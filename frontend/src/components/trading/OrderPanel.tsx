@@ -3,7 +3,7 @@ import { useState } from "react";
 import { AlertCircle, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { useTradingStore } from "@/store/trading.store";
 import { api, endpoints } from "@/lib/api";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, formatSpread } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { getPlanConfig } from "@/lib/planConfig";
 import { useRouter } from "next/navigation";
@@ -34,8 +34,10 @@ export function OrderPanel() {
   const notionalValue = currentPrice * quantity;
   const marginRequired = leverage > 0 ? notionalValue / leverage : notionalValue;
   const commission = notionalValue * planConfig.commission;
-  const spread = (priceData?.ask || 0) - (priceData?.bid || 0);
-  const spreadPoints = spread * 100000;
+  const spread = (priceData?.ask ?? 0) - (priceData?.bid ?? 0);
+  const spreadDisplay = priceData
+    ? formatSpread(spread, selectedAsset?.category, priceData.price)
+    : "—";
   const isBuy = orderSide === "BUY";
 
   // Enforce plan leverage limit
@@ -129,7 +131,7 @@ export function OrderPanel() {
         )}
         {priceData && (
           <div className="mt-1 text-center text-[10px] text-[#5d6673]">
-            Spread: <span className="text-[#b2b5be]">{spreadPoints.toFixed(1)} pts</span>
+            Spread: <span className="text-[#b2b5be]">{spreadDisplay}</span>
           </div>
         )}
       </div>
@@ -340,7 +342,7 @@ export function OrderPanel() {
               { label: "Notional", value: `$${formatPrice(notionalValue)}` },
               { label: "Margin Req.", value: `$${formatPrice(marginRequired)}`, highlight: true },
               { label: `Commission (${(planConfig.commission * 100).toFixed(3)}%)`, value: `$${formatPrice(commission)}` },
-              { label: "Spread", value: `${spreadPoints.toFixed(1)} pts` },
+              { label: "Spread", value: spreadDisplay },
             ].map(({ label, value, highlight }) => (
               <div key={label} className="flex justify-between px-2.5 py-1.5">
                 <span className="text-[11px] text-[#5d6673]">{label}</span>
