@@ -690,7 +690,7 @@ export function Watchlist() {
     const id = `section_${Date.now()}`;
     setSections((prev) => [
       ...prev,
-      { id, name: "New Section", symbols: [], collapsed: false },
+      { id, name: "My list", symbols: [], collapsed: false },
     ]);
   }, []);
 
@@ -803,14 +803,26 @@ export function Watchlist() {
           </div>
         ))}
 
-        {/* ── Add section button ── */}
-        <button
-          onClick={addNewSection}
-          className="flex w-full items-center gap-1 px-3 py-2 text-[10px] text-[var(--tv-muted)] hover:text-[var(--tv-text)] hover:bg-[var(--tv-bg3)] transition-colors"
-        >
-          <Plus className="h-3 w-3" />
-          Add section
-        </button>
+        {/* ── Add section / Reset default ── */}
+        <div className="flex gap-1 px-2 py-1.5 border-t border-[var(--tv-border)]">
+          <button
+            onClick={addNewSection}
+            className="flex flex-1 items-center justify-center gap-1 px-2 py-1.5 rounded text-[10px] text-[var(--tv-muted)] hover:text-[var(--tv-text)] hover:bg-[var(--tv-bg3)] transition-colors"
+          >
+            <Plus className="h-3 w-3" />
+            Add section
+          </button>
+          <button
+            onClick={() => {
+              setSections(JSON.parse(JSON.stringify(DEFAULT_SECTIONS)));
+              saveSections(DEFAULT_SECTIONS);
+            }}
+            className="px-2 py-1.5 rounded text-[10px] text-[var(--tv-muted)] hover:text-[var(--tv-text)] hover:bg-[var(--tv-bg3)] transition-colors"
+            title="Reset watchlist to default sections"
+          >
+            Reset
+          </button>
+        </div>
       </div>
 
       {/* ── Symbol info panel ── */}
