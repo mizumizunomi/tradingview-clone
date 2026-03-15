@@ -12,7 +12,7 @@ async function main() {
     create: {
       email: 'demo@trading.com',
       username: 'demo',
-      password: '$2b$10$rKGZxZ5qJ5hG5gJ5qJ5qJeO5qJ5qJ5qJ5qJ5qJ5qJ5qJ5qJ5qJ5qJ', // "password123"
+      password: '$2b$10$cXnhLQK/GNmfnV98EWjGduSU33DZ40o0IoGyu0TKjo8J6sJ4NvsdS', // "password123"
       firstName: 'Demo',
       lastName: 'User',
       wallet: {
