@@ -21,15 +21,17 @@ model User {
   plan          String   @default("silver")
   avatar        String?
   bio           String?
+  isBanned      Boolean  @default(false)
+  banReason     String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  
+
   wallet        Wallet?
   orders        Order[]
   positions     Position[]
   trades        Trade[]
   watchlist     WatchlistItem[]
-  
+
   @@map("users")
 }
 
@@ -57,20 +59,22 @@ model Transaction {
   id            String   @id @default(uuid())
   walletId      String
   wallet        Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
-  
+
   type          TransactionType
-  method        PaymentMethod
+  method        PaymentMethod    @default(WIRE_TRANSFER)
   amount        Float
   status        TransactionStatus @default(COMPLETED)
-  
+  description   String?
+
   createdAt     DateTime @default(now())
-  
+
   @@map("transactions")
 }
 
 enum TransactionType {
   DEPOSIT
   WITHDRAWAL
+  ADMIN_ADJUSTMENT
 }
 
 enum PaymentMethod {
@@ -266,6 +270,41 @@ enum TradeType {
   OPEN
   CLOSE
   PARTIAL_CLOSE
+}
+
+// ========== ADMIN ==========
+model Admin {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  username  String    @unique
+  password  String    // bcrypt hashed
+  role      AdminRole @default(MANAGER)
+  isActive  Boolean   @default(true)
+  lastLogin DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  actions   AdminAction[]
+
+  @@map("admins")
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  MANAGER
+  SUPPORT
+}
+
+model AdminAction {
+  id        String   @id @default(uuid())
+  adminId   String
+  admin     Admin    @relation(fields: [adminId], references: [id])
+  action    String   // e.g., "BALANCE_ADJUST", "BAN_USER", "CLOSE_POSITION", "EDIT_USER"
+  targetId  String   // userId or positionId
+  details   Json     // before/after values, reason, etc.
+  createdAt DateTime @default(now())
+
+  @@map("admin_actions")
 }
 
 // ========== WATCHLIST ==========
