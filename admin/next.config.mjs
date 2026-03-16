@@ -1,7 +1,8 @@
 
 
 const nextConfig = {
-eslint: {
+  output: 'standalone',
+  eslint: {
     ignoreDuringBuilds: true,
   },
   typescript: {
