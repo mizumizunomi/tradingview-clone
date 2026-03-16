@@ -10,6 +10,45 @@ import { formatCurrency, formatDate, getPnLColor, getPnLSign } from '@/lib/utils
 import { useToast } from '@/hooks/use-toast'
 import { Search, ChevronLeft, ChevronRight, X } from 'lucide-react'
 
+function TablePagination({ total, page, pages, onPage }: { total: number; page: number; pages: number; onPage: (p: number) => void }) {
+  return (
+    <div className="flex items-center justify-between px-4 py-3 border-t border-[#2a2d3a]">
+      <span className="text-xs text-gray-400">{total} total · Page {page} of {pages}</span>
+      <div className="flex gap-1">
+        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onPage(Math.max(1, page - 1))} disabled={page <= 1}>
+          <ChevronLeft className="w-4 h-4" />
+        </Button>
+        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onPage(Math.min(pages, page + 1))} disabled={page >= pages}>
+          <ChevronRight className="w-4 h-4" />
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+function TableWrapper({ children, total, page, pages, onPage }: { children: React.ReactNode; total: number; page: number; pages: number; onPage: (p: number) => void }) {
+  return (
+    <div className="bg-[#1a1d29] border border-[#2a2d3a] rounded-lg overflow-hidden">
+      <div className="overflow-x-auto">{children}</div>
+      <TablePagination total={total} page={page} pages={pages} onPage={onPage} />
+    </div>
+  )
+}
+
+function TableSkeleton({ cols }: { cols: number }) {
+  return (
+    <tbody>
+      {Array.from({ length: 8 }).map((_, i) => (
+        <tr key={i} className="border-b border-[#2a2d3a]">
+          {Array.from({ length: cols }).map((_, j) => (
+            <td key={j} className="px-4 py-3"><div className="h-4 bg-[#2a2d3a] rounded animate-pulse" /></td>
+          ))}
+        </tr>
+      ))}
+    </tbody>
+  )
+}
+
 interface Position {
   id: string; side: string; quantity: number; leverage: number; entryPrice: number; currentPrice: number
   unrealizedPnL: number; realizedPnL: number; margin: number; isOpen: boolean; openedAt: string; closedAt: string | null
@@ -63,39 +102,6 @@ export function TradesClient() {
     } finally { setClosingId(null) }
   }
 
-  const Pagination = () => (
-    <div className="flex items-center justify-between px-4 py-3 border-t border-[#2a2d3a]">
-      <span className="text-xs text-gray-400">{total} total · Page {page} of {pages}</span>
-      <div className="flex gap-1">
-        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}>
-          <ChevronLeft className="w-4 h-4" />
-        </Button>
-        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setPage(p => Math.min(pages, p + 1))} disabled={page >= pages}>
-          <ChevronRight className="w-4 h-4" />
-        </Button>
-      </div>
-    </div>
-  )
-
-  const TableWrapper = ({ children }: { children: React.ReactNode }) => (
-    <div className="bg-[#1a1d29] border border-[#2a2d3a] rounded-lg overflow-hidden">
-      <div className="overflow-x-auto">{children}</div>
-      <Pagination />
-    </div>
-  )
-
-  const Skeleton = ({ cols }: { cols: number }) => (
-    <tbody>
-      {Array.from({ length: 8 }).map((_, i) => (
-        <tr key={i} className="border-b border-[#2a2d3a]">
-          {Array.from({ length: cols }).map((_, j) => (
-            <td key={j} className="px-4 py-3"><div className="h-4 bg-[#2a2d3a] rounded animate-pulse" /></td>
-          ))}
-        </tr>
-      ))}
-    </tbody>
-  )
-
   return (
     <div className="space-y-4">
       <div className="relative max-w-sm">
@@ -113,7 +119,7 @@ export function TradesClient() {
         </TabsList>
 
         <TabsContent value="open">
-          <TableWrapper>
+          <TableWrapper total={total} page={page} pages={pages} onPage={setPage}>
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[#2a2d3a] text-gray-400 text-xs">
@@ -130,7 +136,7 @@ export function TradesClient() {
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
-              {loading ? <Skeleton cols={11} /> : (
+              {loading ? <TableSkeleton cols={11} /> : (
                 <tbody>
                   {(items as Position[]).map(p => (
                     <tr key={p.id} className="border-b border-[#2a2d3a] hover:bg-white/3">
@@ -163,7 +169,7 @@ export function TradesClient() {
         </TabsContent>
 
         <TabsContent value="closed">
-          <TableWrapper>
+          <TableWrapper total={total} page={page} pages={pages} onPage={setPage}>
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[#2a2d3a] text-gray-400 text-xs">
@@ -177,7 +183,7 @@ export function TradesClient() {
                   <th className="text-left px-4 py-3">Closed</th>
                 </tr>
               </thead>
-              {loading ? <Skeleton cols={8} /> : (
+              {loading ? <TableSkeleton cols={8} /> : (
                 <tbody>
                   {(items as Position[]).map(p => (
                     <tr key={p.id} className="border-b border-[#2a2d3a] hover:bg-white/3">
@@ -203,7 +209,7 @@ export function TradesClient() {
         </TabsContent>
 
         <TabsContent value="trades">
-          <TableWrapper>
+          <TableWrapper total={total} page={page} pages={pages} onPage={setPage}>
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[#2a2d3a] text-gray-400 text-xs">
@@ -218,7 +224,7 @@ export function TradesClient() {
                   <th className="text-left px-4 py-3">Executed</th>
                 </tr>
               </thead>
-              {loading ? <Skeleton cols={9} /> : (
+              {loading ? <TableSkeleton cols={9} /> : (
                 <tbody>
                   {(items as Trade[]).map(t => (
                     <tr key={t.id} className="border-b border-[#2a2d3a] hover:bg-white/3">
