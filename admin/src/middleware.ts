@@ -1,18 +1,17 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { getAdminSessionFromRequest } from '@/lib/auth'
 
 const PUBLIC_PATHS = ['/login']
 
-export async function middleware(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
     return NextResponse.next()
   }
 
-  const session = await getAdminSessionFromRequest(request)
-  if (!session) {
+  const token = request.cookies.get('admin_token')?.value
+  if (!token) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
