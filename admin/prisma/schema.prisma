@@ -1,0 +1,282 @@
+// Admin app uses the same DB as the backend.
+// This file must stay in sync with /backend/prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  firstName String?
+  lastName  String?
+  plan      String   @default("silver")
+  avatar    String?
+  bio       String?
+  isBanned  Boolean  @default(false)
+  banReason String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  wallet    Wallet?
+  orders    Order[]
+  positions Position[]
+  trades    Trade[]
+  watchlist WatchlistItem[]
+
+  @@map("users")
+}
+
+model Wallet {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  balance     Float    @default(10000.00)
+  equity      Float    @default(10000.00)
+  margin      Float    @default(0.00)
+  freeMargin  Float    @default(10000.00)
+  marginLevel Float    @default(0.00)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  transactions Transaction[]
+
+  @@map("wallets")
+}
+
+model Transaction {
+  id          String            @id @default(uuid())
+  walletId    String
+  wallet      Wallet            @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  type        TransactionType
+  method      PaymentMethod     @default(WIRE_TRANSFER)
+  amount      Float
+  status      TransactionStatus @default(COMPLETED)
+  description String?
+  createdAt   DateTime          @default(now())
+
+  @@map("transactions")
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  ADMIN_ADJUSTMENT
+}
+
+enum PaymentMethod {
+  WIRE_TRANSFER
+  DEBIT_CARD
+  CRYPTO
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+model Asset {
+  id           String        @id @default(uuid())
+  symbol       String        @unique
+  name         String
+  category     AssetCategory
+  broker       String
+  baseAsset    String?
+  quoteAsset   String?
+  minOrderSize Float         @default(0.01)
+  maxLeverage  Int           @default(100)
+  spread       Float         @default(0.0001)
+  commission   Float         @default(0.0005)
+  apiSymbol    String?
+  dataSource   DataSource
+  isActive     Boolean       @default(true)
+  isFeatured   Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  orders    Order[]
+  positions Position[]
+  trades    Trade[]
+  watchlist WatchlistItem[]
+
+  @@map("assets")
+}
+
+enum AssetCategory {
+  CRYPTO
+  FOREX
+  STOCKS
+  FUTURES
+  INDICES
+  COMMODITIES
+  FUNDS
+  BONDS
+  ECONOMY
+  OPTIONS
+}
+
+enum DataSource {
+  BINANCE
+  YAHOO_FINANCE
+  TWELVE_DATA
+  MOCK
+}
+
+model Order {
+  id          String      @id @default(uuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assetId     String
+  asset       Asset       @relation(fields: [assetId], references: [id])
+  type        OrderType
+  side        OrderSide
+  quantity    Float
+  leverage    Int         @default(1)
+  entryPrice  Float?
+  stopLoss    Float?
+  takeProfit  Float?
+  limitPrice  Float?
+  status      OrderStatus @default(PENDING)
+  filledAt    DateTime?
+  filledPrice Float?
+  margin      Float?
+  commission  Float?
+  spread      Float?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  position Position?
+
+  @@map("orders")
+}
+
+enum OrderType {
+  MARKET
+  LIMIT
+  STOP_LOSS
+  TAKE_PROFIT
+}
+
+enum OrderSide {
+  BUY
+  SELL
+}
+
+enum OrderStatus {
+  PENDING
+  FILLED
+  PARTIALLY_FILLED
+  CANCELLED
+  REJECTED
+}
+
+model Position {
+  id            String    @id @default(uuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assetId       String
+  asset         Asset     @relation(fields: [assetId], references: [id])
+  orderId       String    @unique
+  order         Order     @relation(fields: [orderId], references: [id])
+  side          OrderSide
+  quantity      Float
+  leverage      Int
+  entryPrice    Float
+  currentPrice  Float
+  stopLoss      Float?
+  takeProfit    Float?
+  unrealizedPnL Float     @default(0.00)
+  realizedPnL   Float     @default(0.00)
+  margin        Float
+  commission    Float
+  spread        Float
+  swap          Float     @default(0.00)
+  isOpen        Boolean   @default(true)
+  openedAt      DateTime  @default(now())
+  closedAt      DateTime?
+  updatedAt     DateTime  @updatedAt
+
+  trades Trade[]
+
+  @@map("positions")
+}
+
+model Trade {
+  id         String    @id @default(uuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assetId    String
+  asset      Asset     @relation(fields: [assetId], references: [id])
+  positionId String?
+  position   Position? @relation(fields: [positionId], references: [id])
+  type       TradeType
+  side       OrderSide
+  quantity   Float
+  price      Float
+  pnl        Float     @default(0.00)
+  commission Float
+  executedAt DateTime  @default(now())
+
+  @@map("trades")
+}
+
+enum TradeType {
+  OPEN
+  CLOSE
+  PARTIAL_CLOSE
+}
+
+model WatchlistItem {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assetId   String
+  asset     Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, assetId])
+  @@map("watchlist")
+}
+
+model Admin {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  username  String    @unique
+  password  String
+  role      AdminRole @default(MANAGER)
+  isActive  Boolean   @default(true)
+  lastLogin DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  actions AdminAction[]
+
+  @@map("admins")
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  MANAGER
+  SUPPORT
+}
+
+model AdminAction {
+  id        String   @id @default(uuid())
+  adminId   String
+  admin     Admin    @relation(fields: [adminId], references: [id])
+  action    String
+  targetId  String
+  details   Json
+  createdAt DateTime @default(now())
+
+  @@map("admin_actions")
+}
