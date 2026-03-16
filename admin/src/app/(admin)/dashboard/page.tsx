@@ -33,10 +33,10 @@ async function getDashboardData() {
       take: 5,
     }),
     prisma.$queryRaw<{ date: string; count: bigint }[]>`
-      SELECT DATE(created_at) as date, COUNT(*) as count
+      SELECT DATE("createdAt") as date, COUNT(*) as count
       FROM users
-      WHERE created_at >= ${monthAgo}
-      GROUP BY DATE(created_at)
+      WHERE "createdAt" >= ${monthAgo}
+      GROUP BY DATE("createdAt")
       ORDER BY date ASC
     `,
   ])
