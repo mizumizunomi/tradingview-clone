@@ -18,7 +18,7 @@ model User {
   password      String   // Hashed with bcrypt
   firstName     String?
   lastName      String?
-  plan          String   @default("silver")
+  plan          String   @default("none")
   avatar        String?
   bio           String?
   isBanned      Boolean  @default(false)
@@ -27,6 +27,7 @@ model User {
   updatedAt     DateTime @updatedAt
 
   wallet          Wallet?
+  subscription    UserSubscription?
   orders          Order[]
   positions       Position[]
   trades          Trade[]
@@ -38,23 +39,47 @@ model User {
   @@map("users")
 }
 
+model UserSubscription {
+  id              String    @id @default(uuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier            PlanTier  @default(NONE)
+  totalDeposited  Float     @default(0)
+  monthlyFee      Float     @default(0)
+  nextBillingDate DateTime?
+  isActive        Boolean   @default(true)
+  activatedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("user_subscriptions")
+}
+
+enum PlanTier {
+  NONE
+  DEFAULT
+  SILVER
+  GOLD
+  PLATINUM
+}
+
 // ========== WALLET & BALANCE ==========
 model Wallet {
   id            String   @id @default(uuid())
   userId        String   @unique
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  balance       Float    @default(10000.00)  // Starting balance $10,000
-  equity        Float    @default(10000.00)  // Balance + Unrealized P&L
+
+  balance       Float    @default(0.00)      // Starting balance $0 — must deposit
+  equity        Float    @default(0.00)      // Balance + Unrealized P&L
   margin        Float    @default(0.00)      // Used margin
-  freeMargin    Float    @default(10000.00)  // Available for trading
+  freeMargin    Float    @default(0.00)      // Available for trading
   marginLevel   Float    @default(0.00)      // (Equity/Margin) * 100
-  
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  
+
   transactions  Transaction[]
-  
+
   @@map("wallets")
 }
 
@@ -62,12 +87,16 @@ model Transaction {
   id            String   @id @default(uuid())
   walletId      String
   wallet        Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  userId        String?  // denormalized for faster queries
 
   type          TransactionType
   method        PaymentMethod    @default(WIRE_TRANSFER)
   amount        Float
   status        TransactionStatus @default(COMPLETED)
   description   String?
+  reference     String?          // external reference / receipt ID
+  note          String?
+  completedAt   DateTime?
 
   createdAt     DateTime @default(now())
 
@@ -78,6 +107,8 @@ enum TransactionType {
   DEPOSIT
   WITHDRAWAL
   ADMIN_ADJUSTMENT
+  TRADE_FEE
+  SUBSCRIPTION_FEE
 }
 
 enum PaymentMethod {

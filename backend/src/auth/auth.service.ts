@@ -4,13 +4,24 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto, RegisterDto } from './dto/auth.dto';
 
-const PLAN_BALANCES: Record<string, number> = {
-  silver: 500,
-  gold: 50000,
-  platinum: 1000000,
+// Tier deposit thresholds for auto-upgrade
+export const TIER_DEPOSIT_THRESHOLDS: Record<string, number> = {
+  DEFAULT: 250,
+  SILVER: 2500,
+  GOLD: 10000,
+  PLATINUM: 50000,
 };
 
-const VALID_PLANS = ['silver', 'gold', 'platinum'];
+// Map old plan strings to new tier names (backward compat)
+const PLAN_TO_TIER: Record<string, string> = {
+  none: 'NONE',
+  default: 'DEFAULT',
+  silver: 'SILVER',
+  gold: 'GOLD',
+  platinum: 'PLATINUM',
+};
+
+const VALID_PLANS = ['none', 'default', 'silver', 'gold', 'platinum'];
 
 @Injectable()
 export class AuthService {
@@ -33,31 +44,39 @@ export class AuthService {
         password,
         firstName: dto.firstName,
         lastName: dto.lastName,
-        plan: 'silver',
+        plan: 'none',
         wallet: {
           create: {
-            balance: PLAN_BALANCES.silver,
-            equity: PLAN_BALANCES.silver,
+            balance: 0,
+            equity: 0,
             margin: 0,
-            freeMargin: PLAN_BALANCES.silver,
+            freeMargin: 0,
             marginLevel: 0,
           },
         },
+        subscription: {
+          create: {
+            tier: 'NONE',
+            totalDeposited: 0,
+            monthlyFee: 0,
+          },
+        },
       },
-      include: { wallet: true },
+      include: { wallet: true, subscription: true },
     });
 
-    const token = this.jwtService.sign({ sub: user.id, email: user.email });
     const { password: _, ...userWithoutPassword } = user;
-    return { token, user: userWithoutPassword };
+    // Return user only — frontend will redirect to login
+    return { user: userWithoutPassword };
   }
 
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
-      include: { wallet: true },
+      include: { wallet: true, subscription: true },
     });
     if (!user) throw new UnauthorizedException('Invalid credentials');
+    if (user.isBanned) throw new UnauthorizedException('Your account has been suspended');
 
     const valid = await bcrypt.compare(dto.password, user.password);
     if (!valid) throw new UnauthorizedException('Invalid credentials');
@@ -70,7 +89,7 @@ export class AuthService {
   async getMe(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      include: { wallet: true },
+      include: { wallet: true, subscription: true },
     });
     if (!user) throw new UnauthorizedException();
     const { password: _, ...userWithoutPassword } = user;
@@ -85,20 +104,19 @@ export class AuthService {
     const user = await this.prisma.user.update({
       where: { id: userId },
       data: { plan },
-      include: { wallet: true },
+      include: { wallet: true, subscription: true },
     });
 
-    // Update wallet balance to the plan's starting balance (only if upgrading)
-    const newBalance = PLAN_BALANCES[plan];
-    const wallet = user.wallet;
-    if (wallet && wallet.balance < newBalance) {
-      await this.prisma.wallet.update({
+    // Sync UserSubscription tier
+    const newTier = PLAN_TO_TIER[plan] as any;
+    if (user.subscription) {
+      await this.prisma.userSubscription.update({
         where: { userId },
-        data: {
-          balance: newBalance,
-          equity: newBalance,
-          freeMargin: newBalance - wallet.margin,
-        },
+        data: { tier: newTier },
+      });
+    } else {
+      await this.prisma.userSubscription.create({
+        data: { userId, tier: newTier },
       });
     }
 
@@ -110,7 +128,7 @@ export class AuthService {
     const user = await this.prisma.user.update({
       where: { id: userId },
       data,
-      include: { wallet: true },
+      include: { wallet: true, subscription: true },
     });
     const { password: _, ...userWithoutPassword } = user;
     return userWithoutPassword;

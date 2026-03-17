@@ -82,16 +82,29 @@ export interface Wallet {
   marginLevel: number;
 }
 
+export type PlanTier = "NONE" | "DEFAULT" | "SILVER" | "GOLD" | "PLATINUM";
+
+export interface UserSubscription {
+  id: string;
+  tier: PlanTier;
+  totalDeposited: number;
+  monthlyFee: number;
+  isActive: boolean;
+  activatedAt?: string;
+  nextBillingDate?: string;
+}
+
 export interface User {
   id: string;
   email: string;
   username: string;
   firstName?: string;
   lastName?: string;
-  plan?: "silver" | "gold" | "platinum";
+  plan?: string; // raw string from DB ("none" | "default" | "silver" | "gold" | "platinum")
   avatar?: string;
   bio?: string;
   wallet?: Wallet;
+  subscription?: UserSubscription;
 }
 
 export interface PriceUpdate {
