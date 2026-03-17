@@ -8,6 +8,7 @@ import { TradingModule } from './trading/trading.module';
 import { WalletModule } from './wallet/wallet.module';
 import { NewsModule } from './news/news.module';
 import { TradingBotModule } from './trading-bot/trading-bot.module';
+import { PlanModule } from './plan/plan.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { TradingBotModule } from './trading-bot/trading-bot.module';
     WalletModule,
     NewsModule,
     TradingBotModule,
+    PlanModule,
   ],
 })
 export class AppModule {}

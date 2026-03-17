@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { useTradingStore } from "@/store/trading.store";
 import { TopToolbar } from "@/components/layout/TopToolbar";
@@ -22,6 +23,7 @@ import { useWebSocket } from "@/hooks/useWebSocket";
 import { ConnectionStatus } from "@/components/layout/ConnectionStatus";
 import { useAlertChecker } from "@/hooks/useAlertChecker";
 import { useChartKeyboardShortcuts } from "@/hooks/useChartKeyboardShortcuts";
+import { usePlan } from "@/hooks/usePlan";
 import { api, endpoints } from "@/lib/api";
 
 const PRICES_POLL_MS = 60_000;
@@ -33,6 +35,7 @@ export default function TradePage() {
     showAlertModal, showChartSettings, showDOMPanel, updatePrice,
   } = useTradingStore();
   const pricesPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const { isNoPlan } = usePlan();
 
   const { connected } = useWebSocket();
   useAlertChecker();
@@ -92,6 +95,20 @@ export default function TradePage() {
   return (
     <div className="flex h-screen flex-col overflow-hidden" style={{ background: "var(--tv-bg)" }}>
       <TopToolbar />
+      {isNoPlan && (
+        <div className="w-full flex items-center justify-between gap-3 px-4 py-2 text-sm font-medium sticky top-0 z-50" style={{ background: "#1a2740", borderBottom: "1px solid #2962ff44" }}>
+          <span className="text-[#93c5fd]">
+            Fund your account to start trading — deposit <span className="font-bold text-white">$250</span> to activate your Default plan
+          </span>
+          <Link
+            href="/wallet"
+            className="shrink-0 rounded-lg px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-white transition-colors hover:opacity-90"
+            style={{ background: "#2962ff" }}
+          >
+            Deposit Now
+          </Link>
+        </div>
+      )}
       <SymbolInfoBar />
       <ConnectionStatus connected={connected} />
       <div className="flex flex-1 overflow-hidden">

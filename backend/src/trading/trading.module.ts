@@ -3,9 +3,10 @@ import { TradingService } from './trading.service';
 import { TradingController } from './trading.controller';
 import { MarketDataModule } from '../market-data/market-data.module';
 import { MarketDataGateway } from '../market-data/market-data.gateway';
+import { PlanModule } from '../plan/plan.module';
 
 @Module({
-  imports: [MarketDataModule],
+  imports: [MarketDataModule, PlanModule],
   providers: [TradingService],
   controllers: [TradingController],
   exports: [TradingService],

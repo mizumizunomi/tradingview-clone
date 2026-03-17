@@ -1,12 +1,7 @@
 import { Injectable, BadRequestException, ForbiddenException, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { MarketDataService } from '../market-data/market-data.service';
-
-const PLAN_LIMITS: Record<string, { maxAssets: number; maxLeverage: number; commission: number; orderTypes: string[] }> = {
-  silver:   { maxAssets: 20,  maxLeverage: 10,  commission: 0.001,  orderTypes: ['MARKET'] },
-  gold:     { maxAssets: 80,  maxLeverage: 50,  commission: 0.0005, orderTypes: ['MARKET', 'LIMIT'] },
-  platinum: { maxAssets: 200, maxLeverage: 100, commission: 0.0001, orderTypes: ['MARKET', 'LIMIT', 'OCO'] },
-};
+import { PlanService } from '../plan/plan.service';
 
 @Injectable()
 export class TradingService implements OnModuleInit {
@@ -16,6 +11,7 @@ export class TradingService implements OnModuleInit {
   constructor(
     private prisma: PrismaService,
     private marketData: MarketDataService,
+    private planService: PlanService,
   ) {}
 
   onModuleInit() {
@@ -90,39 +86,50 @@ export class TradingService implements OnModuleInit {
   }
 
   async placeOrder(userId: string, dto: any) {
-    // Get user plan
-    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { plan: true } });
-    const plan = (user?.plan || 'silver') as string;
-    const limits = PLAN_LIMITS[plan] ?? PLAN_LIMITS['silver'];
+    // Get user tier via PlanService
+    const canTrade = await this.planService.canTrade(userId);
+    if (!canTrade) {
+      throw new ForbiddenException(
+        'Your current plan does not allow trading. Please deposit to activate your plan.'
+      );
+    }
 
     const asset = await this.prisma.asset.findUnique({ where: { id: dto.assetId } });
     if (!asset) throw new NotFoundException('Asset not found');
 
-    // Check asset access: find global index of this asset
-    const allAssets = await this.prisma.asset.findMany({
-      where: { isActive: true },
-      orderBy: [{ isFeatured: 'desc' }, { symbol: 'asc' }],
-      select: { id: true },
-    });
-    const assetIndex = allAssets.findIndex(a => a.id === dto.assetId);
-    if (assetIndex === -1 || assetIndex >= limits.maxAssets) {
-      const planName = plan.charAt(0).toUpperCase() + plan.slice(1);
+    // Check asset access via PlanService
+    const hasAssetAccess = await this.planService.canAccessAsset(userId, asset.symbol, asset.category);
+    if (!hasAssetAccess) {
+      const tier = await this.planService.getUserTier(userId);
+      const tierConfig = this.planService.getTierConfig(tier);
       throw new ForbiddenException(
-        `This asset requires a higher plan. Your ${planName} plan allows access to ${limits.maxAssets} assets. Upgrade to unlock more.`
+        `This asset is not available on your ${tierConfig.label} plan. Please upgrade to access more assets.`
       );
     }
 
-    // Check leverage
+    // Check position limit via PlanService
+    const canOpen = await this.planService.canOpenPosition(userId);
+    if (!canOpen) {
+      const tier = await this.planService.getUserTier(userId);
+      const tierConfig = this.planService.getTierConfig(tier);
+      throw new ForbiddenException(
+        `You have reached the maximum number of open positions (${tierConfig.maxPositions}) for your ${tierConfig.label} plan. Upgrade to open more positions.`
+      );
+    }
+
+    // Check leverage via PlanService
     const leverage = dto.leverage || 1;
-    if (leverage > limits.maxLeverage) {
+    const maxLeverage = await this.planService.getMaxLeverage(userId);
+    if (leverage > maxLeverage) {
       throw new BadRequestException(
-        `Leverage ${leverage}× exceeds your plan limit of ${limits.maxLeverage}×. Upgrade your plan for higher leverage.`
+        `Leverage ${leverage}× exceeds your plan limit of ${maxLeverage}×. Upgrade your plan for higher leverage.`
       );
     }
 
     // Check order type
     const orderType = dto.type || 'MARKET';
-    if (!limits.orderTypes.includes(orderType)) {
+    const availableOrderTypes = await this.planService.getAvailableOrderTypes(userId);
+    if (!availableOrderTypes.includes(orderType)) {
       throw new BadRequestException(
         `Order type "${orderType}" is not available on your current plan. Upgrade to access advanced order types.`
       );
@@ -139,8 +146,9 @@ export class TradingService implements OnModuleInit {
     const quantity = dto.quantity;
     const notionalValue = price * quantity;
     const margin = notionalValue / leverage;
-    // Use plan commission rate
-    const commission = notionalValue * limits.commission;
+    // Use plan commission rate via PlanService
+    const commissionRate = await this.planService.getCommissionRate(userId);
+    const commission = notionalValue * commissionRate;
     const spread = asset.spread * price;
 
     if (margin > wallet.freeMargin) {
