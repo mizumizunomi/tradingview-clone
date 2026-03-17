@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards, Request } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards, Request } from '@nestjs/common';
 import { WalletService } from './wallet.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
@@ -23,7 +23,26 @@ export class WalletController {
   }
 
   @Get('transactions')
-  getTransactions(@Request() req: any) {
+  getTransactions(
+    @Request() req: any,
+    @Query('type') type?: string,
+    @Query('status') status?: string,
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
+  ) {
+    if (type || status || limit || offset) {
+      return this.walletService.getTransactionsForUser(req.user.id, {
+        type,
+        status,
+        limit: limit ? parseInt(limit, 10) : undefined,
+        offset: offset ? parseInt(offset, 10) : undefined,
+      });
+    }
     return this.walletService.getTransactions(req.user.id);
+  }
+
+  @Get('plan-summary')
+  getPlanSummary(@Request() req: any) {
+    return this.walletService.getUserPlanSummary(req.user.id);
   }
 }

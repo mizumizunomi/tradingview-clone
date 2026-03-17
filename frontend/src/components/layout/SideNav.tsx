@@ -11,7 +11,7 @@ const NAV_ITEMS = [
   { icon: Calendar, label: "Calendar", href: "/calendar" },
   { icon: Filter, label: "Screener", href: "/screener" },
   { icon: Gem, label: "Plans", href: "/plans" },
-  { icon: Wallet, label: "Wallet", href: "/wallet" },
+  { icon: Wallet, label: "Wallet", href: "/account/deposit" },
   { icon: UserCircle, label: "Profile", href: "/profile" },
   { icon: Info, label: "About", href: "/about" },
 ];
@@ -57,7 +57,7 @@ export function SideNav() {
       {/* Nav items */}
       <div className="flex flex-1 flex-col items-center gap-1">
         {NAV_ITEMS.map(({ icon: Icon, label, href }) => {
-          const isActive = pathname === href;
+          const isActive = pathname === href || (href === "/account/deposit" && pathname.startsWith("/account"));
           return (
             <button
               key={href}
