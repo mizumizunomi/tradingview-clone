@@ -2,6 +2,7 @@ import {
   Controller, Get, Post, Put, Delete, Body, Param, Query,
   UseGuards, Request, HttpCode, HttpStatus,
 } from '@nestjs/common';
+import { Throttle, SkipThrottle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { SignalEngineService } from './services/signal-engine.service';
 import { StrategyService } from './services/strategy.service';
@@ -17,9 +18,15 @@ import { CreateStrategyDto, UpdateStrategyDto } from './dto/create-strategy.dto'
 import { UpdateSettingsDto } from './dto/update-settings.dto';
 import { AssetClass } from './interfaces/signal.interface';
 
+// Simple in-memory cache entry
+interface CacheEntry<T> { data: T; expiresAt: number; }
+
 @UseGuards(JwtAuthGuard)
 @Controller('bot')
 export class TradingBotController {
+  private readonly responseCache = new Map<string, CacheEntry<unknown>>();
+  private readonly CACHE_TTL_MS = 30_000; // 30 seconds
+
   constructor(
     private readonly signalEngine: SignalEngineService,
     private readonly strategyService: StrategyService,
@@ -49,6 +56,7 @@ export class TradingBotController {
 
   @Post('signals/generate')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   async generateSignal(
     @Request() req: { user: { userId: string } },
     @Body() dto: GenerateSignalDto,
@@ -99,6 +107,7 @@ export class TradingBotController {
 
   @Post('research/:asset')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   async runResearch(
     @Param('asset') asset: string,
     @Query('assetClass') assetClass: string,
@@ -197,6 +206,10 @@ export class TradingBotController {
   @Get('dashboard')
   async getDashboard(@Request() req: { user: { userId: string } }) {
     const userId = req.user.userId;
+    const cacheKey = `dashboard:${userId}`;
+    const cached = this.responseCache.get(cacheKey);
+    if (cached && Date.now() < cached.expiresAt) return cached.data;
+
     const [stats, settings, providerStatuses, schedulerStatus] = await Promise.all([
       this.signalEngine.getDashboardStats(userId),
       this.upsertDefaultSettings(userId),
@@ -210,24 +223,26 @@ export class TradingBotController {
       take: 10,
     });
 
-    return {
-      ...stats,
-      recentSignals,
-      settings,
-      providerStatuses,
-      schedulerStatus,
-    };
+    const result = { ...stats, recentSignals, settings, providerStatuses, schedulerStatus };
+    this.responseCache.set(cacheKey, { data: result, expiresAt: Date.now() + this.CACHE_TTL_MS });
+    return result;
   }
 
   // ── Provider / Bot Status ─────────────────────────────────────────────────────
 
   @Get('status')
   async getStatus() {
-    return {
+    const cacheKey = 'status:global';
+    const cached = this.responseCache.get(cacheKey);
+    if (cached && Date.now() < cached.expiresAt) return cached.data;
+
+    const result = {
       providers: this.externalData.getProviderStatuses(),
       scheduler: this.scheduler.getStatus(),
       cache: this.externalData.getCacheStats(),
     };
+    this.responseCache.set(cacheKey, { data: result, expiresAt: Date.now() + this.CACHE_TTL_MS });
+    return result;
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────────

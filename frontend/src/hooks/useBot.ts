@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import { api, endpoints } from "@/lib/api";
+import { useTradingStore } from "@/store/trading.store";
 import type {
   TradingSignal, BotSettings, BotDashboardData,
   BotStrategy, ResearchReport, AssetClass,
@@ -15,6 +16,7 @@ export function useBot() {
   const [connected, setConnected] = useState(false);
   const [loading, setLoading] = useState(true);
   const socketRef = useRef<Socket | null>(null);
+  const addToast = useTradingStore((s) => s.addToast);
 
   const loadDashboard = useCallback(async () => {
     try {
@@ -59,12 +61,22 @@ export function useBot() {
 
     socket.on("bot:signal:new", (signal: TradingSignal) => {
       setSignals((prev) => [signal, ...prev.slice(0, 49)]);
+      addToast({
+        type: "success",
+        message: `New ${signal.action} signal: ${signal.asset}`,
+        duration: 4000,
+      });
     });
 
     socket.on("bot:signal:executed", (data: { signalId: string }) => {
       setSignals((prev) =>
         prev.map((s) => s.id === data.signalId ? { ...s, status: "EXECUTED", autoExecuted: true } : s)
       );
+      addToast({
+        type: "info",
+        message: `Signal executed: ${data.signalId}`,
+        duration: 4000,
+      });
     });
 
     socket.on("bot:signal:expired", (data: { signalId: string }) => {
@@ -97,8 +109,11 @@ export function useBot() {
         prev.map((s) => s.id === id ? { ...s, status: "EXECUTED" } : s)
       );
       return true;
-    } catch { return false; }
-  }, []);
+    } catch {
+      addToast({ type: "error", message: "Execution failed", duration: 4000 });
+      return false;
+    }
+  }, [addToast]);
 
   const cancelSignal = useCallback(async (id: string): Promise<void> => {
     await api.post(endpoints.botCancelSignal(id));

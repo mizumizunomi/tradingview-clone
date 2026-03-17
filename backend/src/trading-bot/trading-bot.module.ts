@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { PrismaModule } from '../prisma/prisma.module';
 import { TradingModule } from '../trading/trading.module';
 import { MarketDataModule } from '../market-data/market-data.module';
@@ -25,9 +27,17 @@ import { TwelveDataProvider } from './providers/twelvedata.provider';
 import { NewsAggregatorProvider } from './providers/news-aggregator.provider';
 
 @Module({
-  imports: [PrismaModule, TradingModule, MarketDataModule],
+  imports: [
+    PrismaModule,
+    TradingModule,
+    MarketDataModule,
+    ThrottlerModule.forRoot([
+      { name: 'short', ttl: 60000, limit: 10 },
+    ]),
+  ],
   controllers: [TradingBotController],
   providers: [
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
     TradingBotGateway,
 
     // Data providers
