@@ -49,4 +49,7 @@ export const endpoints = {
   botSettings: "/bot/settings",
   botDashboard: "/bot/dashboard",
   botStatus: "/bot/status",
+  // Plan
+  planInfo: "/plan",
+  planTiers: "/plan/tiers",
 };

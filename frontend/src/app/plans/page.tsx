@@ -1,122 +1,145 @@
 "use client";
+import { useRouter } from "next/navigation";
 import { SideNav } from "@/components/layout/SideNav";
-import { Check, Zap, Shield, Crown, Star, ArrowRight } from "lucide-react";
+import { Check, Zap, Shield, Crown, Star, Gem, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useTradingStore } from "@/store/trading.store";
-import { api, endpoints } from "@/lib/api";
+import { usePlan } from "@/hooks/usePlan";
+import { PlanTier } from "@/types";
 
-const PLANS = [
+const PLANS: {
+  id: PlanTier;
+  name: string;
+  tagline: string;
+  icon: React.ElementType;
+  color: string;
+  bgGlow: string;
+  depositRequired: number;
+  monthlyFee: number;
+  maxLeverage: number;
+  commission: string;
+  maxPositions: number;
+  features: string[];
+  popular: boolean;
+}[] = [
   {
-    id: "silver",
-    name: "Silver",
-    tagline: "Perfect for beginners",
+    id: "DEFAULT",
+    name: "Default",
+    tagline: "Start trading today",
     icon: Shield,
-    color: "#94a3b8",
-    bgGlow: "#94a3b822",
-    minDeposit: 500,
-    maxLeverage: 10,
-    spread: "Standard",
+    color: "#64748b",
+    bgGlow: "#64748b22",
+    depositRequired: 250,
+    monthlyFee: 0,
+    maxLeverage: 3,
     commission: "0.1%",
-    price: "Free",
+    maxPositions: 3,
     features: [
-      "Up to $500 simulated balance",
-      "10× max leverage",
-      "20 tradeable assets",
-      "Standard spreads",
-      "Basic charting tools",
-      "Email support",
-      "Market orders only",
-      "Daily news digest",
+      "Minimum deposit: $250",
+      "3× max leverage",
+      "Up to 3 open positions",
+      "8 tradeable assets",
+      "FOREX trading",
+      "Basic indicators (SMA, EMA, RSI)",
+      "Market & Limit orders",
+      "No monthly fee",
     ],
-    cta: "Get Started",
     popular: false,
   },
   {
-    id: "gold",
+    id: "SILVER",
+    name: "Silver",
+    tagline: "For growing traders",
+    icon: Star,
+    color: "#94a3b8",
+    bgGlow: "#94a3b822",
+    depositRequired: 2500,
+    monthlyFee: 29,
+    maxLeverage: 5,
+    commission: "0.1%",
+    maxPositions: 5,
+    features: [
+      "Minimum deposit: $2,500",
+      "5× max leverage",
+      "Up to 5 open positions",
+      "20 tradeable assets",
+      "FOREX + Crypto trading",
+      "Advanced indicators (+ MACD, BB)",
+      "Market, Limit & Stop-Loss orders",
+      "Bot signals access",
+    ],
+    popular: false,
+  },
+  {
+    id: "GOLD",
     name: "Gold",
     tagline: "Most popular choice",
-    icon: Star,
+    icon: Gem,
     color: "#f59e0b",
     bgGlow: "#f59e0b22",
-    minDeposit: 5000,
-    maxLeverage: 50,
-    spread: "Tight",
+    depositRequired: 10000,
+    monthlyFee: 199,
+    maxLeverage: 20,
     commission: "0.05%",
-    price: "$29/mo",
+    maxPositions: 20,
     features: [
-      "Up to $50,000 simulated balance",
-      "50× max leverage",
-      "80+ tradeable assets",
-      "Tight spreads",
-      "Advanced charting & indicators",
-      "Priority support",
-      "All order types (Market, Limit, SL/TP)",
-      "Real-time news feed",
-      "Portfolio analytics",
-      "API access",
+      "Minimum deposit: $10,000",
+      "20× max leverage",
+      "Up to 20 open positions",
+      "80 tradeable assets",
+      "FOREX + Crypto + Stocks",
+      "All indicators",
+      "All order types + Take-Profit",
+      "Full bot access + 50 backtests",
     ],
-    cta: "Upgrade to Gold",
     popular: true,
   },
   {
-    id: "platinum",
+    id: "PLATINUM",
     name: "Platinum",
-    tagline: "For serious traders",
+    tagline: "For professional traders",
     icon: Crown,
     color: "#a78bfa",
     bgGlow: "#a78bfa22",
-    minDeposit: 25000,
+    depositRequired: 50000,
+    monthlyFee: 499,
     maxLeverage: 100,
-    spread: "Raw",
     commission: "0.01%",
-    price: "$99/mo",
+    maxPositions: 999,
     features: [
-      "Unlimited simulated balance",
+      "Minimum deposit: $50,000",
       "100× max leverage",
-      "200+ tradeable assets",
-      "Raw institutional spreads",
-      "Professional charting suite",
-      "Dedicated account manager",
-      "All order types + OCO orders",
-      "Premium news & analysis",
-      "Advanced risk management",
-      "Custom API integrations",
-      "White-glove onboarding",
-      "Exclusive trading signals",
+      "Unlimited open positions",
+      "All assets (999+)",
+      "All asset categories",
+      "All indicators",
+      "All order types + OCO",
+      "Premium bot + unlimited backtests",
     ],
-    cta: "Go Platinum",
     popular: false,
   },
 ];
 
 const COMPARISON_ROWS = [
-  { feature: "Simulated Balance", silver: "$500", gold: "$50,000", platinum: "Unlimited" },
-  { feature: "Max Leverage", silver: "10×", gold: "50×", platinum: "100×" },
-  { feature: "Assets Available", silver: "20", gold: "80+", platinum: "200+" },
-  { feature: "Spread Type", silver: "Standard", gold: "Tight", platinum: "Raw" },
-  { feature: "Commission", silver: "0.1%", gold: "0.05%", platinum: "0.01%" },
-  { feature: "Order Types", silver: "Market", gold: "All types", platinum: "All + OCO" },
-  { feature: "API Access", silver: "✗", gold: "✓", platinum: "✓" },
-  { feature: "Support", silver: "Email", gold: "Priority", platinum: "Dedicated" },
-  { feature: "News Feed", silver: "Daily digest", gold: "Real-time", platinum: "Premium" },
+  { feature: "Min. Deposit", DEFAULT: "$250", SILVER: "$2,500", GOLD: "$10,000", PLATINUM: "$50,000" },
+  { feature: "Monthly Fee", DEFAULT: "Free", SILVER: "$29/mo", GOLD: "$199/mo", PLATINUM: "$499/mo" },
+  { feature: "Max Leverage", DEFAULT: "3×", SILVER: "5×", GOLD: "20×", PLATINUM: "100×" },
+  { feature: "Open Positions", DEFAULT: "3", SILVER: "5", GOLD: "20", PLATINUM: "Unlimited" },
+  { feature: "Assets Available", DEFAULT: "8", SILVER: "20", GOLD: "80", PLATINUM: "All" },
+  { feature: "Commission", DEFAULT: "0.1%", SILVER: "0.1%", GOLD: "0.05%", PLATINUM: "0.01%" },
+  { feature: "Crypto Trading", DEFAULT: "✗", SILVER: "✓", GOLD: "✓", PLATINUM: "✓" },
+  { feature: "Stocks Trading", DEFAULT: "✗", SILVER: "✗", GOLD: "✓", PLATINUM: "✓" },
+  { feature: "Order Types", DEFAULT: "Market, Limit", SILVER: "+ Stop Loss", GOLD: "+ Take Profit", PLATINUM: "+ OCO" },
+  { feature: "Bot Access", DEFAULT: "✗", SILVER: "Signals", GOLD: "Full", PLATINUM: "Premium" },
+  { feature: "Backtests", DEFAULT: "✗", SILVER: "✗", GOLD: "50/mo", PLATINUM: "Unlimited" },
 ];
 
 export default function PlansPage() {
-  const { user, setUser, addToast } = useTradingStore();
-  const activePlan = user?.plan || "silver";
+  const router = useRouter();
+  const { tier: activeTier } = usePlan();
 
-  const handleUpgrade = async (planId: string) => {
-    if (planId === activePlan) return;
-    try {
-      await api.patch(endpoints.updatePlan, { plan: planId });
-      if (user) {
-        setUser({ ...user, plan: planId as "silver" | "gold" | "platinum" });
-      }
-      const plan = PLANS.find((p) => p.id === planId);
-      addToast({ type: "success", message: `Upgraded to ${plan?.name || planId} plan!` });
-    } catch {
-      addToast({ type: "error", message: "Failed to update plan. Please try again." });
-    }
+  const handleUpgrade = (planId: PlanTier, depositRequired: number) => {
+    if (planId === activeTier) return;
+    router.push(`/wallet?deposit=${depositRequired}`);
   };
 
   return (
@@ -125,24 +148,24 @@ export default function PlansPage() {
       <div className="flex-1 overflow-y-auto">
         {/* Header */}
         <div className="border-b border-[#363a45] bg-[#1e222d] px-8 py-6">
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-5xl mx-auto">
             <div className="flex items-center gap-2 mb-1">
               <Zap className="h-5 w-5 text-[#f59e0b]" />
               <span className="text-xs font-semibold uppercase tracking-wider text-[#f59e0b]">Investment Plans</span>
             </div>
             <h1 className="text-2xl font-bold text-white mb-1">Choose Your Trading Tier</h1>
             <p className="text-sm text-[#5d6673]">
-              Unlock more power, tighter spreads, and higher leverage as you grow your account.
+              Deposit to activate your plan and unlock more power, tighter spreads, and higher leverage as you grow.
             </p>
           </div>
         </div>
 
-        <div className="max-w-5xl mx-auto px-8 py-8 space-y-10">
+        <div className="max-w-6xl mx-auto px-8 py-8 space-y-10">
           {/* Plan cards */}
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
             {PLANS.map((plan) => {
               const Icon = plan.icon;
-              const isActive = activePlan === plan.id;
+              const isActive = activeTier === plan.id;
               return (
                 <div
                   key={plan.id}
@@ -164,7 +187,7 @@ export default function PlansPage() {
                   {/* Current plan badge */}
                   {isActive && (
                     <div className="absolute top-3 right-3 rounded-full bg-[#2962ff] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
-                      Current Plan
+                      Current
                     </div>
                   )}
 
@@ -182,9 +205,11 @@ export default function PlansPage() {
 
                   {/* Price */}
                   <div className="mb-4 pb-4 border-b border-[#363a45]">
-                    <div className="text-2xl font-bold text-white">{plan.price}</div>
+                    <div className="text-2xl font-bold text-white">
+                      {plan.monthlyFee === 0 ? "Free" : `$${plan.monthlyFee}/mo`}
+                    </div>
                     <div className="text-xs text-[#5d6673]">
-                      Min. deposit: <span className="text-[#b2b5be] font-medium">${plan.minDeposit.toLocaleString("en-US")}</span>
+                      Min. deposit: <span className="text-[#b2b5be] font-medium">${plan.depositRequired.toLocaleString("en-US")}</span>
                     </div>
                   </div>
 
@@ -192,7 +217,7 @@ export default function PlansPage() {
                   <div className="mb-4 grid grid-cols-2 gap-2">
                     {[
                       { label: "Leverage", value: `${plan.maxLeverage}×` },
-                      { label: "Spread", value: plan.spread },
+                      { label: "Positions", value: plan.maxPositions >= 999 ? "∞" : String(plan.maxPositions) },
                       { label: "Commission", value: plan.commission },
                     ].map(({ label, value }) => (
                       <div key={label} className="rounded-lg bg-[#131722] px-2.5 py-2">
@@ -216,7 +241,7 @@ export default function PlansPage() {
                   </ul>
 
                   <button
-                    onClick={() => handleUpgrade(plan.id)}
+                    onClick={() => handleUpgrade(plan.id, plan.depositRequired)}
                     disabled={isActive}
                     className={cn(
                       "flex w-full items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-bold uppercase tracking-wider transition-all",
@@ -227,7 +252,7 @@ export default function PlansPage() {
                       color: isActive ? "white" : plan.popular ? "#000" : plan.color,
                     }}
                   >
-                    {isActive ? "Current Plan" : plan.cta}
+                    {isActive ? "Current Plan" : `Deposit $${plan.depositRequired.toLocaleString()}`}
                     {!isActive && <ArrowRight className="h-3.5 w-3.5" />}
                   </button>
                 </div>
@@ -246,7 +271,7 @@ export default function PlansPage() {
                     {PLANS.map((p) => (
                       <th key={p.id} className="px-4 py-3 text-center text-xs font-bold" style={{ color: p.color }}>
                         {p.name}
-                        {activePlan === p.id && (
+                        {activeTier === p.id && (
                           <span className="ml-1.5 rounded px-1 py-0.5 text-[8px] bg-[#2962ff] text-white">You</span>
                         )}
                       </th>
@@ -257,14 +282,14 @@ export default function PlansPage() {
                   {COMPARISON_ROWS.map((row) => (
                     <tr key={row.feature} className="hover:bg-[#1e222d] transition-colors">
                       <td className="px-4 py-2.5 text-xs text-[#b2b5be]">{row.feature}</td>
-                      {["silver", "gold", "platinum"].map((tier) => (
+                      {(["DEFAULT", "SILVER", "GOLD", "PLATINUM"] as PlanTier[]).map((tier) => (
                         <td key={tier} className="px-4 py-2.5 text-center text-xs">
-                          {(row as any)[tier] === "✓" ? (
+                          {(row as Record<string, string>)[tier] === "✓" ? (
                             <Check className="h-3.5 w-3.5 text-[#26a69a] mx-auto" />
-                          ) : (row as any)[tier] === "✗" ? (
+                          ) : (row as Record<string, string>)[tier] === "✗" ? (
                             <span className="text-[#5d6673]">—</span>
                           ) : (
-                            <span className="font-medium text-[#d1d4dc]">{(row as any)[tier]}</span>
+                            <span className="font-medium text-[#d1d4dc]">{(row as Record<string, string>)[tier]}</span>
                           )}
                         </td>
                       ))}
@@ -279,7 +304,7 @@ export default function PlansPage() {
           <div className="rounded-xl border border-[#363a45] bg-[#1e222d] p-4 text-center">
             <p className="text-xs text-[#5d6673]">
               All plans use <span className="text-[#b2b5be] font-medium">simulated funds only</span> — no real money is involved.
-              Plans are for demonstration purposes on this local platform.
+              Plans are activated by depositing into your trading account.
             </p>
           </div>
         </div>
