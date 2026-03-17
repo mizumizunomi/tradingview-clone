@@ -36,4 +36,17 @@ export const endpoints = {
   transactions: "/wallet/transactions",
   updatePlan: "/auth/plan",
   updateProfile: "/auth/profile",
+  // Bot
+  botSignals: "/bot/signals",
+  botGenerateSignal: "/bot/signals/generate",
+  botExecuteSignal: (id: string) => `/bot/signals/${id}/execute`,
+  botCancelSignal: (id: string) => `/bot/signals/${id}/cancel`,
+  botAnalysis: (asset: string) => `/bot/analysis/${asset}`,
+  botResearch: (asset: string) => `/bot/research/${asset}`,
+  botStrategies: "/bot/strategies",
+  botStrategy: (id: string) => `/bot/strategies/${id}`,
+  botBacktest: (id: string) => `/bot/strategies/${id}/backtest`,
+  botSettings: "/bot/settings",
+  botDashboard: "/bot/dashboard",
+  botStatus: "/bot/status",
 };
