@@ -34,6 +34,11 @@ export const endpoints = {
   deposit: "/wallet/deposit",
   withdraw: "/wallet/withdraw",
   transactions: "/wallet/transactions",
+  // Account pages (new)
+  depositAccount: "/wallet/deposit",
+  withdrawAccount: "/wallet/withdraw",
+  accountTransactions: "/wallet/transactions",
+  planSummary: "/wallet/plan-summary",
   updatePlan: "/auth/plan",
   updateProfile: "/auth/profile",
   // Bot
