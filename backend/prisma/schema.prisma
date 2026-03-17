@@ -26,11 +26,14 @@ model User {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  wallet        Wallet?
-  orders        Order[]
-  positions     Position[]
-  trades        Trade[]
-  watchlist     WatchlistItem[]
+  wallet          Wallet?
+  orders          Order[]
+  positions       Position[]
+  trades          Trade[]
+  watchlist       WatchlistItem[]
+  tradingSignals  TradingSignal[]
+  botStrategies   BotStrategy[]
+  botSettings     BotSettings?
 
   @@map("users")
 }
@@ -305,6 +308,90 @@ model AdminAction {
   createdAt DateTime @default(now())
 
   @@map("admin_actions")
+}
+
+// ========== AI TRADING BOT ==========
+enum AssetClass {
+  CRYPTO
+  FOREX
+  STOCK
+  COMMODITY
+}
+
+enum SignalAction {
+  BUY
+  SELL
+  HOLD
+}
+
+enum SignalStatus {
+  PENDING
+  EXECUTED
+  EXPIRED
+  CANCELLED
+}
+
+enum RiskLevel {
+  CONSERVATIVE
+  MODERATE
+  AGGRESSIVE
+}
+
+model TradingSignal {
+  id              String       @id @default(uuid())
+  userId          String
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  asset           String
+  assetClass      AssetClass
+  action          SignalAction
+  confidence      Float
+  strategy        String
+  reasoning       String
+  technicalData   Json
+  fundamentalData Json?
+  entryPrice      Float?
+  stopLoss        Float?
+  takeProfit      Float?
+  timeframe       String
+  status          SignalStatus @default(PENDING)
+  autoExecuted    Boolean      @default(false)
+  createdAt       DateTime     @default(now())
+  expiresAt       DateTime?
+
+  @@map("trading_signals")
+}
+
+model BotStrategy {
+  id              String     @id @default(uuid())
+  userId          String
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String
+  assetClass      AssetClass
+  indicators      Json
+  rules           Json
+  riskParams      Json
+  isActive        Boolean    @default(true)
+  backtestResults Json?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@map("bot_strategies")
+}
+
+model BotSettings {
+  id                    String       @id @default(uuid())
+  userId                String       @unique
+  user                  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  autoTradeEnabled      Boolean      @default(false)
+  riskLevel             RiskLevel    @default(MODERATE)
+  maxDailyTrades        Int          @default(10)
+  maxDrawdownPercent    Float        @default(5.0)
+  enabledAssetClasses   AssetClass[]
+  notifyOnSignal        Boolean      @default(true)
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+
+  @@map("bot_settings")
 }
 
 // ========== WATCHLIST ==========

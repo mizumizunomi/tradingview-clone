@@ -7,6 +7,7 @@ import { MarketDataModule } from './market-data/market-data.module';
 import { TradingModule } from './trading/trading.module';
 import { WalletModule } from './wallet/wallet.module';
 import { NewsModule } from './news/news.module';
+import { TradingBotModule } from './trading-bot/trading-bot.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { NewsModule } from './news/news.module';
     TradingModule,
     WalletModule,
     NewsModule,
+    TradingBotModule,
   ],
 })
 export class AppModule {}
