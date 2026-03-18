@@ -1,12 +1,11 @@
 "use client";
 import { usePathname, useRouter } from "next/navigation";
-import { BarChart2, Newspaper, Wallet, Info, Gem, Calendar, Filter, UserCircle, Sun, Moon, Keyboard, Monitor, HelpCircle, Sparkles, PanelLeft, LogOut, ChevronRight, Bot, PieChart, ClipboardList } from "lucide-react";
+import { BarChart2, Newspaper, Wallet, Info, Gem, Calendar, Filter, UserCircle, Sun, Moon, Keyboard, Monitor, HelpCircle, Sparkles, PanelLeft, LogOut, ChevronRight, PieChart, ClipboardList } from "lucide-react";
 import { useTradingStore } from "@/store/trading.store";
 import { useState, useEffect, useRef } from "react";
 
 const NAV_ITEMS = [
   { icon: BarChart2, label: "Trade", href: "/trade" },
-  { icon: Bot, label: "AI Bot", href: "/trade/bot" },
   { icon: PieChart, label: "Portfolio", href: "/trade/portfolio" },
   { icon: ClipboardList, label: "Orders", href: "/trade/orders" },
   { icon: Newspaper, label: "News", href: "/news" },

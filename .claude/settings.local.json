@@ -39,7 +39,8 @@
       "WebFetch(domain:control-panel-production-af81.up.railway.app)",
       "Bash(DATABASE_URL=\"postgresql://postgres:riDcClULDhpDVEjTzZKDKBFtObYuTxQQ@turntable.proxy.rlwy.net:53098/railway\" node -e \"\nconst { PrismaClient } = require\\('@prisma/client'\\);\nconst p = new PrismaClient\\({ datasources: { db: { url: 'postgresql://postgres:riDcClULDhpDVEjTzZKDKBFtObYuTxQQ@turntable.proxy.rlwy.net:53098/railway' } } }\\);\np.admin.findMany\\({ select: { email: true, username: true, role: true, isActive: true } }\\).then\\(a => { console.log\\(JSON.stringify\\(a, null, 2\\)\\); return p.\\\\$disconnect\\(\\); }\\);\n\" 2>&1)",
       "Bash(find:*)",
-      "Bash(npx jest:*)"
+      "Bash(npx jest:*)",
+      "Bash(rm:*)"
     ]
   }
 }
