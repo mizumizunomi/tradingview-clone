@@ -18,6 +18,9 @@ import { AutoTraderService } from './services/auto-trader.service';
 import { ResearchService } from './services/research.service';
 import { ExternalDataService } from './services/external-data.service';
 import { SignalSchedulerService } from './services/signal-scheduler.service';
+import { LevelDetectionService } from './services/level-detection.service';
+import { ChartDataService } from './services/chart-data.service';
+import { AnalysisEngineService } from './services/analysis-engine.service';
 
 // Data providers
 import { BinanceProvider } from './providers/binance.provider';
@@ -62,7 +65,12 @@ import { NewsAggregatorProvider } from './providers/news-aggregator.provider';
 
     // Scheduler (runs periodic signal cycle)
     SignalSchedulerService,
+
+    // Chart-integrated analysis (v2)
+    LevelDetectionService,
+    ChartDataService,
+    AnalysisEngineService,
   ],
-  exports: [SignalEngineService, ExternalDataService, TradingBotGateway],
+  exports: [SignalEngineService, ExternalDataService, TradingBotGateway, AnalysisEngineService],
 })
 export class TradingBotModule {}

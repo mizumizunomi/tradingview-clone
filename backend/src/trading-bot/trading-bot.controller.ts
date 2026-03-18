@@ -12,6 +12,7 @@ import { TechnicalAnalysisService } from './services/technical-analysis.service'
 import { FundamentalAnalysisService } from './services/fundamental-analysis.service';
 import { AutoTraderService } from './services/auto-trader.service';
 import { SignalSchedulerService } from './services/signal-scheduler.service';
+import { AnalysisEngineService } from './services/analysis-engine.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { GenerateSignalDto } from './dto/generate-signal.dto';
 import { CreateStrategyDto, UpdateStrategyDto } from './dto/create-strategy.dto';
@@ -36,8 +37,33 @@ export class TradingBotController {
     private readonly fundamentalAnalysis: FundamentalAnalysisService,
     private readonly autoTrader: AutoTraderService,
     private readonly scheduler: SignalSchedulerService,
+    private readonly analysisEngine: AnalysisEngineService,
     private readonly prisma: PrismaService,
   ) {}
+
+  // ── Chart-integrated analysis (new v2 endpoint) ───────────────────────────
+
+  @Post('analyze')
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  async analyzeForChart(
+    @Request() req: { user: { userId: string } },
+    @Body() body: { symbol: string; assetClass: string; timeframe?: string },
+  ) {
+    const { symbol, assetClass, timeframe = '1h' } = body;
+    const cacheKey = `analyze:${symbol}:${assetClass}:${timeframe}`;
+    const cached = this.getCache<unknown>(cacheKey);
+    if (cached) return cached;
+
+    const result = await this.analysisEngine.analyze(
+      symbol,
+      assetClass as any,
+      timeframe,
+    );
+
+    this.setCache(cacheKey, result);
+    return result;
+  }
 
   // ── Signals ──────────────────────────────────────────────────────────────────
 
@@ -246,6 +272,16 @@ export class TradingBotController {
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────────
+
+  private getCache<T>(key: string): T | null {
+    const entry = this.responseCache.get(key);
+    if (entry && Date.now() < entry.expiresAt) return entry.data as T;
+    return null;
+  }
+
+  private setCache<T>(key: string, data: T, ttlMs = this.CACHE_TTL_MS): void {
+    this.responseCache.set(key, { data, expiresAt: Date.now() + ttlMs });
+  }
 
   private async upsertDefaultSettings(userId: string) {
     return this.prisma.botSettings.upsert({
