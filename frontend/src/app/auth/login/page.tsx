@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BarChart2, Eye, EyeOff, Loader2 } from "lucide-react";
 import { api, endpoints } from "@/lib/api";
@@ -13,7 +13,7 @@ function validate(email: string, password: string) {
   return errs;
 }
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { setUser, setToken } = useTradingStore();
@@ -46,8 +46,9 @@ export default function LoginPage() {
       setToken(res.data.token);
       setUser(res.data.user);
       router.push("/trade");
-    } catch (err: any) {
-      setApiError(err.response?.data?.message || "Invalid credentials. Please try again.");
+    } catch (err: unknown) {
+      const apiErr = err as { response?: { data?: { message?: string } } };
+      setApiError(apiErr.response?.data?.message || "Invalid credentials. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -160,5 +161,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }

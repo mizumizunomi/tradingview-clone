@@ -1,12 +1,14 @@
 "use client";
 import { usePathname, useRouter } from "next/navigation";
-import { BarChart2, Newspaper, Wallet, Info, Gem, Calendar, Filter, UserCircle, Sun, Moon, Keyboard, Monitor, HelpCircle, Sparkles, PanelLeft, LogOut, ChevronRight, Bot } from "lucide-react";
+import { BarChart2, Newspaper, Wallet, Info, Gem, Calendar, Filter, UserCircle, Sun, Moon, Keyboard, Monitor, HelpCircle, Sparkles, PanelLeft, LogOut, ChevronRight, Bot, PieChart, ClipboardList } from "lucide-react";
 import { useTradingStore } from "@/store/trading.store";
 import { useState, useEffect, useRef } from "react";
 
 const NAV_ITEMS = [
   { icon: BarChart2, label: "Trade", href: "/trade" },
   { icon: Bot, label: "AI Bot", href: "/trade/bot" },
+  { icon: PieChart, label: "Portfolio", href: "/trade/portfolio" },
+  { icon: ClipboardList, label: "Orders", href: "/trade/orders" },
   { icon: Newspaper, label: "News", href: "/news" },
   { icon: Calendar, label: "Calendar", href: "/calendar" },
   { icon: Filter, label: "Screener", href: "/screener" },
@@ -57,7 +59,10 @@ export function SideNav() {
       {/* Nav items */}
       <div className="flex flex-1 flex-col items-center gap-1">
         {NAV_ITEMS.map(({ icon: Icon, label, href }) => {
-          const isActive = pathname === href || (href === "/account/deposit" && pathname.startsWith("/account"));
+          const isActive = pathname === href
+            || (href === "/account/deposit" && pathname.startsWith("/account"))
+            || (href === "/trade/portfolio" && pathname === "/trade/portfolio")
+            || (href === "/trade/orders" && pathname === "/trade/orders");
           return (
             <button
               key={href}
