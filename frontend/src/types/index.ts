@@ -183,3 +183,151 @@ export interface ChartSettings {
   logScale: boolean;
   percentScale: boolean;
 }
+
+// ── AI Bot Types ────────────────────────────────────────────────────────────
+
+export type BotDrawingType = 'horizontal_line' | 'trend_line' | 'arrow' | 'zone' | 'fibonacci' | 'annotation';
+
+export interface BotHorizontalLine {
+  type: 'horizontal_line';
+  id: string;
+  price: number;
+  label: string;
+  style: 'solid' | 'dashed' | 'dotted';
+  color: string;
+  thickness: number;
+  category: 'support' | 'resistance' | 'stop_loss' | 'take_profit' | 'entry' | 'fibonacci';
+  annotation?: string;
+}
+
+export interface BotTrendLine {
+  type: 'trend_line';
+  id: string;
+  startTime: number;
+  startPrice: number;
+  endTime: number;
+  endPrice: number;
+  label?: string;
+  style: 'solid' | 'dashed';
+  color: string;
+  category: 'pattern' | 'trend' | 'channel';
+  annotation?: string;
+}
+
+export interface BotArrow {
+  type: 'arrow';
+  id: string;
+  time: number;
+  price: number;
+  direction: 'up' | 'down';
+  label: string;
+  color: string;
+  size: 'small' | 'medium' | 'large';
+  annotation?: string;
+}
+
+export interface BotZone {
+  type: 'zone';
+  id: string;
+  fromPrice: number;
+  toPrice: number;
+  color: string;
+  label?: string;
+  category: 'supply' | 'demand' | 'overbought' | 'oversold' | 'consolidation';
+  annotation?: string;
+}
+
+export interface BotFibonacci {
+  type: 'fibonacci';
+  id: string;
+  highPrice: number;
+  highTime: number;
+  lowPrice: number;
+  lowTime: number;
+  levels: { ratio: number; price: number; label: string }[];
+  color: string;
+  annotation?: string;
+}
+
+export interface BotAnnotation {
+  type: 'annotation';
+  id: string;
+  time: number;
+  price: number;
+  icon: 'info' | 'warning' | 'signal' | 'pattern' | 'news';
+  text: string;
+  detailedText: string;
+}
+
+export type BotDrawing = BotHorizontalLine | BotTrendLine | BotArrow | BotZone | BotFibonacci | BotAnnotation;
+
+export interface BotChartDrawingSet {
+  asset: string;
+  timeframe: string;
+  generatedAt: string;
+  drawings: BotDrawing[];
+}
+
+export interface BotAnalysisVerdict {
+  action: 'BUY' | 'SELL' | 'HOLD';
+  confidence: number;
+  strength: 'weak' | 'moderate' | 'strong';
+  summary: string;
+}
+
+export interface BotAnalysisLevels {
+  entry: number;
+  stopLoss: number;
+  takeProfit1: number;
+  takeProfit2: number;
+  riskRewardRatio: number;
+}
+
+export interface BotIndicatorResult {
+  name: string;
+  value: number | string;
+  signal: 'bullish' | 'bearish' | 'neutral';
+  detail: string;
+}
+
+export interface BotAnalysisResponse {
+  asset: string;
+  timeframe: string;
+  timestamp: string;
+  verdict: BotAnalysisVerdict;
+  levels: BotAnalysisLevels;
+  technicals: {
+    trend: 'bullish' | 'bearish' | 'neutral';
+    compositeScore: number;
+    indicators: BotIndicatorResult[];
+    patterns: { name: string; status: string; direction: string; detail: string }[];
+    supportResistance: {
+      supports: { price: number; strength: number; touches: number }[];
+      resistances: { price: number; strength: number; touches: number }[];
+    };
+  };
+  multiTimeframe: { timeframe: string; signal: 'bullish' | 'bearish' | 'neutral'; confidence: number }[];
+  confluenceScore: number;
+  fundamentals: {
+    newsSentiment: { score: number; label: string; headlines: { title: string; sentiment: number; source: string }[] };
+    marketData?: { volume24h?: number; volumeChange?: number; marketCap?: number; fearGreedIndex?: number; fundingRate?: number };
+  };
+  drawings: BotChartDrawingSet;
+}
+
+export interface BotSignal {
+  id: string;
+  asset: string;
+  assetClass: string;
+  action: 'BUY' | 'SELL' | 'HOLD';
+  confidence: number;
+  timeframe: string;
+  reasoning: string;
+  entryPrice?: number;
+  stopLoss?: number;
+  takeProfit?: number;
+  status: 'PENDING' | 'EXECUTED' | 'EXPIRED' | 'CANCELLED';
+  autoExecuted: boolean;
+  createdAt: string;
+  expiresAt?: string;
+}

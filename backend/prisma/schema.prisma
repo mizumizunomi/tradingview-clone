@@ -383,7 +383,10 @@ model TradingSignal {
   entryPrice      Float?
   stopLoss        Float?
   takeProfit      Float?
+  takeProfit2     Float?
+  riskReward      Float?
   timeframe       String
+  drawingData     Json?        // ChartDrawingSet for re-rendering on chart
   status          SignalStatus @default(PENDING)
   autoExecuted    Boolean      @default(false)
   createdAt       DateTime     @default(now())
@@ -393,18 +396,21 @@ model TradingSignal {
 }
 
 model BotStrategy {
-  id              String     @id @default(uuid())
-  userId          String
-  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name            String
-  assetClass      AssetClass
-  indicators      Json
-  rules           Json
-  riskParams      Json
-  isActive        Boolean    @default(true)
-  backtestResults Json?
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
+  id               String     @id @default(uuid())
+  userId           String
+  user             User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name             String
+  assetClass       AssetClass
+  indicators       Json
+  rules            Json
+  riskParams       Json
+  isActive         Boolean    @default(true)
+  backtestResults  Json?
+  backtestDrawings Json?      // Historical entry/exit arrows for chart overlay
+  totalSignals     Int        @default(0)
+  winRate          Float?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
 
   @@map("bot_strategies")
 }
@@ -419,6 +425,9 @@ model BotSettings {
   maxDrawdownPercent    Float        @default(5.0)
   enabledAssetClasses   AssetClass[]
   notifyOnSignal        Boolean      @default(true)
+  showBotDrawings       Boolean      @default(true)
+  drawingColorScheme    String       @default("default")
+  minConfidenceAutoTrade Float       @default(70.0)
   createdAt             DateTime     @default(now())
   updatedAt             DateTime     @updatedAt
 

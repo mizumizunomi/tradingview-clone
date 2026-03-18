@@ -16,7 +16,8 @@ import {
 import { ChartContextMenu } from "./ChartContextMenu";
 import { ReplayControls } from "./ReplayControls";
 import { ObjectTreePanel } from "./ObjectTreePanel";
-import { Maximize2, Camera, BarChart2, Table2 } from "lucide-react";
+import { Maximize2, Camera, BarChart2, Table2, Bot, Loader2, EyeOff, Eye } from "lucide-react";
+import type { BotAnalysisResponse } from "@/types";
 
 // ── Drawing helpers ─────────────────────────────────────────────────────────
 type Pt = { x: number; y: number };
@@ -78,6 +79,8 @@ export function TradingChart() {
     replayMode, replayIndex,
     showObjectTree,
     addToast, setAlertModalContext,
+    botDrawings, showBotDrawings, setBotHoveredDrawingId, botPanelOpen, setBotPanelOpen,
+    botAnalysis, setBotAnalysis, setBotDrawings, botAnalyzing, setBotAnalyzing,
   } = useTradingStore();
 
   const [loading, setLoading] = useState(false);
@@ -120,6 +123,101 @@ export function TradingChart() {
     } catch { return null; }
   }, []);
 
+  // ── Render bot drawings on canvas ───────────────────────────────────────
+  const renderBotDrawings = useCallback((ctx: CanvasRenderingContext2D, W: number) => {
+    if (!showBotDrawings || botDrawings.length === 0) return;
+
+    botDrawings.forEach((d) => {
+      if (d.type === 'horizontal_line') {
+        const p = toPixel(0, d.price);
+        if (!p) return;
+        const color = d.color;
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = d.thickness ?? 1;
+        if (d.style === 'dashed') ctx.setLineDash([8, 5]);
+        else if (d.style === 'dotted') ctx.setLineDash([2, 4]);
+        else ctx.setLineDash([]);
+        ctx.beginPath(); ctx.moveTo(0, p.y); ctx.lineTo(W, p.y); ctx.stroke();
+        // Label badge
+        ctx.setLineDash([]);
+        const label = d.label;
+        ctx.font = 'bold 10px monospace';
+        const tw = ctx.measureText(label).width + 10;
+        ctx.fillStyle = color + 'dd';
+        ctx.beginPath();
+        (ctx as any).roundRect?.(W - tw - 4, p.y - 9, tw, 14, 3);
+        ctx.fill();
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'right';
+        ctx.fillText(label, W - 8, p.y + 1);
+        ctx.restore();
+      } else if (d.type === 'arrow') {
+        const p = toPixel(d.time, d.price);
+        if (!p) return;
+        ctx.save();
+        ctx.fillStyle = d.color;
+        const size = d.size === 'large' ? 12 : d.size === 'medium' ? 9 : 7;
+        ctx.beginPath();
+        if (d.direction === 'up') {
+          ctx.moveTo(p.x, p.y - size * 1.5);
+          ctx.lineTo(p.x + size, p.y);
+          ctx.lineTo(p.x - size, p.y);
+        } else {
+          ctx.moveTo(p.x, p.y + size * 1.5);
+          ctx.lineTo(p.x + size, p.y);
+          ctx.lineTo(p.x - size, p.y);
+        }
+        ctx.closePath();
+        ctx.fill();
+        // Label below/above arrow
+        ctx.font = 'bold 9px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(d.label, p.x, d.direction === 'up' ? p.y + 14 : p.y - 16);
+        ctx.restore();
+      } else if (d.type === 'zone') {
+        const top = toPixel(0, d.fromPrice > d.toPrice ? d.fromPrice : d.toPrice);
+        const bot = toPixel(0, d.fromPrice > d.toPrice ? d.toPrice : d.fromPrice);
+        if (!top || !bot) return;
+        ctx.save();
+        ctx.fillStyle = d.color;
+        ctx.fillRect(0, top.y, W, bot.y - top.y);
+        if (d.label) {
+          ctx.font = '10px sans-serif';
+          ctx.fillStyle = d.color.replace(/[\d.]+\)$/, '0.8)');
+          ctx.textAlign = 'left';
+          ctx.fillText(d.label, 6, top.y + 12);
+        }
+        ctx.restore();
+      } else if (d.type === 'fibonacci') {
+        ctx.save();
+        ctx.setLineDash([4, 4]);
+        d.levels.forEach(({ price, label }) => {
+          const p = toPixel(0, price);
+          if (!p) return;
+          ctx.strokeStyle = d.color + '99';
+          ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(0, p.y); ctx.lineTo(W, p.y); ctx.stroke();
+          ctx.fillStyle = d.color;
+          ctx.font = '9px monospace';
+          ctx.textAlign = 'left';
+          ctx.fillText(label, 4, p.y - 2);
+        });
+        ctx.restore();
+      } else if (d.type === 'trend_line') {
+        const p1 = toPixel(d.startTime, d.startPrice);
+        const p2 = toPixel(d.endTime, d.endPrice);
+        if (!p1 || !p2) return;
+        ctx.save();
+        ctx.strokeStyle = d.color;
+        ctx.lineWidth = 1.5;
+        if (d.style === 'dashed') ctx.setLineDash([6, 4]);
+        ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+        ctx.restore();
+      }
+    });
+  }, [botDrawings, showBotDrawings, toPixel]);
+
   // ── Render drawings ──
   const renderDrawings = useCallback(() => {
     const canvas = canvasRef.current;
@@ -129,6 +227,9 @@ export function TradingChart() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const W = canvas.width, H = canvas.height;
     const mouse = mouseRef.current;
+
+    // Render bot drawings first (underneath user drawings)
+    renderBotDrawings(ctx, W);
 
     drawings.forEach((d) => {
       if (d.visible === false) return;
@@ -251,7 +352,7 @@ export function TradingChart() {
         ctx.restore();
       }
     }
-  }, [drawings, activeTool, selectedDrawingId, toPixel]);
+  }, [drawings, activeTool, selectedDrawingId, toPixel, renderBotDrawings]);
 
   // ── Indicator legend from crosshair ──
   const updateLegend = useCallback((time: number) => {
@@ -495,7 +596,7 @@ export function TradingChart() {
 
   useEffect(() => { loadCandles(); }, [loadCandles]);
   useEffect(() => { if (allCandlesRef.current.length > 0) rebuildIndicators(allCandlesRef.current); }, [indicators, rebuildIndicators]);
-  useEffect(() => { cancelAnimationFrame(frameRef.current); frameRef.current = requestAnimationFrame(renderDrawings); }, [drawings, renderDrawings, selectedDrawingId]);
+  useEffect(() => { cancelAnimationFrame(frameRef.current); frameRef.current = requestAnimationFrame(renderDrawings); }, [drawings, renderDrawings, selectedDrawingId, botDrawings, showBotDrawings]);
 
   // ── Replay mode ──
   useEffect(() => {
@@ -592,6 +693,35 @@ export function TradingChart() {
     setContextMenu({ x: e.clientX, y: e.clientY, price: pos?.price || 0, time: pos?.time || 0 });
   }, [toPrice]);
 
+  // ── AI Bot analyze ──
+  const handleAnalyze = async () => {
+    if (!selectedAsset || botAnalyzing) return;
+    setBotAnalyzing(true);
+    if (!botPanelOpen) setBotPanelOpen(true);
+    try {
+      const assetClass =
+        selectedAsset.category === "CRYPTO" ? "CRYPTO"
+        : selectedAsset.category === "FOREX" ? "FOREX"
+        : selectedAsset.category === "STOCKS" ? "STOCK"
+        : "COMMODITY";
+      const res = await api.post(endpoints.botAnalyze, {
+        symbol: selectedAsset.symbol,
+        assetClass,
+        timeframe,
+      });
+      const analysis = res.data as BotAnalysisResponse;
+      setBotAnalysis(analysis);
+      if (analysis.drawings?.drawings) {
+        setBotDrawings(analysis.drawings.drawings);
+      }
+      addToast({ type: "success", message: `Analysis complete for ${selectedAsset.symbol} (${timeframe})` });
+    } catch {
+      addToast({ type: "error", message: "Analysis failed. Please try again." });
+    } finally {
+      setBotAnalyzing(false);
+    }
+  };
+
   // ── Auto-fit ──
   const handleAutoFit = () => chartRef.current?.timeScale().fitContent();
 
@@ -660,6 +790,34 @@ export function TradingChart() {
 
           {/* Toolbar buttons */}
           <div className="flex items-center gap-1 shrink-0">
+            {/* AI Analyze button */}
+            <button
+              onClick={handleAnalyze}
+              disabled={botAnalyzing || !selectedAsset}
+              title="AI Analysis"
+              className="flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-semibold transition-all disabled:opacity-50"
+              style={{
+                background: botPanelOpen ? "#2962ff" : "rgba(41,98,255,0.15)",
+                border: "1px solid #2962ff44",
+                color: "#2962ff",
+              }}
+            >
+              {botAnalyzing
+                ? <Loader2 className="h-3 w-3 animate-spin" />
+                : <Bot className="h-3 w-3" />}
+              {botAnalyzing ? "Analyzing…" : "Analyze"}
+            </button>
+            {/* Show/hide bot drawings toggle */}
+            {botDrawings.length > 0 && (
+              <button
+                onClick={() => { const { setShowBotDrawings, showBotDrawings: cur } = useTradingStore.getState(); setShowBotDrawings(!cur); }}
+                title={showBotDrawings ? "Hide bot drawings" : "Show bot drawings"}
+                className="p-1 rounded transition-colors hover:bg-[var(--tv-bg3)]"
+                style={{ color: showBotDrawings ? "#2962ff" : "var(--tv-muted)" }}
+              >
+                {showBotDrawings ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+              </button>
+            )}
             {/* Auto-fit */}
             <button onClick={handleAutoFit} title="Auto fit" className="p-1 rounded transition-colors hover:bg-[var(--tv-bg3)]" style={{ color: "var(--tv-muted)" }}>
               <Maximize2 className="h-3.5 w-3.5" />

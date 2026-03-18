@@ -16,6 +16,7 @@ import { OrderPanel } from "@/components/trading/OrderPanel";
 import { PositionsPanel } from "@/components/trading/PositionsPanel";
 import { Watchlist } from "@/components/trading/Watchlist";
 import { DOMPanel } from "@/components/trading/DOMPanel";
+import { BotPanel } from "@/components/chart/BotPanel/BotPanel";
 import { AlertModal } from "@/components/alerts/AlertModal";
 import { ToastContainer } from "@/components/ui/ToastContainer";
 import { KeyboardShortcutsModal } from "@/components/ui/KeyboardShortcutsModal";
@@ -124,6 +125,7 @@ export default function TradePage() {
               </div>
               <OrderPanel />
               {showDOMPanel && <DOMPanel />}
+              <BotPanel />
             </div>
           </Panel>
           <PanelResizeHandle className="h-[3px] hover:bg-[#2962ff] transition-colors cursor-row-resize" style={{ background: "var(--tv-border)" }} />

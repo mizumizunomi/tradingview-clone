@@ -2,6 +2,7 @@ import { create } from "zustand";
 import {
   Asset, Position, Wallet, PriceUpdate, Timeframe, CandleData, User,
   Toast, PriceAlert, ChartLayout, ChartPanelConfig, ChartSettings,
+  BotDrawing, BotAnalysisResponse, BotSignal,
 } from "@/types";
 
 export type DrawingTool =
@@ -175,6 +176,23 @@ interface TradingState {
   // Keyboard shortcuts modal
   showKeyboardShortcuts: boolean;
   setShowKeyboardShortcuts: (v: boolean) => void;
+
+  // AI Bot panel state
+  botPanelOpen: boolean;
+  setBotPanelOpen: (open: boolean) => void;
+  botAnalysis: BotAnalysisResponse | null;
+  setBotAnalysis: (analysis: BotAnalysisResponse | null) => void;
+  botAnalyzing: boolean;
+  setBotAnalyzing: (v: boolean) => void;
+  botDrawings: BotDrawing[];
+  setBotDrawings: (drawings: BotDrawing[]) => void;
+  clearBotDrawings: () => void;
+  showBotDrawings: boolean;
+  setShowBotDrawings: (v: boolean) => void;
+  botHoveredDrawingId: string | null;
+  setBotHoveredDrawingId: (id: string | null) => void;
+  botSignals: BotSignal[];
+  setBotSignals: (signals: BotSignal[]) => void;
 }
 
 const DEFAULT_CHART_PANELS: ChartPanelConfig[] = [
@@ -387,4 +405,21 @@ export const useTradingStore = create<TradingState>((set, get) => ({
   // Keyboard shortcuts modal
   showKeyboardShortcuts: false,
   setShowKeyboardShortcuts: (showKeyboardShortcuts) => set({ showKeyboardShortcuts }),
+
+  // AI Bot panel
+  botPanelOpen: false,
+  setBotPanelOpen: (botPanelOpen) => set({ botPanelOpen }),
+  botAnalysis: null,
+  setBotAnalysis: (botAnalysis) => set({ botAnalysis }),
+  botAnalyzing: false,
+  setBotAnalyzing: (botAnalyzing) => set({ botAnalyzing }),
+  botDrawings: [],
+  setBotDrawings: (botDrawings) => set({ botDrawings }),
+  clearBotDrawings: () => set({ botDrawings: [] }),
+  showBotDrawings: true,
+  setShowBotDrawings: (showBotDrawings) => set({ showBotDrawings }),
+  botHoveredDrawingId: null,
+  setBotHoveredDrawingId: (botHoveredDrawingId) => set({ botHoveredDrawingId }),
+  botSignals: [],
+  setBotSignals: (botSignals) => set({ botSignals }),
 }));

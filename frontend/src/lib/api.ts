@@ -57,4 +57,6 @@ export const endpoints = {
   // Plan
   planInfo: "/plan",
   planTiers: "/plan/tiers",
+  // Bot v2 — chart-integrated analysis
+  botAnalyze: "/bot/analyze",
 };
