@@ -7,6 +7,7 @@ import { formatPrice, formatSpread } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { getPlanConfig } from "@/lib/planConfig";
 import { useRouter } from "next/navigation";
+import { TradeConfirmModal } from "./TradeConfirmModal";
 
 const LEVERAGE_PRESETS = [1, 5, 10, 25, 50, 100];
 
@@ -17,12 +18,13 @@ export function OrderPanel() {
     orderSide, orderType, quantity, leverage, stopLoss, takeProfit, limitPrice,
     setOrderSide, setOrderType, setQuantity, setLeverage,
     setStopLoss, setTakeProfit, setLimitPrice,
-    setWallet, setPositions,
+    setWallet, setPositions, addToast,
     showOrderPanel, setShowOrderPanel,
   } = useTradingStore();
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   // Local string state for quantity input to allow free typing
   const [qtyInput, setQtyInput] = useState<string>(String(quantity));
 
@@ -43,9 +45,15 @@ export function OrderPanel() {
   // Enforce plan leverage limit
   const effectiveLeverage = Math.min(leverage, maxLeverage);
 
-  const handlePlaceOrder = async () => {
+  const handlePlaceOrder = () => {
     if (!selectedAsset) return setMessage({ type: "error", text: "Select a symbol first" });
     if (quantity <= 0) return setMessage({ type: "error", text: "Invalid quantity" });
+    setMessage(null);
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmOrder = async () => {
+    if (!selectedAsset) return;
     setLoading(true);
     setMessage(null);
     try {
@@ -64,12 +72,22 @@ export function OrderPanel() {
         api.get(endpoints.positions),
         api.get(endpoints.wallet),
       ]);
-      setPositions(posRes.data.map((p: any) => ({ ...p, symbol: p.asset.symbol, assetName: p.asset.name })));
+      type PositionRaw = { asset: { symbol: string; name: string }; [key: string]: unknown };
+      setPositions(posRes.data.map((p: PositionRaw) => ({ ...p, symbol: p.asset.symbol, assetName: p.asset.name })));
       setWallet(walletRes.data);
+      setShowConfirmModal(false);
+      const executedPrice = orderType === "LIMIT" && limitPrice
+        ? parseFloat(limitPrice)
+        : currentPrice;
+      addToast({
+        type: "success",
+        message: `Position opened: ${orderSide} ${quantity} ${selectedAsset.symbol} @ $${executedPrice < 10 ? executedPrice.toFixed(5) : executedPrice.toFixed(2)}`,
+      });
       setMessage({ type: "success", text: `${orderSide} order executed` });
       setTimeout(() => setMessage(null), 3000);
-    } catch (err: any) {
-      setMessage({ type: "error", text: err.response?.data?.message || "Order failed" });
+    } catch (err: unknown) {
+      const apiErr = err as { response?: { data?: { message?: string } } };
+      setMessage({ type: "error", text: apiErr.response?.data?.message || "Order failed" });
     } finally {
       setLoading(false);
     }
