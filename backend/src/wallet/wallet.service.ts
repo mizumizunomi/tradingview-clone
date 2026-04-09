@@ -288,10 +288,10 @@ export class WalletService {
   async resetDemoBalance(userId: string) {
     const DEMO_BALANCE = 10000;
 
-    // Close all open positions first (set to closed)
+    // Close all open positions first
     await this.prisma.position.updateMany({
-      where: { userId, status: 'OPEN' },
-      data: { status: 'CLOSED', closedAt: new Date(), closedPrice: 0, pnl: 0 },
+      where: { userId, isOpen: true },
+      data: { isOpen: false, closedAt: new Date() },
     });
 
     // Cancel pending orders
