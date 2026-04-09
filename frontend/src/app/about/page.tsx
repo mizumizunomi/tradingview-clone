@@ -5,7 +5,7 @@ import { BarChart2, Zap, Shield, Globe, Code2, Server, Cpu, ExternalLink } from 
 
 const TECH_STACK = [
   { icon: Code2, name: "Next.js 15", desc: "App Router, React Server Components", color: "#ffffff" },
-  { icon: Cpu, name: "TradingView Charts", desc: "Lightweight Charts v5 for candlesticks", color: "#2962ff" },
+  { icon: Cpu, name: "Advanced Charts", desc: "Lightweight Charts v5 for candlesticks", color: "#2962ff" },
   { icon: Zap, name: "Socket.IO", desc: "Real-time WebSocket price streaming", color: "#f59e0b" },
   { icon: Server, name: "NestJS", desc: "Backend framework with TypeScript", color: "#ef5350" },
   { icon: Shield, name: "Prisma ORM", desc: "Type-safe PostgreSQL database layer", color: "#26a69a" },
@@ -13,7 +13,7 @@ const TECH_STACK = [
 ];
 
 const FEATURES = [
-  { title: "Real-Time Charts", desc: "Professional candlestick charts powered by TradingView Lightweight Charts with live price updates streamed via WebSocket." },
+  { title: "Real-Time Charts", desc: "Professional candlestick charts with live price updates streamed via WebSocket." },
   { title: "124+ Assets", desc: "Trade across Crypto, Forex, Stocks, Indices, Commodities and ETFs. Bitcoin, EUR/USD, AAPL, Gold, S&P 500 and more." },
   { title: "Simulated Trading", desc: "Full paper trading engine — place Market and Limit orders, set Stop Loss and Take Profit levels, use up to 100× leverage." },
   { title: "Live P&L Tracking", desc: "Real-time unrealized profit & loss, margin calculations, equity updates, and full trade history with commission tracking." },
@@ -34,9 +34,9 @@ export default function AboutPage() {
                 <BarChart2 className="h-8 w-8 text-white" />
               </div>
             </div>
-            <h1 className="text-2xl font-bold text-white mb-2">TradingView Clone</h1>
+            <h1 className="text-2xl font-bold text-white mb-2">NovaTrade</h1>
             <p className="text-sm text-[#5d6673] max-w-xl mx-auto leading-relaxed">
-              A production-grade, locally hosted trading platform built to replicate TradingView's interface and core functionality. Real market data, simulated trading engine, full order management.
+              A professional trading platform with real market data, a full trading engine, and complete order management.
             </p>
             <div className="mt-4 flex items-center justify-center gap-3">
               <span className="flex items-center gap-1.5 rounded-full bg-[#26a69a20] border border-[#26a69a40] px-3 py-1 text-xs font-medium text-[#26a69a]">
@@ -111,8 +111,7 @@ export default function AboutPage() {
           <div className="rounded-xl border border-[#363a45] bg-[#1e222d] p-5">
             <div className="text-xs font-semibold uppercase tracking-wider text-[#5d6673] mb-2">Disclaimer</div>
             <p className="text-xs text-[#5d6673] leading-relaxed">
-              This platform is a <strong className="text-[#b2b5be]">demonstration project</strong> for educational purposes only.
-              All trading is simulated using virtual funds. No real money is involved, and no real trades are executed.
+              All trading on this platform uses virtual funds. No real money is involved, and no real trades are executed.
               Market data is sourced from public APIs (Binance) and mocked where unavailable.
               This is not financial advice.
             </p>

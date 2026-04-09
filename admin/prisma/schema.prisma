@@ -30,10 +30,13 @@ model User {
   orders        Order[]
   positions     Position[]
   trades        Trade[]
-  watchlist     WatchlistItem[]
-  tradingSignals TradingSignal[]
-  botStrategies  BotStrategy[]
-  botSettings    BotSettings?
+  watchlist       WatchlistItem[]
+  tradingSignals  TradingSignal[]
+  botStrategies   BotStrategy[]
+  botSettings     BotSettings?
+  supportTickets  SupportTicket[]
+  kyc             KycVerification?
+  notifications   Notification[]
 
   @@map("users")
 }
@@ -406,4 +409,93 @@ model BotSettings {
   updatedAt              DateTime     @updatedAt
 
   @@map("bot_settings")
+}
+
+// ========== SUPPORT ==========
+model SupportTicket {
+  id          String              @id @default(uuid())
+  userId      String
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject     String
+  message     String
+  status      SupportTicketStatus @default(OPEN)
+  priority    SupportPriority     @default(NORMAL)
+  adminNote   String?
+  assignedTo  String?
+  resolvedAt  DateTime?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@map("support_tickets")
+}
+
+enum SupportTicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum SupportPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+// ========== KYC ==========
+model KycVerification {
+  id            String    @id @default(uuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status        KycStatus @default(PENDING)
+  fullName      String
+  dateOfBirth   String
+  country       String
+  address       String
+  documentType  String
+  documentFront String
+  documentBack  String?
+  selfie        String?
+  adminNote     String?
+  assignedTo    String?
+  submittedAt   DateTime  @default(now())
+  reviewedAt    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("kyc_verifications")
+}
+
+enum KycStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  RESUBMIT
+}
+
+// ========== NOTIFICATIONS ==========
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  title     String
+  message   String
+  read      Boolean          @default(false)
+  data      Json?
+  createdAt DateTime         @default(now())
+
+  @@map("notifications")
+}
+
+enum NotificationType {
+  DEPOSIT_CONFIRMED
+  DEPOSIT_REJECTED
+  WITHDRAWAL_COMPLETED
+  POSITION_CLOSED
+  KYC_APPROVED
+  KYC_REJECTED
+  SUPPORT_REPLY
+  SYSTEM
 }

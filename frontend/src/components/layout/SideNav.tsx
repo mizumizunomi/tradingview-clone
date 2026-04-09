@@ -1,6 +1,6 @@
 "use client";
 import { usePathname, useRouter } from "next/navigation";
-import { BarChart2, Newspaper, Wallet, Info, Gem, Calendar, Filter, UserCircle, Sun, Moon, Keyboard, Monitor, HelpCircle, Sparkles, PanelLeft, LogOut, ChevronRight, PieChart, ClipboardList } from "lucide-react";
+import { BarChart2, Newspaper, Wallet, Info, Gem, Calendar, Filter, UserCircle, Sun, Moon, Keyboard, Monitor, HelpCircle, Sparkles, PanelLeft, LogOut, ChevronRight, PieChart, ClipboardList, MessageCircle } from "lucide-react";
 import { useTradingStore } from "@/store/trading.store";
 import { useState, useEffect, useRef } from "react";
 
@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { icon: Gem, label: "Plans", href: "/plans" },
   { icon: Wallet, label: "Wallet", href: "/account/deposit" },
   { icon: UserCircle, label: "Profile", href: "/profile" },
+  { icon: MessageCircle, label: "Support", href: "/support" },
   { icon: Info, label: "About", href: "/about" },
 ];
 

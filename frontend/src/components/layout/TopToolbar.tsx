@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { ChevronDown, Sun, Moon, Bell, Settings, Layers, PlayCircle, LayoutGrid, BookOpen } from "lucide-react";
+import { NotificationBell } from "./NotificationBell";
 import { useTradingStore } from "@/store/trading.store";
 import { SymbolSearch } from "@/components/trading/SymbolSearch";
 import { formatPrice } from "@/lib/utils";
@@ -175,6 +176,9 @@ export function TopToolbar() {
 
         {/* Alerts */}
         {iconBtn(() => setShowAlertModal(true), <Bell className="h-3.5 w-3.5" />, "Price Alerts", false, activeAlerts)}
+
+        {/* Notification bell */}
+        <NotificationBell />
 
         {/* Theme */}
         {iconBtn(toggleTheme, theme === "dark" ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />, theme === "dark" ? "Light Mode" : "Dark Mode")}

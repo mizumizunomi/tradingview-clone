@@ -33,5 +33,16 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     },
   })
 
+  // Notify user
+  await prisma.notification.create({
+    data: {
+      userId: transaction.userId!,
+      type: 'DEPOSIT_REJECTED',
+      title: 'Deposit Rejected',
+      message: `Your deposit of $${Number(transaction.amount).toLocaleString()} has been rejected. Reason: ${reason}`,
+      data: { transactionId, reason },
+    },
+  })
+
   return NextResponse.json({ ok: true })
 }

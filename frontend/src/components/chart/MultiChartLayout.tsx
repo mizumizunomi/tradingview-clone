@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useTradingStore } from "@/store/trading.store";
 import { TradingChart } from "./TradingChart";
 import { PanelChart } from "./PanelChart";
+import { TradingViewWidget } from "./TradingViewWidget";
 import { ChevronDown } from "lucide-react";
 import { ChartLayout } from "@/types";
 import { cn } from "@/lib/utils";
@@ -101,7 +102,7 @@ export function MultiChartLayout() {
                 {isMain ? (
                   <TradingChart />
                 ) : (
-                  <PanelChart symbol={panel.symbol} timeframe={panel.timeframe} />
+                  <TradingViewWidget symbol={panel.symbol} timeframe={panel.timeframe} height="100%" />
                 )}
               </div>
             </div>

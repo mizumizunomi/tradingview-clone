@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Landmark, CreditCard, Bitcoin, CheckCircle, X, Loader2, ArrowDownCircle, AlertTriangle } from "lucide-react";
+import { Landmark, CreditCard, Bitcoin, CheckCircle, X, Loader2, ArrowDownCircle, AlertTriangle, ShieldCheck } from "lucide-react";
+import Link from "next/link";
 import { useTradingStore } from "@/store/trading.store";
 import { api, endpoints } from "@/lib/api";
 import { formatPrice } from "@/lib/utils";
@@ -99,6 +100,20 @@ export default function WithdrawPage() {
       </div>
 
       <div className="mx-auto max-w-2xl p-6 space-y-5">
+        {/* KYC notice */}
+        <div className="flex items-start gap-3 rounded-xl border p-4"
+          style={{ borderColor: "#2962ff40", background: "#2962ff08" }}>
+          <ShieldCheck className="h-5 w-5 shrink-0 mt-0.5" style={{ color: "#4d7cff" }} />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium" style={{ color: "#4d7cff" }}>Identity Verification Required</p>
+            <p className="text-xs mt-0.5" style={{ color: "#b2b5be" }}>
+              Withdrawals require approved KYC verification.{" "}
+              <Link href="/account/kyc" className="underline hover:text-white transition-colors">Complete KYC</Link>
+              {" "}to unlock withdrawals.
+            </p>
+          </div>
+        </div>
+
         {/* Balance overview */}
         {wallet && (
           <div

@@ -50,7 +50,7 @@ export default function LoginPage() {
             <Shield className="w-6 h-6 text-blue-400" />
           </div>
           <h1 className="text-xl font-bold text-white">Admin Panel</h1>
-          <p className="text-sm text-gray-500">TradingView Clone CRM</p>
+          <p className="text-sm text-gray-500">NovaTrade CRM</p>
         </div>
 
         <Card className="bg-[#1a1d29] border-[#2a2d3a]">
