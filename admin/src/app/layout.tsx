@@ -6,7 +6,7 @@ import { Toaster } from '@/components/ui/toaster'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Admin CRM — TradingView Clone',
+  title: 'NovaTrade Admin CRM',
   description: 'Internal admin panel',
 }
 

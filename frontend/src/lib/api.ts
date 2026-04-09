@@ -41,6 +41,7 @@ export const endpoints = {
   planSummary: "/wallet/plan-summary",
   // updatePlan removed — plan upgrades happen automatically through the deposit flow
   updateProfile: "/auth/profile",
+  changePassword: "/auth/change-password",
   // Bot
   botSignals: "/bot/signals",
   botGenerateSignal: "/bot/signals/generate",
@@ -55,6 +56,14 @@ export const endpoints = {
   botDashboard: "/bot/dashboard",
   botStatus: "/bot/status",
   // Plan
+  demoReset: "/wallet/demo/reset",
+  supportTickets: "/support/tickets",
+  kycStatus: "/kyc/status",
+  kycSubmit: "/kyc/submit",
+  notifications: "/notifications",
+  notificationsUnread: "/notifications/unread-count",
+  notificationRead: (id: string) => `/notifications/${id}/read`,
+  notificationsMarkAllRead: "/notifications/mark-all-read",
   planInfo: "/plan",
   planTiers: "/plan/tiers",
   // Bot v2 — chart-integrated analysis

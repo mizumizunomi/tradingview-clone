@@ -92,6 +92,17 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     },
   })
 
+  // Notify user
+  await prisma.notification.create({
+    data: {
+      userId,
+      type: 'DEPOSIT_CONFIRMED',
+      title: 'Deposit Confirmed',
+      message: `Your deposit of $${amount.toLocaleString()} has been confirmed and credited to your account.${tierUpgraded ? ` You've been upgraded to ${newTier} tier!` : ''}`,
+      data: { transactionId, amount, newTier, tierUpgraded },
+    },
+  })
+
   return NextResponse.json({
     ok: true,
     wallet: updatedWallet,

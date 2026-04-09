@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, Users, Wallet, TrendingUp, BarChart3, Settings, LogOut, ChevronLeft, ChevronRight,
+  ArrowDownCircle, MessageSquare, ShieldCheck,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
@@ -12,8 +13,11 @@ const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/users', icon: Users, label: 'Users' },
   { href: '/balances', icon: Wallet, label: 'Balances' },
+  { href: '/deposits', icon: ArrowDownCircle, label: 'Deposits' },
   { href: '/trades', icon: TrendingUp, label: 'Trades' },
   { href: '/assets', icon: BarChart3, label: 'Assets' },
+  { href: '/support', icon: MessageSquare, label: 'Support' },
+  { href: '/kyc', icon: ShieldCheck, label: 'KYC' },
   { href: '/settings', icon: Settings, label: 'Settings' },
 ]
 
@@ -38,7 +42,7 @@ export function Sidebar() {
         <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center shrink-0">
           <span className="text-white font-bold text-sm">A</span>
         </div>
-        {!collapsed && <span className="font-semibold text-white text-sm">Admin CRM</span>}
+        {!collapsed && <span className="font-semibold text-white text-sm">NovaTrade CRM</span>}
       </div>
 
       {/* Nav */}

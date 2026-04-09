@@ -11,6 +11,9 @@ import { WalletModule } from './wallet/wallet.module';
 import { NewsModule } from './news/news.module';
 import { TradingBotModule } from './trading-bot/trading-bot.module';
 import { PlanModule } from './plan/plan.module';
+import { SupportModule } from './support/support.module';
+import { KycModule } from './kyc/kyc.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -29,6 +32,9 @@ import { PlanModule } from './plan/plan.module';
     NewsModule,
     TradingBotModule,
     PlanModule,
+    SupportModule,
+    KycModule,
+    NotificationsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

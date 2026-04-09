@@ -182,6 +182,12 @@ export class WalletService {
   async withdraw(userId: string, dto: { amount: number; method: string }) {
     if (dto.amount < 10) throw new BadRequestException('Minimum withdrawal is $10');
 
+    // KYC check: withdrawals require approved KYC
+    const kyc = await this.prisma.kycVerification.findUnique({ where: { userId } });
+    if (!kyc || kyc.status !== 'APPROVED') {
+      throw new BadRequestException('KYC verification required before withdrawals. Please complete identity verification.');
+    }
+
     const wallet = await this.prisma.wallet.findUnique({ where: { userId } });
     if (!wallet) throw new NotFoundException('Wallet not found');
 
@@ -277,6 +283,50 @@ export class WalletService {
     ]);
 
     return { transactions, total };
+  }
+
+  async resetDemoBalance(userId: string) {
+    const DEMO_BALANCE = 10000;
+
+    // Close all open positions first (set to closed)
+    await this.prisma.position.updateMany({
+      where: { userId, status: 'OPEN' },
+      data: { status: 'CLOSED', closedAt: new Date(), closedPrice: 0, pnl: 0 },
+    });
+
+    // Cancel pending orders
+    await this.prisma.order.updateMany({
+      where: { userId, status: 'PENDING' },
+      data: { status: 'CANCELLED' },
+    });
+
+    // Reset wallet
+    const wallet = await this.prisma.wallet.update({
+      where: { userId },
+      data: {
+        balance: DEMO_BALANCE,
+        equity: DEMO_BALANCE,
+        margin: 0,
+        freeMargin: DEMO_BALANCE,
+        marginLevel: 0,
+      },
+    });
+
+    // Log as transaction
+    await this.prisma.transaction.create({
+      data: {
+        walletId: wallet.id,
+        userId,
+        type: 'DEPOSIT',
+        method: 'WIRE_TRANSFER',
+        amount: DEMO_BALANCE,
+        status: 'COMPLETED',
+        completedAt: new Date(),
+        description: 'Demo account reset — $10,000 virtual balance restored',
+      },
+    });
+
+    return { wallet, reset: true };
   }
 
   async getUserPlanSummary(userId: string) {

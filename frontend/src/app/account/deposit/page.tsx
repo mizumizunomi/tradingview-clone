@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Landmark, CreditCard, Bitcoin, CheckCircle, X, Loader2, ArrowUpCircle } from "lucide-react";
+import { Landmark, CreditCard, Bitcoin, CheckCircle, X, Loader2, ArrowUpCircle, RefreshCw, Beaker } from "lucide-react";
 import { useTradingStore } from "@/store/trading.store";
 import { api, endpoints } from "@/lib/api";
 import { formatPrice } from "@/lib/utils";
@@ -53,6 +53,7 @@ export default function DepositPage() {
 
   // Subscription info
   const [subscription, setSubscription] = useState<{ tier: string; totalDeposited: number } | null>(null);
+  const [demoResetting, setDemoResetting] = useState(false);
 
   useEffect(() => {
     if (!token) { router.replace("/auth/login"); return; }
@@ -107,6 +108,17 @@ export default function DepositPage() {
     }
   };
 
+  const handleDemoReset = async () => {
+    if (!confirm("Reset demo balance to $10,000? All open positions will be closed.")) return;
+    setDemoResetting(true);
+    try {
+      const res = await api.post(endpoints.demoReset);
+      setWallet(res.data.wallet);
+      setSubscription(null);
+    } catch { /* ignore */ }
+    finally { setDemoResetting(false); }
+  };
+
   const tierLabel = subscription?.tier ?? "NONE";
   const isNoneTier = tierLabel === "NONE";
   const totalDeposited = subscription?.totalDeposited ?? 0;
@@ -133,6 +145,29 @@ export default function DepositPage() {
       </div>
 
       <div className="mx-auto max-w-2xl p-6 space-y-5">
+        {/* Demo account card */}
+        <div className="rounded-xl border p-4 flex items-center justify-between gap-4"
+          style={{ borderColor: "#f59e0b40", background: "#f59e0b0a" }}>
+          <div className="flex items-center gap-3">
+            <Beaker className="h-5 w-5 shrink-0" style={{ color: "#f59e0b" }} />
+            <div>
+              <div className="text-sm font-bold" style={{ color: "#f59e0b" }}>Demo Account</div>
+              <div className="text-xs mt-0.5" style={{ color: "#b2b5be" }}>
+                Reset your balance to $10,000 virtual funds to practice trading risk-free.
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={handleDemoReset}
+            disabled={demoResetting}
+            className="flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-bold transition-all disabled:opacity-60"
+            style={{ background: "#f59e0b22", color: "#f59e0b", border: "1px solid #f59e0b44" }}
+          >
+            {demoResetting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+            {demoResetting ? "Resetting…" : "Reset Balance"}
+          </button>
+        </div>
+
         {/* Tier progress card */}
         {subscription && (
           <div

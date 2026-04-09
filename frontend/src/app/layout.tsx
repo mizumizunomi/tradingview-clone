@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "TradingView Clone",
-  description: "Local trading platform",
+  title: "NovaTrade",
+  description: "Professional trading platform",
 };
 
 export default function RootLayout({

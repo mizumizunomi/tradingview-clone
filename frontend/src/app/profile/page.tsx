@@ -2,7 +2,8 @@
 import { useState } from "react";
 import { SideNav } from "@/components/layout/SideNav";
 import { useTradingStore } from "@/store/trading.store";
-import { User, Settings, Shield, ChevronRight } from "lucide-react";
+import { api, endpoints } from "@/lib/api";
+import { User, Settings, Shield, ChevronRight, Loader2 } from "lucide-react";
 
 const SECTION_STYLE: React.CSSProperties = {
   background: "var(--tv-bg2)",
@@ -40,7 +41,7 @@ const INPUT_READONLY_STYLE: React.CSSProperties = {
 };
 
 export default function ProfilePage() {
-  const { user, theme, setTheme, addToast } = useTradingStore();
+  const { user, setUser, theme, setTheme, addToast } = useTradingStore();
 
   const [displayName, setDisplayName] = useState({
     firstName: user?.firstName || "",
@@ -52,14 +53,28 @@ export default function ProfilePage() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [changingPw, setChangingPw] = useState(false);
 
   const avatarLetter = user?.username ? user.username[0].toUpperCase() : "U";
 
-  const handleSave = () => {
-    addToast({ type: "success", message: "Profile saved" });
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const res = await api.patch(endpoints.updateProfile, {
+        firstName: displayName.firstName,
+        lastName: displayName.lastName,
+      });
+      setUser(res.data);
+      addToast({ type: "success", message: "Profile saved" });
+    } catch {
+      addToast({ type: "error", message: "Failed to save profile" });
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleChangePassword = () => {
+  const handleChangePassword = async () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
       addToast({ type: "error", message: "Please fill in all password fields" });
       return;
@@ -68,10 +83,18 @@ export default function ProfilePage() {
       addToast({ type: "error", message: "New passwords do not match" });
       return;
     }
-    addToast({ type: "success", message: "Password changed successfully" });
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
+    setChangingPw(true);
+    try {
+      await api.patch(endpoints.changePassword, { currentPassword, newPassword });
+      addToast({ type: "success", message: "Password changed successfully" });
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err: any) {
+      addToast({ type: "error", message: err?.response?.data?.message || "Failed to change password" });
+    } finally {
+      setChangingPw(false);
+    }
   };
 
   return (
@@ -263,12 +286,13 @@ export default function ProfilePage() {
 
             <button
               onClick={handleChangePassword}
-              className="mt-4 flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all hover:opacity-90"
+              disabled={changingPw}
+            className="mt-4 flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all hover:opacity-90 disabled:opacity-60"
               style={{ background: "#2962ff22", color: "#2962ff", border: "1px solid #2962ff44" }}
             >
-              <Shield className="h-3.5 w-3.5" />
-              Change Password
-              <ChevronRight className="h-3.5 w-3.5" />
+              {changingPw ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Shield className="h-3.5 w-3.5" />}
+              {changingPw ? "Changing…" : "Change Password"}
+              {!changingPw && <ChevronRight className="h-3.5 w-3.5" />}
             </button>
           </div>
 
@@ -276,10 +300,12 @@ export default function ProfilePage() {
           <div className="flex justify-end pb-6">
             <button
               onClick={handleSave}
-              className="flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-bold text-white transition-all hover:opacity-90"
+              disabled={saving}
+            className="flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-60"
               style={{ background: "#2962ff" }}
             >
-              Save Changes
+              {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+              {saving ? "Saving…" : "Save Changes"}
             </button>
           </div>
         </div>

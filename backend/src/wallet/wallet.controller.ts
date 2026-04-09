@@ -53,4 +53,10 @@ export class WalletController {
   getPlanSummary(@Request() req: any) {
     return this.walletService.getUserPlanSummary(req.user.id);
   }
+
+  @Post('demo/reset')
+  @Throttle({ short: { ttl: 60000, limit: 2 } })
+  resetDemo(@Request() req: any) {
+    return this.walletService.resetDemoBalance(req.user.id);
+  }
 }
