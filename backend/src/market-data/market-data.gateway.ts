@@ -7,10 +7,15 @@ import {
   OnGatewayInit,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { MarketDataService } from './market-data.service';
 
 @WebSocketGateway({
-  cors: { origin: '*', credentials: false },
+  cors: {
+    origin: (process.env.CORS_ORIGINS || 'http://localhost:3000').split(',').map(s => s.trim()),
+    credentials: true,
+  },
   namespace: '/',
   transports: ['polling', 'websocket'],
 })
@@ -20,7 +25,11 @@ export class MarketDataGateway implements OnGatewayConnection, OnGatewayDisconne
   private clientSubscriptions: Map<string, (() => void)[]> = new Map();
   private clientUserMap: Map<string, string> = new Map(); // socketId -> userId
 
-  constructor(private marketDataService: MarketDataService) {}
+  constructor(
+    private marketDataService: MarketDataService,
+    private jwtService: JwtService,
+    private configService: ConfigService,
+  ) {}
 
   afterInit() {}
 
@@ -45,9 +54,16 @@ export class MarketDataGateway implements OnGatewayConnection, OnGatewayDisconne
   }
 
   @SubscribeMessage('auth')
-  handleAuth(client: Socket, userId: string) {
-    this.clientUserMap.set(client.id, userId);
-    client.join(`user:${userId}`);
+  handleAuth(client: Socket, payload: { token: string }) {
+    try {
+      const secret = this.configService.get<string>('JWT_SECRET');
+      const decoded = this.jwtService.verify(payload.token, { secret }) as { sub: string };
+      const userId = decoded.sub;
+      this.clientUserMap.set(client.id, userId);
+      client.join(`user:${userId}`);
+    } catch {
+      client.emit('auth:error', { message: 'Invalid or expired token' });
+    }
   }
 
   @SubscribeMessage('subscribe:symbol')

@@ -44,8 +44,8 @@ model UserSubscription {
   userId          String    @unique
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   tier            PlanTier  @default(NONE)
-  totalDeposited  Float     @default(0)
-  monthlyFee      Float     @default(0)
+  totalDeposited  Decimal   @default(0) @db.Decimal(20, 8)
+  monthlyFee      Decimal   @default(0) @db.Decimal(20, 8)
   nextBillingDate DateTime?
   isActive        Boolean   @default(true)
   activatedAt     DateTime?
@@ -69,11 +69,11 @@ model Wallet {
   userId        String   @unique
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  balance       Float    @default(0.00)      // Starting balance $0 — must deposit
-  equity        Float    @default(0.00)      // Balance + Unrealized P&L
-  margin        Float    @default(0.00)      // Used margin
-  freeMargin    Float    @default(0.00)      // Available for trading
-  marginLevel   Float    @default(0.00)      // (Equity/Margin) * 100
+  balance       Decimal  @default(0.00) @db.Decimal(20, 8)  // Starting balance $0 — must deposit
+  equity        Decimal  @default(0.00) @db.Decimal(20, 8)  // Balance + Unrealized P&L
+  margin        Decimal  @default(0.00) @db.Decimal(20, 8)  // Used margin
+  freeMargin    Decimal  @default(0.00) @db.Decimal(20, 8)  // Available for trading
+  marginLevel   Decimal  @default(0.00) @db.Decimal(20, 8)  // (Equity/Margin) * 100
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -91,7 +91,7 @@ model Transaction {
 
   type          TransactionType
   method        PaymentMethod    @default(WIRE_TRANSFER)
-  amount        Float
+  amount        Decimal          @db.Decimal(20, 8)
   status        TransactionStatus @default(COMPLETED)
   description   String?
   reference     String?          // external reference / receipt ID
@@ -134,10 +134,10 @@ model Asset {
   quoteAsset    String?             // e.g., "USD"
   
   // Trading parameters
-  minOrderSize  Float    @default(0.01)
+  minOrderSize  Decimal  @default(0.01)   @db.Decimal(20, 8)
   maxLeverage   Int      @default(100)
-  spread        Float    @default(0.0001)  // 1 pip = 0.0001
-  commission    Float    @default(0.0005)  // 0.05%
+  spread        Decimal  @default(0.0001) @db.Decimal(20, 8)  // 1 pip = 0.0001
+  commission    Decimal  @default(0.0005) @db.Decimal(20, 8)  // 0.05%
   
   // For API mapping
   apiSymbol     String?             // Symbol format for external API
@@ -191,22 +191,22 @@ model Order {
   leverage      Int      @default(1)
   
   // Prices
-  entryPrice    Float?
-  stopLoss      Float?
-  takeProfit    Float?
-  limitPrice    Float?
-  
+  entryPrice    Decimal? @db.Decimal(20, 8)
+  stopLoss      Decimal? @db.Decimal(20, 8)
+  takeProfit    Decimal? @db.Decimal(20, 8)
+  limitPrice    Decimal? @db.Decimal(20, 8)
+
   // Status
   status        OrderStatus @default(PENDING)
-  
+
   // Filled information
   filledAt      DateTime?
-  filledPrice   Float?
-  
+  filledPrice   Decimal? @db.Decimal(20, 8)
+
   // Costs
-  margin        Float?
-  commission    Float?
-  spread        Float?
+  margin        Decimal? @db.Decimal(20, 8)
+  commission    Decimal? @db.Decimal(20, 8)
+  spread        Decimal? @db.Decimal(20, 8)
   
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -250,20 +250,20 @@ model Position {
   quantity      Float
   leverage      Int
   
-  entryPrice    Float
-  currentPrice  Float
-  stopLoss      Float?
-  takeProfit    Float?
-  
+  entryPrice    Decimal  @db.Decimal(20, 8)
+  currentPrice  Decimal  @db.Decimal(20, 8)
+  stopLoss      Decimal? @db.Decimal(20, 8)
+  takeProfit    Decimal? @db.Decimal(20, 8)
+
   // Profit & Loss
-  unrealizedPnL Float    @default(0.00)
-  realizedPnL   Float    @default(0.00)
-  
+  unrealizedPnL Decimal  @default(0.00) @db.Decimal(20, 8)
+  realizedPnL   Decimal  @default(0.00) @db.Decimal(20, 8)
+
   // Costs
-  margin        Float
-  commission    Float
-  spread        Float
-  swap          Float    @default(0.00)  // Overnight/rollover fee
+  margin        Decimal  @db.Decimal(20, 8)
+  commission    Decimal  @db.Decimal(20, 8)
+  spread        Decimal  @db.Decimal(20, 8)
+  swap          Decimal  @default(0.00) @db.Decimal(20, 8)  // Overnight/rollover fee
   
   isOpen        Boolean  @default(true)
   
@@ -290,10 +290,10 @@ model Trade {
   type          TradeType
   side          OrderSide
   quantity      Float
-  price         Float
-  
-  pnl           Float    @default(0.00)
-  commission    Float
+  price         Decimal  @db.Decimal(20, 8)
+
+  pnl           Decimal  @default(0.00) @db.Decimal(20, 8)
+  commission    Decimal  @db.Decimal(20, 8)
   
   executedAt    DateTime @default(now())
   
@@ -375,16 +375,16 @@ model TradingSignal {
   asset           String
   assetClass      AssetClass
   action          SignalAction
-  confidence      Float
+  confidence      Decimal      @db.Decimal(10, 4)
   strategy        String
   reasoning       String
   technicalData   Json
   fundamentalData Json?
-  entryPrice      Float?
-  stopLoss        Float?
-  takeProfit      Float?
-  takeProfit2     Float?
-  riskReward      Float?
+  entryPrice      Decimal?     @db.Decimal(20, 8)
+  stopLoss        Decimal?     @db.Decimal(20, 8)
+  takeProfit      Decimal?     @db.Decimal(20, 8)
+  takeProfit2     Decimal?     @db.Decimal(20, 8)
+  riskReward      Decimal?     @db.Decimal(10, 4)
   timeframe       String
   drawingData     Json?        // ChartDrawingSet for re-rendering on chart
   status          SignalStatus @default(PENDING)
@@ -408,7 +408,7 @@ model BotStrategy {
   backtestResults  Json?
   backtestDrawings Json?      // Historical entry/exit arrows for chart overlay
   totalSignals     Int        @default(0)
-  winRate          Float?
+  winRate          Decimal?   @db.Decimal(10, 4)
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
 
@@ -422,12 +422,12 @@ model BotSettings {
   autoTradeEnabled      Boolean      @default(false)
   riskLevel             RiskLevel    @default(MODERATE)
   maxDailyTrades        Int          @default(10)
-  maxDrawdownPercent    Float        @default(5.0)
+  maxDrawdownPercent    Decimal      @default(5.0)  @db.Decimal(10, 4)
   enabledAssetClasses   AssetClass[]
   notifyOnSignal        Boolean      @default(true)
   showBotDrawings       Boolean      @default(true)
   drawingColorScheme    String       @default("default")
-  minConfidenceAutoTrade Float       @default(70.0)
+  minConfidenceAutoTrade Decimal     @default(70.0) @db.Decimal(10, 4)
   createdAt             DateTime     @default(now())
   updatedAt             DateTime     @updatedAt
 

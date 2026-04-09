@@ -3,6 +3,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { TradingService } from '../../trading/trading.service';
 import { MarketDataService } from '../../market-data/market-data.service';
 import { SignalResult } from '../interfaces/signal.interface';
+import { OrderSideDto, OrderTypeDto } from '../../trading/dto/place-order.dto';
 
 export interface AutoTradeGuardResult {
   allowed: boolean;
@@ -86,14 +87,17 @@ export class AutoTraderService {
     const wallet = await this.prisma.wallet.findUnique({ where: { userId } });
     if (wallet) {
       // If margin level is dangerously low, pause auto-trading
-      const marginLevel = wallet.margin > 0 ? (wallet.equity / wallet.margin) * 100 : Infinity;
+      const wMargin = Number(wallet.margin);
+      const wEquity = Number(wallet.equity);
+      const wBalance = Number(wallet.balance);
+      const marginLevel = wMargin > 0 ? (wEquity / wMargin) * 100 : Infinity;
       if (marginLevel < 150) {
         return { allowed: false, reason: `Margin level ${marginLevel.toFixed(0)}% too low — auto-trading paused (min 150%)` };
       }
       // Drawdown from balance
-      const drawdownPct = wallet.equity < wallet.balance
-        ? ((wallet.balance - wallet.equity) / wallet.balance) * 100 : 0;
-      if (drawdownPct >= settings.maxDrawdownPercent) {
+      const drawdownPct = wEquity < wBalance
+        ? ((wBalance - wEquity) / wBalance) * 100 : 0;
+      if (drawdownPct >= Number(settings.maxDrawdownPercent)) {
         return {
           allowed: false,
           reason: `Daily drawdown ${drawdownPct.toFixed(1)}% reached limit of ${settings.maxDrawdownPercent}% — auto-trading paused`,
@@ -141,8 +145,8 @@ export class AutoTraderService {
 
       const settings = await this.prisma.botSettings.findUnique({ where: { userId } });
       const riskFraction = this.getRiskFraction(settings?.riskLevel ?? 'MODERATE');
-      const notionalBudget = wallet.freeMargin * riskFraction;
-      const quantity = Math.max(asset.minOrderSize, notionalBudget / currentPrice);
+      const notionalBudget = Number(wallet.freeMargin) * riskFraction;
+      const quantity = Math.max(Number(asset.minOrderSize), notionalBudget / currentPrice);
 
       const orderSide = signal.action === 'BUY' ? 'BUY' : 'SELL';
 
@@ -152,12 +156,12 @@ export class AutoTraderService {
 
       const result = await this.tradingService.placeOrder(userId, {
         assetId: asset.id,
-        type: 'MARKET',
-        side: orderSide,
+        type: OrderTypeDto.MARKET,
+        side: orderSide as OrderSideDto,
         quantity,
         leverage: 1,
-        stopLoss: signal.stopLoss ?? undefined,
-        takeProfit: signal.takeProfit ?? undefined,
+        stopLoss: signal.stopLoss ? Number(signal.stopLoss) : undefined,
+        takeProfit: signal.takeProfit ? Number(signal.takeProfit) : undefined,
       });
 
       // Mark signal as executed
@@ -195,14 +199,14 @@ export class AutoTraderService {
       asset: signal.asset,
       assetClass: signal.assetClass,
       action: signal.action,
-      confidence: signal.confidence,
+      confidence: Number(signal.confidence),
       strategy: signal.strategy,
       reasoning: signal.reasoning,
       technicalData: signal.technicalData as unknown as SignalResult['technicalData'],
       fundamentalData: signal.fundamentalData as unknown as SignalResult['fundamentalData'],
-      entryPrice: signal.entryPrice ?? undefined,
-      stopLoss: signal.stopLoss ?? undefined,
-      takeProfit: signal.takeProfit ?? undefined,
+      entryPrice: signal.entryPrice != null ? Number(signal.entryPrice) : undefined,
+      stopLoss: signal.stopLoss != null ? Number(signal.stopLoss) : undefined,
+      takeProfit: signal.takeProfit != null ? Number(signal.takeProfit) : undefined,
       timeframe: signal.timeframe,
       expiresAt: signal.expiresAt ?? undefined,
     };

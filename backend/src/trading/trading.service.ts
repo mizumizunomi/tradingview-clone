@@ -2,6 +2,7 @@ import { Injectable, BadRequestException, ForbiddenException, NotFoundException,
 import { PrismaService } from '../prisma/prisma.service';
 import { MarketDataService } from '../market-data/market-data.service';
 import { PlanService } from '../plan/plan.service';
+import { PlaceOrderDto } from './dto/place-order.dto';
 
 @Injectable()
 export class TradingService implements OnModuleInit {
@@ -42,12 +43,14 @@ export class TradingService implements OnModuleInit {
           let shouldClose = false;
 
           if (pos.stopLoss) {
-            if (pos.side === 'BUY' && price <= pos.stopLoss) shouldClose = true;
-            if (pos.side === 'SELL' && price >= pos.stopLoss) shouldClose = true;
+            const sl = Number(pos.stopLoss);
+            if (pos.side === 'BUY' && price <= sl) shouldClose = true;
+            if (pos.side === 'SELL' && price >= sl) shouldClose = true;
           }
           if (pos.takeProfit) {
-            if (pos.side === 'BUY' && price >= pos.takeProfit) shouldClose = true;
-            if (pos.side === 'SELL' && price <= pos.takeProfit) shouldClose = true;
+            const tp = Number(pos.takeProfit);
+            if (pos.side === 'BUY' && price >= tp) shouldClose = true;
+            if (pos.side === 'SELL' && price <= tp) shouldClose = true;
           }
 
           if (shouldClose) {
@@ -68,24 +71,24 @@ export class TradingService implements OnModuleInit {
           for (const pos of userPositions) {
             const pd = this.marketData.getPrice(pos.asset.symbol);
             if (!pd) continue;
-            const diff = pos.side === 'BUY' ? pd.price - pos.entryPrice : pos.entryPrice - pd.price;
-            unrealizedPnL += diff * pos.quantity * pos.leverage - pos.commission;
+            const diff = pos.side === 'BUY' ? pd.price - Number(pos.entryPrice) : Number(pos.entryPrice) - pd.price;
+            unrealizedPnL += diff * pos.quantity * pos.leverage - Number(pos.commission);
           }
-          const equity = wallet.balance + unrealizedPnL;
-          const freeMargin = equity - wallet.margin;
+          const equity = Number(wallet.balance) + unrealizedPnL;
+          const freeMargin = equity - Number(wallet.margin);
           await this.prisma.wallet.update({
             where: { userId },
             data: { equity, freeMargin },
           });
           if (this.onEquityUpdate) {
-            this.onEquityUpdate(userId, equity, freeMargin, wallet.margin);
+            this.onEquityUpdate(userId, equity, freeMargin, Number(wallet.margin));
           }
         }
       } catch {}
     }, 3000);
   }
 
-  async placeOrder(userId: string, dto: any) {
+  async placeOrder(userId: string, dto: PlaceOrderDto) {
     // Get user tier via PlanService
     const canTrade = await this.planService.canTrade(userId);
     if (!canTrade) {
@@ -149,10 +152,10 @@ export class TradingService implements OnModuleInit {
     // Use plan commission rate via PlanService
     const commissionRate = await this.planService.getCommissionRate(userId);
     const commission = notionalValue * commissionRate;
-    const spread = asset.spread * price;
+    const spread = Number(asset.spread) * price;
 
-    if (margin > wallet.freeMargin) {
-      throw new BadRequestException(`Insufficient margin. Required: $${margin.toFixed(2)}, Available: $${wallet.freeMargin.toFixed(2)}`);
+    if (margin > Number(wallet.freeMargin)) {
+      throw new BadRequestException(`Insufficient margin. Required: $${margin.toFixed(2)}, Available: $${Number(wallet.freeMargin).toFixed(2)}`);
     }
 
     const order = await this.prisma.order.create({
@@ -210,7 +213,7 @@ export class TradingService implements OnModuleInit {
     const priceData = this.marketData.getPrice(pos.asset.symbol);
     const closePrice = priceData
       ? (pos.side === 'BUY' ? priceData.bid : priceData.ask)
-      : pos.currentPrice;
+      : Number(pos.currentPrice);
     return this.closePositionInternal(userId, positionId, closePrice);
   }
 
@@ -222,11 +225,11 @@ export class TradingService implements OnModuleInit {
     if (!position) throw new NotFoundException('Position not found');
 
     const priceDiff = position.side === 'BUY'
-      ? closePrice - position.entryPrice
-      : position.entryPrice - closePrice;
+      ? closePrice - Number(position.entryPrice)
+      : Number(position.entryPrice) - closePrice;
 
-    const pnl = priceDiff * position.quantity * position.leverage - position.commission;
-    const closeCommission = closePrice * position.quantity * position.asset.commission;
+    const pnl = priceDiff * position.quantity * position.leverage - Number(position.commission);
+    const closeCommission = closePrice * position.quantity * Number(position.asset.commission);
 
     await this.prisma.position.update({
       where: { id: positionId },
@@ -245,8 +248,8 @@ export class TradingService implements OnModuleInit {
     await this.prisma.wallet.update({
       where: { userId },
       data: {
-        margin: { decrement: position.margin },
-        freeMargin: { increment: position.margin + pnl - closeCommission },
+        margin: { decrement: Number(position.margin) },
+        freeMargin: { increment: Number(position.margin) + pnl - closeCommission },
         balance: { increment: pnl - closeCommission },
       },
     });

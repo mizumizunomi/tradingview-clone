@@ -2,9 +2,9 @@ import { SignJWT, jwtVerify } from 'jose'
 import { cookies } from 'next/headers'
 import { NextRequest } from 'next/server'
 
-const ADMIN_JWT_SECRET = new TextEncoder().encode(
-  process.env.ADMIN_JWT_SECRET ?? 'fallback-secret-change-in-production'
-)
+const rawSecret = process.env.ADMIN_JWT_SECRET;
+if (!rawSecret) throw new Error('ADMIN_JWT_SECRET environment variable is required');
+const ADMIN_JWT_SECRET = new TextEncoder().encode(rawSecret);
 
 export interface AdminSession {
   id: string

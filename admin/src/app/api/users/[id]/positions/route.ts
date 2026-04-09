@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/auth'
+import { requireRole } from '@/lib/require-role'
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getAdminSession()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const denied = requireRole(session, 'MANAGER')
+  if (denied) return denied
 
   const { id: userId } = await params
   const { positionId, currentPrice } = await req.json()
@@ -15,11 +17,12 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   })
   if (!position) return NextResponse.json({ error: 'Position not found' }, { status: 404 })
 
-  const closePrice = currentPrice ?? position.currentPrice
-  const priceDiff = closePrice - position.entryPrice
+  const closePrice = currentPrice ?? Number(position.currentPrice)
+  const priceDiff = closePrice - Number(position.entryPrice)
   const pnl = position.side === 'BUY'
     ? priceDiff * position.quantity * position.leverage
     : -priceDiff * position.quantity * position.leverage
+  const posMargin = Number(position.margin)
 
   await prisma.$transaction([
     prisma.position.update({
@@ -35,9 +38,9 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     prisma.wallet.update({
       where: { userId },
       data: {
-        balance: { increment: position.margin + pnl },
-        margin: { decrement: position.margin },
-        freeMargin: { increment: position.margin + pnl },
+        balance: { increment: posMargin + pnl },
+        margin: { decrement: posMargin },
+        freeMargin: { increment: posMargin + pnl },
       },
     }),
     prisma.trade.create({
@@ -55,7 +58,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     }),
     prisma.adminAction.create({
       data: {
-        adminId: session.id,
+        adminId: session!.id,
         action: 'CLOSE_POSITION',
         targetId: positionId,
         details: { userId, symbol: position.asset.symbol, pnl, closePrice },

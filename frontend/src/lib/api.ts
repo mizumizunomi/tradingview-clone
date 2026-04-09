@@ -39,7 +39,7 @@ export const endpoints = {
   withdrawAccount: "/wallet/withdraw",
   accountTransactions: "/wallet/transactions",
   planSummary: "/wallet/plan-summary",
-  updatePlan: "/auth/plan",
+  // updatePlan removed — plan upgrades happen automatically through the deposit flow
   updateProfile: "/auth/profile",
   // Bot
   botSignals: "/bot/signals",

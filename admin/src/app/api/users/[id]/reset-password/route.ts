@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/auth'
+import { requireRole } from '@/lib/require-role'
 import bcrypt from 'bcryptjs'
 
 function generateTempPassword(): string {
@@ -10,7 +11,8 @@ function generateTempPassword(): string {
 
 export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getAdminSession()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const denied = requireRole(session, 'MANAGER')
+  if (denied) return denied
 
   const { id } = await params
   const tempPassword = generateTempPassword()
@@ -20,7 +22,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
 
   await prisma.adminAction.create({
     data: {
-      adminId: session.id,
+      adminId: session!.id,
       action: 'RESET_PASSWORD',
       targetId: id,
       details: {},

@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/auth'
+import { requireRole } from '@/lib/require-role'
 
 export async function GET(req: NextRequest) {
   const session = await getAdminSession()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const denied = requireRole(session, 'SUPPORT')
+  if (denied) return denied
 
   const { searchParams } = req.nextUrl
   const page = Math.max(1, parseInt(searchParams.get('page') ?? '1'))
@@ -43,7 +45,8 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const session = await getAdminSession()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const denied = requireRole(session, 'MANAGER')
+  if (denied) return denied
 
   const { userIds, amount, reason } = await req.json()
   if (!Array.isArray(userIds) || userIds.length === 0) return NextResponse.json({ error: 'No users selected' }, { status: 400 })
@@ -55,19 +58,19 @@ export async function POST(req: NextRequest) {
     try {
       const wallet = await prisma.wallet.findUnique({ where: { userId } })
       if (!wallet) { results.push({ userId, success: false, error: 'No wallet' }); continue }
-      const newBalance = wallet.balance + amount
+      const newBalance = Number(wallet.balance) + amount
       if (newBalance < 0) { results.push({ userId, success: false, error: 'Insufficient balance' }); continue }
 
       await prisma.$transaction([
         prisma.wallet.update({
           where: { userId },
-          data: { balance: newBalance, equity: wallet.equity + amount, freeMargin: wallet.freeMargin + amount },
+          data: { balance: newBalance, equity: Number(wallet.equity) + amount, freeMargin: Number(wallet.freeMargin) + amount },
         }),
         prisma.transaction.create({
           data: { walletId: wallet.id, type: 'ADMIN_ADJUSTMENT', method: 'WIRE_TRANSFER', amount, status: 'COMPLETED', description: reason },
         }),
         prisma.adminAction.create({
-          data: { adminId: session.id, action: 'BALANCE_ADJUST', targetId: userId, details: { before: wallet.balance, after: newBalance, amount, reason } },
+          data: { adminId: session!.id, action: 'BALANCE_ADJUST', targetId: userId, details: { before: wallet.balance, after: newBalance, amount, reason } },
         }),
       ])
       results.push({ userId, success: true })

@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/auth'
+import { requireRole } from '@/lib/require-role'
 
 export async function GET() {
   const session = await getAdminSession()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const denied = requireRole(session, 'SUPPORT')
+  if (denied) return denied
 
   const now = new Date()
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -76,14 +78,14 @@ export async function GET() {
     newToday: todayUsers,
     newThisWeek: weekUsers,
     newThisMonth: monthUsers,
-    totalBalance: totalWallets._sum.balance ?? 0,
-    totalEquity: totalWallets._sum.equity ?? 0,
-    totalMargin: totalWallets._sum.margin ?? 0,
+    totalBalance: Number(totalWallets._sum.balance ?? 0),
+    totalEquity: Number(totalWallets._sum.equity ?? 0),
+    totalMargin: Number(totalWallets._sum.margin ?? 0),
     openPositions,
-    marginInUse: marginResult._sum.margin ?? 0,
-    totalUnrealizedPnL: marginResult._sum.unrealizedPnL ?? 0,
+    marginInUse: Number(marginResult._sum.margin ?? 0),
+    totalUnrealizedPnL: Number(marginResult._sum.unrealizedPnL ?? 0),
     todayTrades,
-    totalRevenue: revenueResult._sum.commission ?? 0,
+    totalRevenue: Number(revenueResult._sum.commission ?? 0),
     topAssets: topAssets.map((a) => ({
       ...a,
       symbol: assetMap[a.assetId]?.symbol ?? 'Unknown',

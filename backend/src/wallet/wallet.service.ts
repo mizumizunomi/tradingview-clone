@@ -57,20 +57,63 @@ export class WalletService {
     const wallet = await this.prisma.wallet.findUnique({ where: { userId } });
     if (!wallet) throw new NotFoundException('Wallet not found');
 
-    // Get or create subscription
-    let subscription = await this.prisma.userSubscription.findUnique({ where: { userId } });
-    if (!subscription) {
-      subscription = await this.prisma.userSubscription.create({
-        data: { userId },
-      });
+    // Create PENDING transaction — balance is NOT credited until admin confirms
+    const transaction = await this.prisma.transaction.create({
+      data: {
+        walletId: wallet.id,
+        userId,
+        type: 'DEPOSIT',
+        method: dto.method as any,
+        amount: dto.amount,
+        status: 'PENDING',
+      },
+    });
+
+    return {
+      transaction,
+      message: 'Deposit pending — awaiting payment confirmation',
+    };
+  }
+
+  async confirmDeposit(transactionId: string, adminId?: string) {
+    const transaction = await this.prisma.transaction.findUnique({ where: { id: transactionId } });
+    if (!transaction) throw new NotFoundException('Transaction not found');
+    if (transaction.status !== 'PENDING') {
+      throw new BadRequestException(`Transaction is already ${transaction.status}`);
+    }
+    if (transaction.type !== 'DEPOSIT') {
+      throw new BadRequestException('Transaction is not a deposit');
     }
 
+    const amount = Number(transaction.amount);
+    const userId = transaction.userId!;
+
+    // Mark transaction COMPLETED
+    await this.prisma.transaction.update({
+      where: { id: transactionId },
+      data: { status: 'COMPLETED', completedAt: new Date() },
+    });
+
+    // Credit wallet
+    const updatedWallet = await this.prisma.wallet.update({
+      where: { userId },
+      data: {
+        balance: { increment: amount },
+        equity: { increment: amount },
+        freeMargin: { increment: amount },
+      },
+    });
+
+    // Update subscription / tier
+    let subscription = await this.prisma.userSubscription.findUnique({ where: { userId } });
+    if (!subscription) {
+      subscription = await this.prisma.userSubscription.create({ data: { userId } });
+    }
     const previousTier = subscription.tier as PlanTier;
-    const newTotalDeposited = subscription.totalDeposited + dto.amount;
+    const newTotalDeposited = Number(subscription.totalDeposited) + amount;
     const newTier = determineTier(newTotalDeposited);
     const tierUpgraded = newTier !== previousTier;
 
-    // Update subscription
     const updatedSubscription = await this.prisma.userSubscription.update({
       where: { userId },
       data: {
@@ -80,7 +123,6 @@ export class WalletService {
       },
     });
 
-    // Update user plan string if tier changed
     if (tierUpgraded) {
       await this.prisma.user.update({
         where: { id: userId },
@@ -88,35 +130,53 @@ export class WalletService {
       });
     }
 
-    // Create transaction record
-    await this.prisma.transaction.create({
-      data: {
-        walletId: wallet.id,
-        userId,
-        type: 'DEPOSIT',
-        method: dto.method as any,
-        amount: dto.amount,
-        status: 'COMPLETED',
-        completedAt: new Date(),
-      },
+    if (adminId) {
+      await this.prisma.adminAction.create({
+        data: {
+          adminId,
+          action: 'CONFIRM_DEPOSIT',
+          targetId: userId,
+          details: { transactionId, amount, newTier, tierUpgraded },
+        },
+      });
+    }
+
+    return { wallet: updatedWallet, subscription: updatedSubscription, tierUpgraded, newTier };
+  }
+
+  async rejectDeposit(transactionId: string, reason: string, adminId?: string) {
+    const transaction = await this.prisma.transaction.findUnique({ where: { id: transactionId } });
+    if (!transaction) throw new NotFoundException('Transaction not found');
+    if (transaction.status !== 'PENDING') {
+      throw new BadRequestException(`Transaction is already ${transaction.status}`);
+    }
+
+    await this.prisma.transaction.update({
+      where: { id: transactionId },
+      data: { status: 'FAILED', note: reason },
     });
 
-    // Update wallet
-    const updatedWallet = await this.prisma.wallet.update({
-      where: { userId },
-      data: {
-        balance: { increment: dto.amount },
-        equity: { increment: dto.amount },
-        freeMargin: { increment: dto.amount },
-      },
-    });
+    if (adminId) {
+      await this.prisma.adminAction.create({
+        data: {
+          adminId,
+          action: 'REJECT_DEPOSIT',
+          targetId: transaction.userId ?? transactionId,
+          details: { transactionId, reason },
+        },
+      });
+    }
 
-    return {
-      wallet: updatedWallet,
-      subscription: updatedSubscription,
-      tierUpgraded,
-      newTier: tierUpgraded ? newTier : null,
-    };
+    return { ok: true };
+  }
+
+  async getPendingDeposits(userId: string) {
+    const wallet = await this.prisma.wallet.findUnique({ where: { userId } });
+    if (!wallet) throw new NotFoundException('Wallet not found');
+    return this.prisma.transaction.findMany({
+      where: { walletId: wallet.id, type: 'DEPOSIT', status: 'PENDING' },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   async withdraw(userId: string, dto: { amount: number; method: string }) {
@@ -128,7 +188,7 @@ export class WalletService {
     const fee = Math.max(1, dto.amount * 0.005);
     const totalDeduction = dto.amount + fee;
 
-    if (totalDeduction > wallet.freeMargin) {
+    if (totalDeduction > Number(wallet.freeMargin)) {
       throw new BadRequestException('Insufficient free margin for withdrawal (amount + fee)');
     }
 
@@ -174,7 +234,7 @@ export class WalletService {
     const subscription = await this.prisma.userSubscription.findUnique({ where: { userId } });
     if (subscription && subscription.tier !== 'NONE') {
       const tierThreshold = getTierThreshold(subscription.tier as PlanTier);
-      if (updatedWallet.balance < tierThreshold) {
+      if (Number(updatedWallet.balance) < tierThreshold) {
         warning = `Your balance has dropped below the $${tierThreshold.toLocaleString()} threshold for your ${subscription.tier} tier. Consider depositing to maintain your tier benefits.`;
       }
     }
@@ -235,7 +295,7 @@ export class WalletService {
         ? {
             tier: nextTier.tier,
             threshold: nextTier.threshold,
-            remaining: Math.max(0, nextTier.threshold - subscription.totalDeposited),
+            remaining: Math.max(0, nextTier.threshold - Number(subscription.totalDeposited)),
           }
         : null,
     };

@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/auth'
+import { requireRole } from '@/lib/require-role'
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getAdminSession()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const denied = requireRole(session, 'MANAGER')
+  if (denied) return denied
 
   const { id } = await params
   const { amount, reason } = await req.json()
@@ -15,7 +17,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const wallet = await prisma.wallet.findUnique({ where: { userId: id } })
   if (!wallet) return NextResponse.json({ error: 'Wallet not found' }, { status: 404 })
 
-  const newBalance = wallet.balance + amount
+  const newBalance = Number(wallet.balance) + amount
   if (newBalance < 0) return NextResponse.json({ error: 'Insufficient balance' }, { status: 400 })
 
   const [updatedWallet] = await prisma.$transaction([
@@ -23,8 +25,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       where: { userId: id },
       data: {
         balance: newBalance,
-        equity: wallet.equity + amount,
-        freeMargin: wallet.freeMargin + amount,
+        equity: Number(wallet.equity) + amount,
+        freeMargin: Number(wallet.freeMargin) + amount,
       },
     }),
     prisma.transaction.create({
@@ -39,7 +41,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }),
     prisma.adminAction.create({
       data: {
-        adminId: session.id,
+        adminId: session!.id,
         action: 'BALANCE_ADJUST',
         targetId: id,
         details: {
