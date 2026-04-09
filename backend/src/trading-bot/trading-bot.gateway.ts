@@ -7,6 +7,8 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { SignalEngineService } from './services/signal-engine.service';
 import { AssetClass } from './interfaces/signal.interface';
 
@@ -16,7 +18,10 @@ import { AssetClass } from './interfaces/signal.interface';
  * Bot events are prefixed with 'bot:' to avoid collisions.
  */
 @WebSocketGateway({
-  cors: { origin: '*', credentials: false },
+  cors: {
+    origin: (process.env.CORS_ORIGINS || 'http://localhost:3000').split(',').map(s => s.trim()),
+    credentials: true,
+  },
   namespace: '/',
   transports: ['polling', 'websocket'],
 })
@@ -29,7 +34,11 @@ export class TradingBotGateway implements OnGatewayConnection, OnGatewayDisconne
   // socketId → subscribed assets
   private readonly assetSubscriptions = new Map<string, Set<string>>();
 
-  constructor(private readonly signalEngine: SignalEngineService) {}
+  constructor(
+    private readonly signalEngine: SignalEngineService,
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+  ) {}
 
   handleConnection(client: Socket) {
     this.assetSubscriptions.set(client.id, new Set());
@@ -41,6 +50,17 @@ export class TradingBotGateway implements OnGatewayConnection, OnGatewayDisconne
   }
 
   // Client → Server events
+
+  @SubscribeMessage('auth')
+  handleAuth(client: Socket, payload: { token: string }) {
+    try {
+      const secret = this.configService.get<string>('JWT_SECRET');
+      const decoded = this.jwtService.verify(payload.token, { secret }) as { sub: string };
+      this.userSockets.set(client.id, decoded.sub);
+    } catch {
+      client.emit('auth:error', { message: 'Invalid or expired token' });
+    }
+  }
 
   @SubscribeMessage('bot:subscribe:asset')
   handleSubscribeAsset(client: Socket, payload: { asset: string; assetClass?: AssetClass }) {

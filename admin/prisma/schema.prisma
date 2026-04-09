@@ -17,7 +17,7 @@ model User {
   password  String
   firstName String?
   lastName  String?
-  plan      String   @default("silver")
+  plan      String   @default("none")
   avatar    String?
   bio       String?
   isBanned  Boolean  @default(false)
@@ -25,24 +25,52 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  wallet    Wallet?
-  orders    Order[]
-  positions Position[]
-  trades    Trade[]
-  watchlist WatchlistItem[]
+  wallet        Wallet?
+  subscription  UserSubscription?
+  orders        Order[]
+  positions     Position[]
+  trades        Trade[]
+  watchlist     WatchlistItem[]
+  tradingSignals TradingSignal[]
+  botStrategies  BotStrategy[]
+  botSettings    BotSettings?
 
   @@map("users")
+}
+
+model UserSubscription {
+  id              String    @id @default(uuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier            PlanTier  @default(NONE)
+  totalDeposited  Decimal   @default(0) @db.Decimal(20, 8)
+  monthlyFee      Decimal   @default(0) @db.Decimal(20, 8)
+  nextBillingDate DateTime?
+  isActive        Boolean   @default(true)
+  activatedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("user_subscriptions")
+}
+
+enum PlanTier {
+  NONE
+  DEFAULT
+  SILVER
+  GOLD
+  PLATINUM
 }
 
 model Wallet {
   id          String   @id @default(uuid())
   userId      String   @unique
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  balance     Float    @default(10000.00)
-  equity      Float    @default(10000.00)
-  margin      Float    @default(0.00)
-  freeMargin  Float    @default(10000.00)
-  marginLevel Float    @default(0.00)
+  balance     Decimal  @default(0.00) @db.Decimal(20, 8)
+  equity      Decimal  @default(0.00) @db.Decimal(20, 8)
+  margin      Decimal  @default(0.00) @db.Decimal(20, 8)
+  freeMargin  Decimal  @default(0.00) @db.Decimal(20, 8)
+  marginLevel Decimal  @default(0.00) @db.Decimal(20, 8)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -55,11 +83,15 @@ model Transaction {
   id          String            @id @default(uuid())
   walletId    String
   wallet      Wallet            @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  userId      String?
   type        TransactionType
   method      PaymentMethod     @default(WIRE_TRANSFER)
-  amount      Float
+  amount      Decimal           @db.Decimal(20, 8)
   status      TransactionStatus @default(COMPLETED)
   description String?
+  reference   String?
+  note        String?
+  completedAt DateTime?
   createdAt   DateTime          @default(now())
 
   @@map("transactions")
@@ -69,6 +101,8 @@ enum TransactionType {
   DEPOSIT
   WITHDRAWAL
   ADMIN_ADJUSTMENT
+  TRADE_FEE
+  SUBSCRIPTION_FEE
 }
 
 enum PaymentMethod {
@@ -91,10 +125,10 @@ model Asset {
   broker       String
   baseAsset    String?
   quoteAsset   String?
-  minOrderSize Float         @default(0.01)
+  minOrderSize Decimal       @default(0.01)   @db.Decimal(20, 8)
   maxLeverage  Int           @default(100)
-  spread       Float         @default(0.0001)
-  commission   Float         @default(0.0005)
+  spread       Decimal       @default(0.0001) @db.Decimal(20, 8)
+  commission   Decimal       @default(0.0005) @db.Decimal(20, 8)
   apiSymbol    String?
   dataSource   DataSource
   isActive     Boolean       @default(true)
@@ -140,16 +174,16 @@ model Order {
   side        OrderSide
   quantity    Float
   leverage    Int         @default(1)
-  entryPrice  Float?
-  stopLoss    Float?
-  takeProfit  Float?
-  limitPrice  Float?
+  entryPrice  Decimal?    @db.Decimal(20, 8)
+  stopLoss    Decimal?    @db.Decimal(20, 8)
+  takeProfit  Decimal?    @db.Decimal(20, 8)
+  limitPrice  Decimal?    @db.Decimal(20, 8)
   status      OrderStatus @default(PENDING)
   filledAt    DateTime?
-  filledPrice Float?
-  margin      Float?
-  commission  Float?
-  spread      Float?
+  filledPrice Decimal?    @db.Decimal(20, 8)
+  margin      Decimal?    @db.Decimal(20, 8)
+  commission  Decimal?    @db.Decimal(20, 8)
+  spread      Decimal?    @db.Decimal(20, 8)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
@@ -189,16 +223,16 @@ model Position {
   side          OrderSide
   quantity      Float
   leverage      Int
-  entryPrice    Float
-  currentPrice  Float
-  stopLoss      Float?
-  takeProfit    Float?
-  unrealizedPnL Float     @default(0.00)
-  realizedPnL   Float     @default(0.00)
-  margin        Float
-  commission    Float
-  spread        Float
-  swap          Float     @default(0.00)
+  entryPrice    Decimal   @db.Decimal(20, 8)
+  currentPrice  Decimal   @db.Decimal(20, 8)
+  stopLoss      Decimal?  @db.Decimal(20, 8)
+  takeProfit    Decimal?  @db.Decimal(20, 8)
+  unrealizedPnL Decimal   @default(0.00) @db.Decimal(20, 8)
+  realizedPnL   Decimal   @default(0.00) @db.Decimal(20, 8)
+  margin        Decimal   @db.Decimal(20, 8)
+  commission    Decimal   @db.Decimal(20, 8)
+  spread        Decimal   @db.Decimal(20, 8)
+  swap          Decimal   @default(0.00) @db.Decimal(20, 8)
   isOpen        Boolean   @default(true)
   openedAt      DateTime  @default(now())
   closedAt      DateTime?
@@ -220,9 +254,9 @@ model Trade {
   type       TradeType
   side       OrderSide
   quantity   Float
-  price      Float
-  pnl        Float     @default(0.00)
-  commission Float
+  price      Decimal   @db.Decimal(20, 8)
+  pnl        Decimal   @default(0.00) @db.Decimal(20, 8)
+  commission Decimal   @db.Decimal(20, 8)
   executedAt DateTime  @default(now())
 
   @@map("trades")
@@ -279,4 +313,97 @@ model AdminAction {
   createdAt DateTime @default(now())
 
   @@map("admin_actions")
+}
+
+// ========== AI TRADING BOT ==========
+enum AssetClass {
+  CRYPTO
+  FOREX
+  STOCK
+  COMMODITY
+}
+
+enum SignalAction {
+  BUY
+  SELL
+  HOLD
+}
+
+enum SignalStatus {
+  PENDING
+  EXECUTED
+  EXPIRED
+  CANCELLED
+}
+
+enum RiskLevel {
+  CONSERVATIVE
+  MODERATE
+  AGGRESSIVE
+}
+
+model TradingSignal {
+  id              String       @id @default(uuid())
+  userId          String
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  asset           String
+  assetClass      AssetClass
+  action          SignalAction
+  confidence      Decimal      @db.Decimal(10, 4)
+  strategy        String
+  reasoning       String
+  technicalData   Json
+  fundamentalData Json?
+  entryPrice      Decimal?     @db.Decimal(20, 8)
+  stopLoss        Decimal?     @db.Decimal(20, 8)
+  takeProfit      Decimal?     @db.Decimal(20, 8)
+  takeProfit2     Decimal?     @db.Decimal(20, 8)
+  riskReward      Decimal?     @db.Decimal(10, 4)
+  timeframe       String
+  drawingData     Json?
+  status          SignalStatus @default(PENDING)
+  autoExecuted    Boolean      @default(false)
+  createdAt       DateTime     @default(now())
+  expiresAt       DateTime?
+
+  @@map("trading_signals")
+}
+
+model BotStrategy {
+  id               String     @id @default(uuid())
+  userId           String
+  user             User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name             String
+  assetClass       AssetClass
+  indicators       Json
+  rules            Json
+  riskParams       Json
+  isActive         Boolean    @default(true)
+  backtestResults  Json?
+  backtestDrawings Json?
+  totalSignals     Int        @default(0)
+  winRate          Decimal?   @db.Decimal(10, 4)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  @@map("bot_strategies")
+}
+
+model BotSettings {
+  id                     String       @id @default(uuid())
+  userId                 String       @unique
+  user                   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  autoTradeEnabled       Boolean      @default(false)
+  riskLevel              RiskLevel    @default(MODERATE)
+  maxDailyTrades         Int          @default(10)
+  maxDrawdownPercent     Decimal      @default(5.0)  @db.Decimal(10, 4)
+  enabledAssetClasses    AssetClass[]
+  notifyOnSignal         Boolean      @default(true)
+  showBotDrawings        Boolean      @default(true)
+  drawingColorScheme     String       @default("default")
+  minConfidenceAutoTrade Decimal      @default(70.0) @db.Decimal(10, 4)
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
+
+  @@map("bot_settings")
 }

@@ -33,8 +33,8 @@ export function useWebSocket(): { socketRef: React.RefObject<Socket | null>; con
 
       socket.on("connect", () => {
         setConnected(true);
-        const storeUser = useTradingStore.getState().user;
-        if (storeUser?.id) socket.emit("auth", storeUser.id);
+        const token = localStorage.getItem("token");
+        if (token) socket.emit("auth", { token });
       });
 
       socket.on("disconnect", () => setConnected(false));
@@ -81,7 +81,8 @@ export function useWebSocket(): { socketRef: React.RefObject<Socket | null>; con
 
   useEffect(() => {
     if (user?.id && socketRef.current?.connected) {
-      socketRef.current.emit("auth", user.id);
+      const token = localStorage.getItem("token");
+      if (token) socketRef.current.emit("auth", { token });
     }
   }, [user?.id]);
 

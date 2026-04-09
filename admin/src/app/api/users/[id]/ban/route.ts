@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/auth'
+import { requireRole } from '@/lib/require-role'
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getAdminSession()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const denied = requireRole(session, 'MANAGER')
+  if (denied) return denied
 
   const { id } = await params
   const { ban, reason } = await req.json()
@@ -16,7 +18,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   await prisma.adminAction.create({
     data: {
-      adminId: session.id,
+      adminId: session!.id,
       action: ban ? 'BAN_USER' : 'UNBAN_USER',
       targetId: id,
       details: { reason: reason ?? null },

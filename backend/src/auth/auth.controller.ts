@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Post, Patch, Delete, UseGuards, Request } from '@nestjs/common';
+import { Body, Controller, Get, Post, Patch, UseGuards, Request } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto } from './dto/auth.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
@@ -8,11 +9,13 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('register')
+  @Throttle({ short: { ttl: 60000, limit: 3 } })
   register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);
   }
 
   @Post('login')
+  @Throttle({ short: { ttl: 60000, limit: 5 } })
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
   }
@@ -21,12 +24,6 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   getMe(@Request() req: any) {
     return this.authService.getMe(req.user.id);
-  }
-
-  @Patch('plan')
-  @UseGuards(JwtAuthGuard)
-  updatePlan(@Request() req: any, @Body() body: { plan: string }) {
-    return this.authService.updatePlan(req.user.id, body.plan);
   }
 
   @Patch('profile')

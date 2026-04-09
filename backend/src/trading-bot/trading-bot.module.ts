@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from '../prisma/prisma.module';
 import { TradingModule } from '../trading/trading.module';
 import { MarketDataModule } from '../market-data/market-data.module';
@@ -31,16 +31,14 @@ import { NewsAggregatorProvider } from './providers/news-aggregator.provider';
 
 @Module({
   imports: [
+    ConfigModule,
+    JwtModule,
     PrismaModule,
     TradingModule,
     MarketDataModule,
-    ThrottlerModule.forRoot([
-      { name: 'short', ttl: 60000, limit: 10 },
-    ]),
   ],
   controllers: [TradingBotController],
   providers: [
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
     TradingBotGateway,
 
     // Data providers

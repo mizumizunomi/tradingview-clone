@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/auth'
+import { requireRole } from '@/lib/require-role'
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getAdminSession()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const denied = requireRole(session, 'SUPPORT')
+  if (denied) return denied
 
   const { id } = await params
 
@@ -38,7 +40,8 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getAdminSession()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const denied = requireRole(session, 'MANAGER')
+  if (denied) return denied
 
   const { id } = await params
   const body = await req.json()
@@ -52,7 +55,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   await prisma.adminAction.create({
     data: {
-      adminId: session.id,
+      adminId: session!.id,
       action: 'EDIT_USER',
       targetId: id,
       details: { changes: data } as import('@prisma/client').Prisma.InputJsonValue,

@@ -302,7 +302,7 @@ export class SignalEngineService {
     const byAction = { BUY: 0, SELL: 0, HOLD: 0 };
     for (const s of signals) byAction[s.action]++;
     const avgConfidence = signals.length
-      ? signals.reduce((sum, s) => sum + s.confidence, 0) / signals.length : 0;
+      ? signals.reduce((sum, s) => sum + Number(s.confidence), 0) / signals.length : 0;
     return { totalSignals: signals.length, executedCount: executed.length, pendingCount: pending.length, byAction, avgConfidence };
   }
 }

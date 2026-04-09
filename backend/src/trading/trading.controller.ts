@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, Post, UseGuards, Request } from '@nestjs/common';
 import { TradingService } from './trading.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { PlaceOrderDto } from './dto/place-order.dto';
 
 @Controller('trading')
 @UseGuards(JwtAuthGuard)
@@ -8,7 +9,7 @@ export class TradingController {
   constructor(private tradingService: TradingService) {}
 
   @Post('orders')
-  placeOrder(@Request() req: any, @Body() dto: any) {
+  placeOrder(@Request() req: any, @Body() dto: PlaceOrderDto) {
     return this.tradingService.placeOrder(req.user.id, dto);
   }
 

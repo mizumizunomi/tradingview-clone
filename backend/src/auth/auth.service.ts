@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
@@ -12,16 +12,6 @@ export const TIER_DEPOSIT_THRESHOLDS: Record<string, number> = {
   PLATINUM: 50000,
 };
 
-// Map old plan strings to new tier names (backward compat)
-const PLAN_TO_TIER: Record<string, string> = {
-  none: 'NONE',
-  default: 'DEFAULT',
-  silver: 'SILVER',
-  gold: 'GOLD',
-  platinum: 'PLATINUM',
-};
-
-const VALID_PLANS = ['none', 'default', 'silver', 'gold', 'platinum'];
 
 @Injectable()
 export class AuthService {
@@ -92,34 +82,6 @@ export class AuthService {
       include: { wallet: true, subscription: true },
     });
     if (!user) throw new UnauthorizedException();
-    const { password: _, ...userWithoutPassword } = user;
-    return userWithoutPassword;
-  }
-
-  async updatePlan(userId: string, plan: string) {
-    if (!VALID_PLANS.includes(plan)) {
-      throw new BadRequestException(`Invalid plan. Must be one of: ${VALID_PLANS.join(', ')}`);
-    }
-
-    const user = await this.prisma.user.update({
-      where: { id: userId },
-      data: { plan },
-      include: { wallet: true, subscription: true },
-    });
-
-    // Sync UserSubscription tier
-    const newTier = PLAN_TO_TIER[plan] as any;
-    if (user.subscription) {
-      await this.prisma.userSubscription.update({
-        where: { userId },
-        data: { tier: newTier },
-      });
-    } else {
-      await this.prisma.userSubscription.create({
-        data: { userId, tier: newTier },
-      });
-    }
-
     const { password: _, ...userWithoutPassword } = user;
     return userWithoutPassword;
   }
