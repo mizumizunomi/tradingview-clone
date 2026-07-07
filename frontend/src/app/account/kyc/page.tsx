@@ -42,6 +42,30 @@ export default function KycPage() {
     documentFront: "",
     documentBack: "",
   });
+  const [uploading, setUploading] = useState<"documentFront" | "documentBack" | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  const handleFileUpload = async (
+    field: "documentFront" | "documentBack",
+    file: File | undefined,
+  ) => {
+    if (!file) return;
+    setUploadError(null);
+    setUploading(field);
+    try {
+      const data = new FormData();
+      data.append("file", file);
+      const res = await api.post(endpoints.kycUpload, data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setForm((f) => ({ ...f, [field]: res.data.url }));
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      setUploadError(msg ?? "Upload failed. Please try again.");
+    } finally {
+      setUploading(null);
+    }
+  };
 
   useEffect(() => {
     if (!token) { router.replace("/auth/login"); return; }
@@ -175,22 +199,27 @@ export default function KycPage() {
                         style={{ background: "var(--tv-bg3)", borderColor: "var(--tv-border)", color: "var(--tv-text)" }} />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium mb-1" style={{ color: "var(--tv-muted)" }}>Document Front (URL or reference)</label>
-                      <input type="text" required value={form.documentFront}
-                        onChange={(e) => setForm((f) => ({ ...f, documentFront: e.target.value }))}
-                        placeholder="https://... or document reference number"
-                        className="w-full rounded-lg px-3 py-2 text-sm outline-none border"
-                        style={{ background: "var(--tv-bg3)", borderColor: "var(--tv-border)", color: "var(--tv-text)" }} />
+                      <label className="block text-xs font-medium mb-1" style={{ color: "var(--tv-muted)" }}>Document Front</label>
+                      <DocumentUpload
+                        field="documentFront"
+                        value={form.documentFront}
+                        uploading={uploading === "documentFront"}
+                        onSelect={(file) => handleFileUpload("documentFront", file)}
+                      />
                     </div>
                     <div>
                       <label className="block text-xs font-medium mb-1" style={{ color: "var(--tv-muted)" }}>Document Back (optional)</label>
-                      <input type="text" value={form.documentBack}
-                        onChange={(e) => setForm((f) => ({ ...f, documentBack: e.target.value }))}
-                        placeholder="Back side reference (if applicable)"
-                        className="w-full rounded-lg px-3 py-2 text-sm outline-none border"
-                        style={{ background: "var(--tv-bg3)", borderColor: "var(--tv-border)", color: "var(--tv-text)" }} />
+                      <DocumentUpload
+                        field="documentBack"
+                        value={form.documentBack}
+                        uploading={uploading === "documentBack"}
+                        onSelect={(file) => handleFileUpload("documentBack", file)}
+                      />
                     </div>
-                    <button type="submit" disabled={submitting}
+                    {uploadError && (
+                      <p className="text-xs" style={{ color: "#f6465d" }}>{uploadError}</p>
+                    )}
+                    <button type="submit" disabled={submitting || !!uploading || !form.documentFront}
                       className="flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold text-white disabled:opacity-60"
                       style={{ background: "#2962ff" }}>
                       {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
@@ -204,5 +233,50 @@ export default function KycPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function DocumentUpload({
+  field,
+  value,
+  uploading,
+  onSelect,
+}: {
+  field: string;
+  value: string;
+  uploading: boolean;
+  onSelect: (file: File | undefined) => void;
+}) {
+  const inputId = `kyc-${field}`;
+  return (
+    <label
+      htmlFor={inputId}
+      className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm border cursor-pointer transition-colors"
+      style={{ background: "var(--tv-bg3)", borderColor: value ? "#0ecb81" : "var(--tv-border)", color: "var(--tv-text)" }}
+    >
+      <input
+        id={inputId}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,application/pdf"
+        className="hidden"
+        onChange={(e) => onSelect(e.target.files?.[0])}
+      />
+      {uploading ? (
+        <>
+          <Loader2 className="h-4 w-4 animate-spin shrink-0" />
+          <span>Uploading…</span>
+        </>
+      ) : value ? (
+        <>
+          <CheckCircle className="h-4 w-4 shrink-0" style={{ color: "#0ecb81" }} />
+          <span className="truncate">Uploaded — click to replace</span>
+        </>
+      ) : (
+        <>
+          <Upload className="h-4 w-4 shrink-0" style={{ color: "var(--tv-muted)" }} />
+          <span style={{ color: "var(--tv-muted)" }}>Choose a file (JPG, PNG, WebP or PDF, max 8 MB)</span>
+        </>
+      )}
+    </label>
   );
 }

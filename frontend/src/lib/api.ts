@@ -60,6 +60,7 @@ export const endpoints = {
   supportTickets: "/support/tickets",
   kycStatus: "/kyc/status",
   kycSubmit: "/kyc/submit",
+  kycUpload: "/kyc/upload",
   notifications: "/notifications",
   notificationsUnread: "/notifications/unread-count",
   notificationRead: (id: string) => `/notifications/${id}/read`,
