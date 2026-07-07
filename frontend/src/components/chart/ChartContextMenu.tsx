@@ -61,7 +61,7 @@ export function ChartContextMenu({ x, y, price, time, onClose, onScreenshot }: P
     },
     { divider: true },
     {
-      icon: <Trash2 className="h-3.5 w-3.5 text-[#ef5350]" />,
+      icon: <Trash2 className="h-3.5 w-3.5 text-[#f6465d]" />,
       label: "Clear Drawings",
       action: () => { clearDrawings(); onClose(); },
       danger: true,
@@ -85,7 +85,7 @@ export function ChartContextMenu({ x, y, price, time, onClose, onScreenshot }: P
             key={i}
             onClick={item.action}
             className="flex items-center gap-2.5 w-full px-3 py-1.5 text-left text-xs hover:bg-[var(--tv-bg3)] transition-colors"
-            style={{ color: item.danger ? "#ef5350" : "var(--tv-text-light)" }}
+            style={{ color: item.danger ? "#f6465d" : "var(--tv-text-light)" }}
           >
             {item.icon}
             {item.label}

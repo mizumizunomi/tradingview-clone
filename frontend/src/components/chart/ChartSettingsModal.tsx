@@ -71,9 +71,9 @@ export function ChartSettingsModal() {
         <div className="flex gap-2 px-4 py-3 border-t" style={{ borderColor: "var(--tv-border)" }}>
           <button
             onClick={() => setChartSettings({
-              bgColor: "#131722", gridColor: "#1e222d",
-              upColor: "#26a69a", downColor: "#ef5350",
-              wickUpColor: "#26a69a", wickDownColor: "#ef5350",
+              bgColor: "#0a0b0d", gridColor: "#111318",
+              upColor: "#2ebd85", downColor: "#f6465d",
+              wickUpColor: "#2ebd85", wickDownColor: "#f6465d",
             })}
             className="flex-1 py-1.5 rounded text-xs border transition-colors hover:bg-[var(--tv-bg3)]"
             style={{ borderColor: "var(--tv-border)", color: "var(--tv-text)" }}

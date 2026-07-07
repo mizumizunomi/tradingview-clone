@@ -55,37 +55,45 @@ function LoginForm() {
   };
 
   return (
-    <div className="flex h-screen items-center justify-center bg-[#131722]">
+    <div className="flex h-screen items-center justify-center route-fade" style={{ background: "var(--tv-bg)" }}>
+      {/* Ambient glow */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0"
+        style={{
+          background: "radial-gradient(600px circle at 50% 0%, rgba(41,98,255,0.10), transparent 60%)",
+        }}
+      />
       {/* Background grid */}
       <div
-        className="pointer-events-none fixed inset-0 opacity-[0.03]"
+        className="pointer-events-none fixed inset-0 opacity-[0.025]"
         style={{
           backgroundImage: "linear-gradient(#b2b5be 1px, transparent 1px), linear-gradient(90deg, #b2b5be 1px, transparent 1px)",
-          backgroundSize: "40px 40px",
+          backgroundSize: "44px 44px",
         }}
       />
 
       <div className="relative w-full max-w-sm px-4">
         {/* Logo */}
         <div className="mb-8 text-center">
-          <div className="mb-3 flex items-center justify-center">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#2962ff] shadow-lg shadow-[#2962ff44]">
+          <button onClick={() => router.push("/")} className="mb-3 inline-flex items-center justify-center" aria-label="NovaTrade home">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl glow-blue" style={{ background: "var(--tv-blue)" }}>
               <BarChart2 className="h-6 w-6 text-white" />
             </div>
-          </div>
+          </button>
           <h1 className="text-xl font-bold text-white">Welcome back</h1>
-          <p className="mt-1 text-sm text-[#5d6673]">Sign in to your trading account</p>
+          <p className="mt-1 text-sm" style={{ color: "var(--tv-muted)" }}>Sign in to your trading account</p>
         </div>
 
         {/* Success banner after registration */}
         {registered && (
-          <div className="mb-4 rounded-lg border border-[#26a69a40] bg-[#26a69a15] px-3 py-2.5 text-xs text-[#26a69a]">
+          <div className="mb-4 rounded-lg border border-[#2ebd8540] bg-[#2ebd8515] px-3 py-2.5 text-xs text-[#2ebd85]">
             Account created successfully — please sign in.
           </div>
         )}
 
         {/* Card */}
-        <div className="rounded-xl border border-[#363a45] bg-[#1e222d] p-6 shadow-2xl">
+        <div className="rounded-xl border border-[#23262f] bg-[#111318] p-6 shadow-2xl">
           <form onSubmit={handleSubmit} noValidate className="space-y-4">
             {/* Email */}
             <div>
@@ -96,12 +104,12 @@ function LoginForm() {
                 onChange={(e) => { setForm({ ...form, email: e.target.value }); setApiError(""); }}
                 onBlur={() => handleBlur("email")}
                 placeholder="you@example.com"
-                className="w-full rounded-lg border bg-[#2a2e39] px-3 py-2.5 text-sm text-white outline-none transition-colors placeholder:text-[#5d6673]"
-                style={{ borderColor: touched.email && fieldErrs.email ? "#ef5350" : "#363a45" }}
+                className="w-full rounded-lg border bg-[#181b22] px-3 py-2.5 text-sm text-white outline-none transition-colors placeholder:text-[#5d6673]"
+                style={{ borderColor: touched.email && fieldErrs.email ? "#f6465d" : "#23262f" }}
                 autoComplete="email"
               />
               {touched.email && fieldErrs.email && (
-                <p className="mt-1 text-xs text-[#ef5350]">{fieldErrs.email}</p>
+                <p className="mt-1 text-xs text-[#f6465d]">{fieldErrs.email}</p>
               )}
             </div>
 
@@ -115,8 +123,8 @@ function LoginForm() {
                   onChange={(e) => { setForm({ ...form, password: e.target.value }); setApiError(""); }}
                   onBlur={() => handleBlur("password")}
                   placeholder="••••••••"
-                  className="w-full rounded-lg border bg-[#2a2e39] px-3 py-2.5 pr-10 text-sm text-white outline-none transition-colors placeholder:text-[#5d6673]"
-                  style={{ borderColor: touched.password && fieldErrs.password ? "#ef5350" : "#363a45" }}
+                  className="w-full rounded-lg border bg-[#181b22] px-3 py-2.5 pr-10 text-sm text-white outline-none transition-colors placeholder:text-[#5d6673]"
+                  style={{ borderColor: touched.password && fieldErrs.password ? "#f6465d" : "#23262f" }}
                   autoComplete="current-password"
                 />
                 <button
@@ -129,13 +137,13 @@ function LoginForm() {
                 </button>
               </div>
               {touched.password && fieldErrs.password && (
-                <p className="mt-1 text-xs text-[#ef5350]">{fieldErrs.password}</p>
+                <p className="mt-1 text-xs text-[#f6465d]">{fieldErrs.password}</p>
               )}
             </div>
 
             {/* API error */}
             {apiError && (
-              <div className="rounded-lg border border-[#ef535040] bg-[#ef535015] px-3 py-2 text-xs text-[#ef5350]">
+              <div className="rounded-lg border border-[#f6465d40] bg-[#f6465d15] px-3 py-2 text-xs text-[#f6465d]">
                 {apiError}
               </div>
             )}
@@ -143,7 +151,8 @@ function LoginForm() {
             <button
               type="submit"
               disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#2962ff] py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#2962ff33] transition-all hover:bg-[#3d6fff] active:bg-[#1e4dd8] disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold text-white transition-all glow-blue hover:brightness-110 active:brightness-95 disabled:opacity-60"
+              style={{ background: "var(--tv-blue)" }}
             >
               {loading && <Loader2 className="h-4 w-4 animate-spin" />}
               {loading ? "Signing in…" : "Sign In"}

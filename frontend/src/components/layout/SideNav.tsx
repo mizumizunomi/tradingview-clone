@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { BarChart2, Newspaper, Wallet, Info, Gem, Calendar, Filter, UserCircle, Sun, Moon, Keyboard, Monitor, HelpCircle, Sparkles, PanelLeft, LogOut, ChevronRight, PieChart, ClipboardList, MessageCircle } from "lucide-react";
 import { useTradingStore } from "@/store/trading.store";
@@ -64,9 +65,10 @@ export function SideNav() {
             || (href === "/trade/portfolio" && pathname === "/trade/portfolio")
             || (href === "/trade/orders" && pathname === "/trade/orders");
           return (
-            <button
+            <Link
               key={href}
-              onClick={() => router.push(href)}
+              href={href}
+              prefetch
               title={label}
               className="group relative flex h-9 w-9 items-center justify-center rounded-lg transition-all duration-150"
               style={isActive ? { background: "var(--tv-blue)", color: "white" } : { color: "var(--tv-muted)" }}
@@ -78,7 +80,7 @@ export function SideNav() {
                 style={{ background: "var(--tv-bg3)", borderColor: "var(--tv-border)", color: "var(--tv-text-light)" }}>
                 {label}
               </div>
-            </button>
+            </Link>
           );
         })}
       </div>
@@ -187,7 +189,7 @@ export function SideNav() {
             >
               <PanelLeft className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--tv-muted)" }} />
               <span className="flex-1 text-left">Drawings toolbar</span>
-              <span className="text-[9px]" style={{ color: showObjectTree ? "#26a69a" : "var(--tv-muted)" }}>
+              <span className="text-[9px]" style={{ color: showObjectTree ? "#2ebd85" : "var(--tv-muted)" }}>
                 {showObjectTree ? "On" : "Off"}
               </span>
             </button>
@@ -225,7 +227,7 @@ export function SideNav() {
             <button
               onClick={() => { setShowProfileMenu(false); handleLogout(); }}
               className="flex w-full items-center gap-2.5 px-3 py-2 text-xs transition-colors hover:bg-[var(--tv-bg3)]"
-              style={{ color: "#ef5350" }}
+              style={{ color: "#f6465d" }}
             >
               <LogOut className="h-3.5 w-3.5 shrink-0" />
               Sign out

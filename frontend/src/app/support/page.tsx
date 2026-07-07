@@ -18,9 +18,9 @@ interface Ticket {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  OPEN: "#ef5350",
+  OPEN: "#f6465d",
   IN_PROGRESS: "#f59e0b",
-  RESOLVED: "#26a69a",
+  RESOLVED: "#2ebd85",
   CLOSED: "#5d6673",
 };
 

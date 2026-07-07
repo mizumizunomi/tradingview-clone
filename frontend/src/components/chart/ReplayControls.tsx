@@ -87,7 +87,7 @@ export function ReplayControls({ totalCandles }: Props) {
         className="p-1 rounded hover:bg-[var(--tv-bg3)] ml-1"
         title="Exit replay"
       >
-        <X className="h-3.5 w-3.5 text-[#ef5350]" />
+        <X className="h-3.5 w-3.5 text-[#f6465d]" />
       </button>
     </div>
   );

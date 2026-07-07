@@ -87,8 +87,8 @@ export default function KycPage() {
 
   const statusConfig = {
     PENDING: { icon: Clock, color: "#f59e0b", label: "Under Review", desc: "Your documents are being reviewed. This usually takes 1-3 business days." },
-    APPROVED: { icon: CheckCircle, color: "#26a69a", label: "Verified", desc: "Your identity has been verified. You can now make withdrawals." },
-    REJECTED: { icon: ShieldX, color: "#ef5350", label: "Rejected", desc: "Your verification was rejected. Please review the admin note and resubmit." },
+    APPROVED: { icon: CheckCircle, color: "#2ebd85", label: "Verified", desc: "Your identity has been verified. You can now make withdrawals." },
+    REJECTED: { icon: ShieldX, color: "#f6465d", label: "Rejected", desc: "Your verification was rejected. Please review the admin note and resubmit." },
     RESUBMIT: { icon: AlertCircle, color: "#a78bfa", label: "Resubmit Required", desc: "Please provide new documents as requested." },
   };
 
@@ -142,8 +142,8 @@ export default function KycPage() {
               /* Submission form */
               <>
                 {kyc && (kyc.status === "REJECTED" || kyc.status === "RESUBMIT") && (
-                  <div className="rounded-lg p-3" style={{ background: "#ef535015", border: "1px solid #ef535030" }}>
-                    <p className="text-xs font-semibold text-[#ef5350] uppercase mb-0.5">Resubmission Required</p>
+                  <div className="rounded-lg p-3" style={{ background: "#f6465d15", border: "1px solid #f6465d30" }}>
+                    <p className="text-xs font-semibold text-[#f6465d] uppercase mb-0.5">Resubmission Required</p>
                     {kyc.adminNote && <p className="text-sm" style={{ color: "var(--tv-text)" }}>{kyc.adminNote}</p>}
                   </div>
                 )}

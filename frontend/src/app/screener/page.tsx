@@ -107,7 +107,7 @@ export default function ScreenerPage() {
   );
 
   const CATEGORY_COLORS: Record<string, string> = {
-    CRYPTO: "#f59e0b", FOREX: "#2962ff", STOCKS: "#26a69a",
+    CRYPTO: "#f59e0b", FOREX: "#2962ff", STOCKS: "#2ebd85",
     INDICES: "#9c27b0", COMMODITIES: "#ff9800", FUNDS: "#00bcd4",
   };
 
@@ -237,10 +237,10 @@ export default function ScreenerPage() {
                     <td className="px-3 py-2.5 text-right font-mono text-xs font-medium" style={{ color: "var(--tv-text-light)" }}>
                       {a.price > 0 ? fmtPrice : "—"}
                     </td>
-                    <td className={cn("px-3 py-2.5 text-right font-mono text-xs", isPos ? "text-[#26a69a]" : "text-[#ef5350]")}>
+                    <td className={cn("px-3 py-2.5 text-right font-mono text-xs", isPos ? "text-[#2ebd85]" : "text-[#f6465d]")}>
                       {a.change !== 0 ? `${isPos ? "+" : ""}${a.change.toFixed(a.price < 10 ? 5 : 2)}` : "—"}
                     </td>
-                    <td className={cn("px-3 py-2.5 text-right font-mono text-xs font-bold", isPos ? "text-[#26a69a]" : "text-[#ef5350]")}>
+                    <td className={cn("px-3 py-2.5 text-right font-mono text-xs font-bold", isPos ? "text-[#2ebd85]" : "text-[#f6465d]")}>
                       {a.changePercent !== 0 ? `${isPos ? "+" : ""}${a.changePercent.toFixed(2)}%` : "—"}
                     </td>
                     <td className="px-3 py-2.5 text-right font-mono text-xs" style={{ color: "var(--tv-muted)" }}>

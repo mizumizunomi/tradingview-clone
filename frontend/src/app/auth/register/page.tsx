@@ -20,10 +20,10 @@ const PW_RULES = [
 
 function pwStrength(pw: string): { score: number; label: string; color: string } {
   const passed = PW_RULES.filter((r) => r.test(pw)).length;
-  if (pw.length === 0) return { score: 0, label: "", color: "#363a45" };
-  if (passed === 1) return { score: 1, label: "Weak", color: "#ef5350" };
+  if (pw.length === 0) return { score: 0, label: "", color: "#23262f" };
+  if (passed === 1) return { score: 1, label: "Weak", color: "#f6465d" };
   if (passed === 2) return { score: 2, label: "Fair", color: "#f59e0b" };
-  return { score: 3, label: "Strong", color: "#26a69a" };
+  return { score: 3, label: "Strong", color: "#2ebd85" };
 }
 
 function validate(form: {
@@ -91,38 +91,43 @@ export default function RegisterPage() {
   };
 
   const inputCls = (field: keyof FieldErrors) =>
-    `w-full rounded-lg border bg-[#2a2e39] px-3 py-2.5 text-sm text-white outline-none transition-colors placeholder:text-[#5d6673] focus:border-[#2962ff] ${err(field) ? "border-[#ef5350]" : "border-[#363a45]"}`;
+    `w-full rounded-lg border bg-[#181b22] px-3 py-2.5 text-sm text-white outline-none transition-colors placeholder:text-[#5d6673] focus:border-[#2962ff] ${err(field) ? "border-[#f6465d]" : "border-[#23262f]"}`;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#131722] py-8">
+    <div className="flex min-h-screen items-center justify-center py-8 route-fade" style={{ background: "var(--tv-bg)" }}>
       <div
-        className="pointer-events-none fixed inset-0 opacity-[0.03]"
+        aria-hidden
+        className="pointer-events-none fixed inset-0"
+        style={{ background: "radial-gradient(600px circle at 50% 0%, rgba(41,98,255,0.10), transparent 60%)" }}
+      />
+      <div
+        className="pointer-events-none fixed inset-0 opacity-[0.025]"
         style={{
           backgroundImage: "linear-gradient(#b2b5be 1px, transparent 1px), linear-gradient(90deg, #b2b5be 1px, transparent 1px)",
-          backgroundSize: "40px 40px",
+          backgroundSize: "44px 44px",
         }}
       />
 
       <div className="relative w-full max-w-sm px-4">
         {/* Logo */}
         <div className="mb-6 text-center">
-          <div className="mb-3 flex items-center justify-center">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#2962ff] shadow-lg shadow-[#2962ff44]">
+          <button onClick={() => router.push("/")} className="mb-3 inline-flex items-center justify-center" aria-label="NovaTrade home">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl glow-blue" style={{ background: "var(--tv-blue)" }}>
               <BarChart2 className="h-6 w-6 text-white" />
             </div>
-          </div>
+          </button>
           <h1 className="text-xl font-bold text-white">Create your account</h1>
           <p className="mt-1 text-sm text-[#5d6673]">
             Deposit $250 after signing up to start trading
           </p>
         </div>
 
-        <div className="rounded-xl border border-[#363a45] bg-[#1e222d] p-6 shadow-2xl">
+        <div className="rounded-xl border border-[#23262f] bg-[#111318] p-6 shadow-2xl">
           <form onSubmit={handleSubmit} noValidate className="space-y-3">
             {/* Name row */}
             <div className="flex gap-2">
               <div className="flex-1">
-                <label className="mb-1.5 block text-xs font-medium text-[#b2b5be]">First name <span className="text-[#ef5350]">*</span></label>
+                <label className="mb-1.5 block text-xs font-medium text-[#b2b5be]">First name <span className="text-[#f6465d]">*</span></label>
                 <input
                   placeholder="John"
                   value={form.firstName}
@@ -130,7 +135,7 @@ export default function RegisterPage() {
                   onBlur={() => touch("firstName")}
                   className={inputCls("firstName")}
                 />
-                {err("firstName") && <p className="mt-1 text-xs text-[#ef5350]">{err("firstName")}</p>}
+                {err("firstName") && <p className="mt-1 text-xs text-[#f6465d]">{err("firstName")}</p>}
               </div>
               <div className="flex-1">
                 <label className="mb-1.5 block text-xs font-medium text-[#b2b5be]">Last name</label>
@@ -138,14 +143,14 @@ export default function RegisterPage() {
                   placeholder="Doe"
                   value={form.lastName}
                   onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-                  className="w-full rounded-lg border border-[#363a45] bg-[#2a2e39] px-3 py-2.5 text-sm text-white outline-none transition-colors placeholder:text-[#5d6673] focus:border-[#2962ff]"
+                  className="w-full rounded-lg border border-[#23262f] bg-[#181b22] px-3 py-2.5 text-sm text-white outline-none transition-colors placeholder:text-[#5d6673] focus:border-[#2962ff]"
                 />
               </div>
             </div>
 
             {/* Email */}
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-[#b2b5be]">Email address <span className="text-[#ef5350]">*</span></label>
+              <label className="mb-1.5 block text-xs font-medium text-[#b2b5be]">Email address <span className="text-[#f6465d]">*</span></label>
               <input
                 type="email"
                 placeholder="you@example.com"
@@ -155,12 +160,12 @@ export default function RegisterPage() {
                 className={inputCls("email")}
                 autoComplete="email"
               />
-              {err("email") && <p className="mt-1 text-xs text-[#ef5350]">{err("email")}</p>}
+              {err("email") && <p className="mt-1 text-xs text-[#f6465d]">{err("email")}</p>}
             </div>
 
             {/* Username */}
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-[#b2b5be]">Username <span className="text-[#ef5350]">*</span></label>
+              <label className="mb-1.5 block text-xs font-medium text-[#b2b5be]">Username <span className="text-[#f6465d]">*</span></label>
               <input
                 placeholder="trader123"
                 value={form.username}
@@ -169,12 +174,12 @@ export default function RegisterPage() {
                 className={inputCls("username")}
                 autoComplete="username"
               />
-              {err("username") && <p className="mt-1 text-xs text-[#ef5350]">{err("username")}</p>}
+              {err("username") && <p className="mt-1 text-xs text-[#f6465d]">{err("username")}</p>}
             </div>
 
             {/* Password */}
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-[#b2b5be]">Password <span className="text-[#ef5350]">*</span></label>
+              <label className="mb-1.5 block text-xs font-medium text-[#b2b5be]">Password <span className="text-[#f6465d]">*</span></label>
               <div className="relative">
                 <input
                   type={showPw ? "text" : "password"}
@@ -199,7 +204,7 @@ export default function RegisterPage() {
                       <div
                         key={i}
                         className="h-1 flex-1 rounded-full transition-colors"
-                        style={{ background: i <= strength.score ? strength.color : "#2a2e39" }}
+                        style={{ background: i <= strength.score ? strength.color : "#181b22" }}
                       />
                     ))}
                     <span className="text-xs ml-1" style={{ color: strength.color }}>{strength.label}</span>
@@ -210,9 +215,9 @@ export default function RegisterPage() {
                       return (
                         <div key={r.label} className="flex items-center gap-1.5">
                           {ok
-                            ? <Check className="h-3 w-3 text-[#26a69a]" />
+                            ? <Check className="h-3 w-3 text-[#2ebd85]" />
                             : <X className="h-3 w-3 text-[#5d6673]" />}
-                          <span className="text-[11px]" style={{ color: ok ? "#26a69a" : "#5d6673" }}>{r.label}</span>
+                          <span className="text-[11px]" style={{ color: ok ? "#2ebd85" : "#5d6673" }}>{r.label}</span>
                         </div>
                       );
                     })}
@@ -220,13 +225,13 @@ export default function RegisterPage() {
                 </div>
               )}
               {err("password") && !form.password && (
-                <p className="mt-1 text-xs text-[#ef5350]">{err("password")}</p>
+                <p className="mt-1 text-xs text-[#f6465d]">{err("password")}</p>
               )}
             </div>
 
             {/* Confirm password */}
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-[#b2b5be]">Confirm password <span className="text-[#ef5350]">*</span></label>
+              <label className="mb-1.5 block text-xs font-medium text-[#b2b5be]">Confirm password <span className="text-[#f6465d]">*</span></label>
               <div className="relative">
                 <input
                   type={showConfirm ? "text" : "password"}
@@ -242,12 +247,12 @@ export default function RegisterPage() {
                   {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
-              {err("confirmPassword") && <p className="mt-1 text-xs text-[#ef5350]">{err("confirmPassword")}</p>}
+              {err("confirmPassword") && <p className="mt-1 text-xs text-[#f6465d]">{err("confirmPassword")}</p>}
             </div>
 
             {/* API error */}
             {apiError && (
-              <div className="rounded-lg border border-[#ef535040] bg-[#ef535015] px-3 py-2 text-xs text-[#ef5350]">
+              <div className="rounded-lg border border-[#f6465d40] bg-[#f6465d15] px-3 py-2 text-xs text-[#f6465d]">
                 {apiError}
               </div>
             )}
@@ -255,7 +260,8 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#2962ff] py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#2962ff33] transition-all hover:bg-[#3d6fff] disabled:opacity-60 mt-1"
+              className="flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold text-white transition-all glow-blue hover:brightness-110 disabled:opacity-60 mt-1"
+              style={{ background: "var(--tv-blue)" }}
             >
               {loading && <Loader2 className="h-4 w-4 animate-spin" />}
               {loading ? "Creating account…" : "Create Account"}

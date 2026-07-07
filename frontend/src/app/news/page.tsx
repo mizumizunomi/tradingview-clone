@@ -20,7 +20,7 @@ const CATEGORIES = [
 const CATEGORY_COLOR: Record<string, string> = {
   CRYPTO: "#f59e0b",
   FOREX: "#2962ff",
-  STOCKS: "#26a69a",
+  STOCKS: "#2ebd85",
   INDICES: "#a78bfa",
   COMMODITIES: "#fb923c",
   ECONOMY: "#34d399",
@@ -82,17 +82,17 @@ export default function NewsPage() {
   };
 
   const sentimentIcon = (s: string) => {
-    if (s === "bullish") return <TrendingUp className="h-3.5 w-3.5 text-[#26a69a]" />;
-    if (s === "bearish") return <TrendingDown className="h-3.5 w-3.5 text-[#ef5350]" />;
+    if (s === "bullish") return <TrendingUp className="h-3.5 w-3.5 text-[#2ebd85]" />;
+    if (s === "bearish") return <TrendingDown className="h-3.5 w-3.5 text-[#f6465d]" />;
     return <Minus className="h-3.5 w-3.5 text-[#5d6673]" />;
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#131722]">
+    <div className="flex h-screen overflow-hidden bg-[#0a0b0d]">
       <SideNav />
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#363a45] bg-[#1e222d] px-6 py-3">
+        <div className="flex items-center justify-between border-b border-[#23262f] bg-[#111318] px-6 py-3">
           <div>
             <h1 className="text-base font-bold text-white">Market News</h1>
             <p className="text-xs text-[#5d6673]">Real-time financial news & market insights</p>
@@ -100,7 +100,7 @@ export default function NewsPage() {
           <button
             onClick={() => fetchNews(category)}
             disabled={loading}
-            className="flex items-center gap-1.5 rounded-lg border border-[#363a45] bg-[#2a2e39] px-3 py-1.5 text-xs text-[#b2b5be] hover:border-[#434651] hover:text-white transition-all disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-lg border border-[#23262f] bg-[#181b22] px-3 py-1.5 text-xs text-[#b2b5be] hover:border-[#2f333d] hover:text-white transition-all disabled:opacity-50"
           >
             <RefreshCw className={cn("h-3.5 w-3.5", loading && "animate-spin")} />
             Refresh
@@ -108,7 +108,7 @@ export default function NewsPage() {
         </div>
 
         {/* Category tabs */}
-        <div className="flex border-b border-[#363a45] bg-[#1e222d] px-4">
+        <div className="flex border-b border-[#23262f] bg-[#111318] px-4">
           {CATEGORIES.map((cat) => (
             <button
               key={cat.value}
@@ -145,7 +145,7 @@ export default function NewsPage() {
               {news.slice(0, 1).map((item) => (
                 <div
                   key={item.id}
-                  className="lg:col-span-2 xl:col-span-2 rounded-xl border border-[#363a45] bg-[#1e222d] p-5 hover:border-[#434651] transition-all cursor-pointer group"
+                  className="lg:col-span-2 xl:col-span-2 rounded-xl border border-[#23262f] bg-[#111318] p-5 hover:border-[#2f333d] transition-all cursor-pointer group"
                 >
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div className="flex items-center gap-2">
@@ -162,7 +162,7 @@ export default function NewsPage() {
                         {sentimentIcon(item.sentiment)}
                         <span className={cn(
                           "text-[10px] font-medium capitalize",
-                          item.sentiment === "bullish" ? "text-[#26a69a]" : item.sentiment === "bearish" ? "text-[#ef5350]" : "text-[#5d6673]"
+                          item.sentiment === "bullish" ? "text-[#2ebd85]" : item.sentiment === "bearish" ? "text-[#f6465d]" : "text-[#5d6673]"
                         )}>
                           {item.sentiment}
                         </span>
@@ -179,7 +179,7 @@ export default function NewsPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="text-[11px] font-semibold text-[#5d6673]">{item.source}</span>
-                      <span className="text-[#363a45]">·</span>
+                      <span className="text-[#23262f]">·</span>
                       <span className="flex items-center gap-1 text-[11px] text-[#5d6673]">
                         <Clock className="h-3 w-3" />{timeAgo(item.publishedAt)}
                       </span>
@@ -189,7 +189,7 @@ export default function NewsPage() {
                         <button
                           key={sym}
                           onClick={(e) => { e.stopPropagation(); handleSymbolClick(sym); }}
-                          className="rounded bg-[#2a2e39] px-1.5 py-0.5 text-[10px] font-mono font-medium text-[#b2b5be] hover:bg-[#2962ff] hover:text-white transition-colors"
+                          className="rounded bg-[#181b22] px-1.5 py-0.5 text-[10px] font-mono font-medium text-[#b2b5be] hover:bg-[#2962ff] hover:text-white transition-colors"
                         >
                           {sym}
                         </button>
@@ -203,7 +203,7 @@ export default function NewsPage() {
               {news.slice(1).map((item) => (
                 <div
                   key={item.id}
-                  className="rounded-xl border border-[#363a45] bg-[#1e222d] p-4 hover:border-[#434651] transition-all cursor-pointer group"
+                  className="rounded-xl border border-[#23262f] bg-[#111318] p-4 hover:border-[#2f333d] transition-all cursor-pointer group"
                 >
                   <div className="flex items-center gap-2 mb-2">
                     <span
@@ -233,7 +233,7 @@ export default function NewsPage() {
                         <button
                           key={sym}
                           onClick={(e) => { e.stopPropagation(); handleSymbolClick(sym); }}
-                          className="rounded bg-[#2a2e39] px-1.5 py-0.5 text-[9px] font-mono text-[#b2b5be] hover:bg-[#2962ff] hover:text-white transition-colors"
+                          className="rounded bg-[#181b22] px-1.5 py-0.5 text-[9px] font-mono text-[#b2b5be] hover:bg-[#2962ff] hover:text-white transition-colors"
                         >
                           {sym}
                         </button>

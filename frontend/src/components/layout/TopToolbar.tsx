@@ -120,7 +120,7 @@ export function TopToolbar() {
               <span className="text-xs font-mono" style={{ color: "var(--tv-text-light)" }}>
                 {priceData.price < 10 ? priceData.price.toFixed(5) : priceData.price.toFixed(2)}
               </span>
-              <span className={cn("text-xs font-medium", priceData.changePercent >= 0 ? "text-[#26a69a]" : "text-[#ef5350]")}>
+              <span className={cn("text-xs font-medium", priceData.changePercent >= 0 ? "text-[#2ebd85]" : "text-[#f6465d]")}>
                 {priceData.changePercent >= 0 ? "+" : ""}{priceData.changePercent.toFixed(2)}%
               </span>
             </>
@@ -192,7 +192,7 @@ export function TopToolbar() {
               {
                 label: "P&L",
                 val: `${totalUnrealizedPnL >= 0 ? "+" : ""}$${formatPrice(Math.abs(totalUnrealizedPnL))}`,
-                color: totalUnrealizedPnL >= 0 ? "#26a69a" : "#ef5350",
+                color: totalUnrealizedPnL >= 0 ? "#2ebd85" : "#f6465d",
               },
               { label: "Free Margin", val: `$${formatPrice(wallet.freeMargin)}`, color: "var(--tv-text-light)" },
             ].map(({ label, val, color }) => (

@@ -31,10 +31,10 @@ export function PanelChart({ symbol, timeframe }: PanelChartProps) {
   useEffect(() => {
     if (!containerRef.current) return;
 
-    const bg = chartSettings?.bgColor ?? (theme === "dark" ? "#131722" : "#ffffff");
-    const textCol = theme === "dark" ? "#b2b5be" : "#434651";
-    const grid = chartSettings?.gridColor ?? (theme === "dark" ? "#1e222d" : "#f0f3fa");
-    const border = theme === "dark" ? "#363a45" : "#d1d4dc";
+    const bg = chartSettings?.bgColor ?? (theme === "dark" ? "#0a0b0d" : "#ffffff");
+    const textCol = theme === "dark" ? "#b2b5be" : "#2f333d";
+    const grid = chartSettings?.gridColor ?? (theme === "dark" ? "#111318" : "#f0f3fa");
+    const border = theme === "dark" ? "#23262f" : "#d1d4dc";
 
     const chart = createChart(containerRef.current, {
       layout: { background: { type: ColorType.Solid, color: bg }, textColor: textCol, fontSize: 10 },
@@ -46,8 +46,8 @@ export function PanelChart({ symbol, timeframe }: PanelChartProps) {
       height: containerRef.current.clientHeight,
     });
 
-    const upColor = chartSettings?.upColor ?? "#26a69a";
-    const downColor = chartSettings?.downColor ?? "#ef5350";
+    const upColor = chartSettings?.upColor ?? "#2ebd85";
+    const downColor = chartSettings?.downColor ?? "#f6465d";
     const series = chart.addSeries(CandlestickSeries, {
       upColor, downColor,
       borderUpColor: upColor, borderDownColor: downColor,

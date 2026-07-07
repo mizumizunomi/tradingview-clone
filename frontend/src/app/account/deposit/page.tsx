@@ -128,13 +128,13 @@ export default function DepositPage() {
     : 100;
 
   return (
-    <div className="min-h-screen" style={{ background: "#131722", color: "#d1d4dc" }}>
+    <div className="min-h-screen" style={{ background: "#0a0b0d", color: "#d1d4dc" }}>
       {/* Header */}
       <div
         className="flex items-center gap-3 border-b px-6 py-4"
-        style={{ borderColor: "#2a2e39", background: "#1e222d" }}
+        style={{ borderColor: "#181b22", background: "#111318" }}
       >
-        <ArrowUpCircle className="h-5 w-5 text-[#26a69a]" />
+        <ArrowUpCircle className="h-5 w-5 text-[#2ebd85]" />
         <h1 className="text-lg font-bold text-white">Deposit Funds</h1>
         <div className="ml-auto flex items-center gap-2 text-sm">
           <span style={{ color: "#b2b5be" }}>Balance:</span>
@@ -172,7 +172,7 @@ export default function DepositPage() {
         {subscription && (
           <div
             className="rounded-xl border p-4"
-            style={{ borderColor: "#2a2e39", background: "#1e222d" }}
+            style={{ borderColor: "#181b22", background: "#111318" }}
           >
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-semibold uppercase" style={{ color: "#b2b5be" }}>
@@ -194,7 +194,7 @@ export default function DepositPage() {
                   <span>${totalDeposited.toLocaleString("en-US")} deposited</span>
                   <span>${nextThreshold.toLocaleString("en-US")} for next tier</span>
                 </div>
-                <div className="h-1.5 rounded-full" style={{ background: "#2a2e39" }}>
+                <div className="h-1.5 rounded-full" style={{ background: "#181b22" }}>
                   <div
                     className="h-1.5 rounded-full transition-all duration-500"
                     style={{
@@ -217,7 +217,7 @@ export default function DepositPage() {
         {step === "processing" && (
           <div
             className="rounded-xl border p-12 flex flex-col items-center gap-4"
-            style={{ borderColor: "#2a2e39", background: "#1e222d" }}
+            style={{ borderColor: "#181b22", background: "#111318" }}
           >
             <Loader2 className="h-12 w-12 animate-spin text-[#2962ff]" />
             <p className="text-lg font-semibold text-white">Processing your deposit…</p>
@@ -232,7 +232,7 @@ export default function DepositPage() {
           <div
             ref={confettiRef}
             className="rounded-xl border p-10 flex flex-col items-center gap-4 relative overflow-hidden"
-            style={{ borderColor: "#26a69a44", background: "#1e222d" }}
+            style={{ borderColor: "#2ebd8544", background: "#111318" }}
           >
             {/* CSS confetti */}
             <div className="pointer-events-none absolute inset-0" aria-hidden>
@@ -246,7 +246,7 @@ export default function DepositPage() {
                     width: 8,
                     height: 8,
                     borderRadius: i % 2 === 0 ? "50%" : "2px",
-                    background: ["#2962ff","#26a69a","#f59e0b","#a78bfa","#ef5350"][i % 5],
+                    background: ["#2962ff","#2ebd85","#f59e0b","#a78bfa","#f6465d"][i % 5],
                     animation: `confettiFall ${1.5 + (i % 5) * 0.3}s ease-in ${(i * 0.07)}s both`,
                     opacity: 0,
                   }}
@@ -260,12 +260,12 @@ export default function DepositPage() {
               }
             `}</style>
 
-            <CheckCircle className="h-16 w-16 text-[#26a69a]" />
+            <CheckCircle className="h-16 w-16 text-[#2ebd85]" />
             <p className="text-2xl font-bold text-white">Deposit Successful!</p>
-            <p className="text-3xl font-mono font-bold text-[#26a69a]">
+            <p className="text-3xl font-mono font-bold text-[#2ebd85]">
               +${formatPrice(parsedAmount)}
             </p>
-            <div className="w-full mt-2 space-y-2 rounded-lg p-4" style={{ background: "#131722" }}>
+            <div className="w-full mt-2 space-y-2 rounded-lg p-4" style={{ background: "#0a0b0d" }}>
               <div className="flex justify-between text-sm">
                 <span style={{ color: "#b2b5be" }}>New Balance</span>
                 <span className="font-mono font-semibold text-white">
@@ -288,8 +288,8 @@ export default function DepositPage() {
             <div className="flex gap-3 mt-2 w-full">
               <button
                 onClick={() => { setStep("form"); setAmount(""); }}
-                className="flex-1 rounded-lg border py-2.5 text-sm font-medium transition-colors hover:bg-[#2a2e39]"
-                style={{ borderColor: "#363a45", color: "#b2b5be" }}
+                className="flex-1 rounded-lg border py-2.5 text-sm font-medium transition-colors hover:bg-[#181b22]"
+                style={{ borderColor: "#23262f", color: "#b2b5be" }}
               >
                 Make Another Deposit
               </button>
@@ -308,7 +308,7 @@ export default function DepositPage() {
         {step === "form" && (
           <div
             className="rounded-xl border p-6 space-y-5"
-            style={{ borderColor: "#2a2e39", background: "#1e222d" }}
+            style={{ borderColor: "#181b22", background: "#111318" }}
           >
             {/* Payment method */}
             <div>
@@ -325,7 +325,7 @@ export default function DepositPage() {
                     style={
                       method === m.id
                         ? { borderColor: "#2962ff", background: "#2962ff15", color: "white" }
-                        : { borderColor: "#363a45", color: "#b2b5be" }
+                        : { borderColor: "#23262f", color: "#b2b5be" }
                     }
                   >
                     <m.icon className="h-5 w-5" />
@@ -357,7 +357,7 @@ export default function DepositPage() {
                   max={100000}
                   step="0.01"
                   className="w-full rounded-lg border bg-transparent py-3 pl-7 pr-4 text-lg font-mono text-white outline-none transition-colors focus:border-[#2962ff]"
-                  style={{ borderColor: error ? "#ef5350" : "#363a45" }}
+                  style={{ borderColor: error ? "#f6465d" : "#23262f" }}
                 />
               </div>
               <p className="mt-1 text-xs" style={{ color: "#5d6673" }}>
@@ -376,7 +376,7 @@ export default function DepositPage() {
                   style={
                     amount === p.toString()
                       ? { borderColor: "#2962ff", background: "#2962ff15", color: "white" }
-                      : { borderColor: "#363a45", color: "#b2b5be" }
+                      : { borderColor: "#23262f", color: "#b2b5be" }
                   }
                 >
                   ${p.toLocaleString("en-US")}
@@ -388,7 +388,7 @@ export default function DepositPage() {
             {error && (
               <div
                 className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm"
-                style={{ background: "#ef535022", color: "#ef5350" }}
+                style={{ background: "#f6465d22", color: "#f6465d" }}
               >
                 <X className="h-4 w-4 shrink-0" />
                 {error}
@@ -418,13 +418,13 @@ export default function DepositPage() {
             className="relative rounded-2xl border p-8 text-center max-w-sm w-full"
             style={{
               borderColor: TIER_COLORS[depositResult.newTier] ?? "#2962ff",
-              background: "#1e222d",
+              background: "#111318",
               boxShadow: `0 0 40px ${TIER_COLORS[depositResult.newTier] ?? "#2962ff"}44`,
             }}
           >
             <button
               onClick={() => setShowTierModal(false)}
-              className="absolute right-3 top-3 rounded-full p-1 hover:bg-[#2a2e39]"
+              className="absolute right-3 top-3 rounded-full p-1 hover:bg-[#181b22]"
               style={{ color: "#b2b5be" }}
             >
               <X className="h-4 w-4" />

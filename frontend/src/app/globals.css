@@ -2,26 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Dark theme (default) ── */
+/* ── Dark theme (default) — premium OLED black + electric blue ── */
 :root {
-  --tv-bg: #131722;
-  --tv-bg2: #1e222d;
-  --tv-bg3: #2a2e39;
-  --tv-border: #363a45;
-  --tv-border2: #434651;
-  --tv-muted: #5d6673;
-  --tv-text: #b2b5be;
-  --tv-text-light: #d1d4dc;
-  --tv-text-inv: #131722;
-  --tv-green: #26a69a;
-  --tv-red: #ef5350;
-  --tv-blue: #2962ff;
-  --tv-yellow: #f59e0b;
-  --tv-purple: #9c27b0;
+  --tv-bg: #0a0b0d;         /* near-black base (was navy #131722) */
+  --tv-bg2: #111318;        /* raised surface: cards, panels */
+  --tv-bg3: #181b22;        /* controls, inputs, hover fills */
+  --tv-border: #23262f;     /* subtle hairline borders */
+  --tv-border2: #2f333d;    /* stronger dividers */
+  --tv-muted: #6b7280;      /* muted labels */
+  --tv-text: #a1a6b0;       /* body text */
+  --tv-text-light: #eceef2; /* headings / bright text (higher contrast) */
+  --tv-text-inv: #0a0b0d;
+  --tv-green: #2ebd85;      /* refined up/gain */
+  --tv-red: #f6465d;        /* refined down/loss */
+  --tv-blue: #2962ff;       /* electric-blue accent */
+  --tv-blue-glow: #4d7cff;  /* accent hover / glow */
+  --tv-yellow: #f5a623;
+  --tv-purple: #7c5cff;
   --tv-orange: #ff9800;
-  --tv-chart-bg: #131722;
-  --tv-chart-grid: #1e222d;
-  --tv-chart-cross: #363a45;
+  --tv-chart-bg: #0a0b0d;
+  --tv-chart-grid: #16181d;
+  --tv-chart-cross: #2f333d;
 }
 
 /* ── Light theme ── */
@@ -57,17 +58,19 @@ html, body {
   overflow: hidden;
   background-color: var(--tv-bg);
   color: var(--tv-text-light);
-  font-family: -apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif;
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, sans-serif;
   font-size: 12px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 4px; height: 4px; }
+/* Scrollbar — thin, premium */
+::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--tv-border); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: var(--tv-border2); }
+::-webkit-scrollbar-thumb { background: var(--tv-border2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #3a3f4b; }
 
 /* Number inputs - hide spinners */
 input[type=number]::-webkit-inner-spin-button,
@@ -134,7 +137,24 @@ html {
 }
 
 /* Price flash animations */
-@keyframes flashGreen { 0% { background: #26a69a33; } 100% { background: transparent; } }
-@keyframes flashRed { 0% { background: #ef535033; } 100% { background: transparent; } }
+@keyframes flashGreen { 0% { background: #2ebd8533; } 100% { background: transparent; } }
+@keyframes flashRed { 0% { background: #f6465d33; } 100% { background: transparent; } }
 .flash-green { animation: flashGreen 0.5s ease-out; }
 .flash-red { animation: flashRed 0.5s ease-out; }
+
+/* ── Route content fade-in — smooth, lag-free tab transitions ── */
+@keyframes routeFade {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.route-fade {
+  animation: routeFade 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .route-fade { animation: none; }
+  *, *::before, *::after { transition-duration: 0.01ms !important; }
+}
+
+/* Premium accent glow for CTAs (used sparingly) */
+.glow-blue { box-shadow: 0 0 0 1px rgba(41,98,255,0.4), 0 4px 20px -4px rgba(41,98,255,0.5); }
+.glow-blue:hover { box-shadow: 0 0 0 1px rgba(77,124,255,0.6), 0 6px 28px -4px rgba(41,98,255,0.7); }

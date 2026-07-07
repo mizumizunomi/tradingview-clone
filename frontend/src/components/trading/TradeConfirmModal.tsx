@@ -75,7 +75,7 @@ export function TradeConfirmModal({
     {
       label: "Direction",
       value: side,
-      valueColor: isBuy ? "#26a69a" : "#ef5350",
+      valueColor: isBuy ? "#2ebd85" : "#f6465d",
     },
     {
       label: "Volume (Lots)",
@@ -97,12 +97,12 @@ export function TradeConfirmModal({
     {
       label: "Stop Loss",
       value: stopLoss !== undefined ? `$${formatNum(stopLoss)}` : "—",
-      valueColor: stopLoss !== undefined ? "#ef5350" : undefined,
+      valueColor: stopLoss !== undefined ? "#f6465d" : undefined,
     },
     {
       label: "Take Profit",
       value: takeProfit !== undefined ? `$${formatNum(takeProfit)}` : "—",
-      valueColor: takeProfit !== undefined ? "#26a69a" : undefined,
+      valueColor: takeProfit !== undefined ? "#2ebd85" : undefined,
     },
     {
       label: "Notional Value",
@@ -120,7 +120,7 @@ export function TradeConfirmModal({
     {
       label: "Available Margin",
       value: `$${formatPrice(availableMargin)}`,
-      valueColor: marginWarning ? "#ef5350" : "#26a69a",
+      valueColor: marginWarning ? "#f6465d" : "#2ebd85",
     },
   ];
 
@@ -134,12 +134,12 @@ export function TradeConfirmModal({
     >
       <div
         className="relative w-full max-w-sm mx-4 rounded-xl overflow-hidden shadow-2xl"
-        style={{ background: "#1e222d", border: "1px solid #363a45" }}
+        style={{ background: "#111318", border: "1px solid #23262f" }}
       >
         {/* Header */}
         <div
           className="flex items-center justify-between px-5 py-4"
-          style={{ background: "#131722", borderBottom: "1px solid #363a45" }}
+          style={{ background: "#0a0b0d", borderBottom: "1px solid #23262f" }}
         >
           <div className="flex items-center gap-3">
             <div>
@@ -149,8 +149,8 @@ export function TradeConfirmModal({
                   className={cn(
                     "rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest",
                     isBuy
-                      ? "bg-[#26a69a22] text-[#26a69a] border border-[#26a69a44]"
-                      : "bg-[#ef535022] text-[#ef5350] border border-[#ef535044]"
+                      ? "bg-[#2ebd8522] text-[#2ebd85] border border-[#2ebd8544]"
+                      : "bg-[#f6465d22] text-[#f6465d] border border-[#f6465d44]"
                   )}
                 >
                   {side}
@@ -165,7 +165,7 @@ export function TradeConfirmModal({
           <button
             onClick={onCancel}
             disabled={loading}
-            className="p-1 rounded hover:bg-[#363a45] text-[#5d6673] hover:text-white transition-colors disabled:opacity-40"
+            className="p-1 rounded hover:bg-[#23262f] text-[#5d6673] hover:text-white transition-colors disabled:opacity-40"
           >
             <X className="h-4 w-4" />
           </button>
@@ -176,13 +176,13 @@ export function TradeConfirmModal({
           {/* Detail rows */}
           <div
             className="rounded-lg overflow-hidden divide-y"
-            style={{ border: "1px solid #363a45" }}
+            style={{ border: "1px solid #23262f" }}
           >
             {rows.map(({ label, value, valueColor }) => (
               <div
                 key={label}
                 className="flex justify-between items-center px-3 py-2"
-                style={{ background: "#131722", borderColor: "#1e222d" }}
+                style={{ background: "#0a0b0d", borderColor: "#111318" }}
               >
                 <span className="text-[11px] text-[#5d6673]">{label}</span>
                 <span
@@ -197,7 +197,7 @@ export function TradeConfirmModal({
 
           {/* Margin warning */}
           {marginWarning && (
-            <div className="flex items-start gap-2 rounded-lg px-3 py-2.5 text-xs bg-[#ef535015] border border-[#ef535040] text-[#ef5350]">
+            <div className="flex items-start gap-2 rounded-lg px-3 py-2.5 text-xs bg-[#f6465d15] border border-[#f6465d40] text-[#f6465d]">
               <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
               <span>
                 Insufficient margin. Required{" "}
@@ -215,7 +215,7 @@ export function TradeConfirmModal({
           <button
             onClick={onCancel}
             disabled={loading}
-            className="flex-1 rounded-lg py-2.5 text-xs font-bold uppercase tracking-widest transition-all bg-[#2a2e39] text-[#b2b5be] hover:bg-[#363a45] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex-1 rounded-lg py-2.5 text-xs font-bold uppercase tracking-widest transition-all bg-[#181b22] text-[#b2b5be] hover:bg-[#23262f] hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Cancel
           </button>
@@ -225,8 +225,8 @@ export function TradeConfirmModal({
             className={cn(
               "flex-1 rounded-lg py-2.5 text-xs font-bold uppercase tracking-widest text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed",
               isBuy
-                ? "bg-[#26a69a] hover:bg-[#2bbb9d] active:bg-[#1f8f84] shadow-[0_2px_8px_#26a69a33]"
-                : "bg-[#ef5350] hover:bg-[#f26360] active:bg-[#d44a48] shadow-[0_2px_8px_#ef535033]"
+                ? "bg-[#2ebd85] hover:bg-[#2bbb9d] active:bg-[#1f8f84] shadow-[0_2px_8px_#2ebd8533]"
+                : "bg-[#f6465d] hover:bg-[#f26360] active:bg-[#d44a48] shadow-[0_2px_8px_#f6465d33]"
             )}
           >
             {loading ? (

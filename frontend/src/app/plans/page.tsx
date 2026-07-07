@@ -143,11 +143,11 @@ export default function PlansPage() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#131722]">
+    <div className="flex h-screen overflow-hidden bg-[#0a0b0d]">
       <SideNav />
       <div className="flex-1 overflow-y-auto">
         {/* Header */}
-        <div className="border-b border-[#363a45] bg-[#1e222d] px-8 py-6">
+        <div className="border-b border-[#23262f] bg-[#111318] px-8 py-6">
           <div className="max-w-5xl mx-auto">
             <div className="flex items-center gap-2 mb-1">
               <Zap className="h-5 w-5 text-[#f59e0b]" />
@@ -172,14 +172,14 @@ export default function PlansPage() {
                   className={cn(
                     "relative rounded-2xl border p-5 transition-all cursor-pointer",
                     plan.popular
-                      ? "border-[#f59e0b] bg-[#1e222d]"
-                      : "border-[#363a45] bg-[#1e222d] hover:border-[#434651]",
-                    isActive && "ring-2 ring-[#2962ff] ring-offset-2 ring-offset-[#131722]"
+                      ? "border-[#f59e0b] bg-[#111318]"
+                      : "border-[#23262f] bg-[#111318] hover:border-[#2f333d]",
+                    isActive && "ring-2 ring-[#2962ff] ring-offset-2 ring-offset-[#0a0b0d]"
                   )}
                   style={{ boxShadow: plan.popular ? `0 0 40px ${plan.bgGlow}` : undefined }}
                 >
                   {plan.popular && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#f59e0b] px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#131722]">
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#f59e0b] px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#0a0b0d]">
                       Most Popular
                     </div>
                   )}
@@ -204,7 +204,7 @@ export default function PlansPage() {
                   </div>
 
                   {/* Price */}
-                  <div className="mb-4 pb-4 border-b border-[#363a45]">
+                  <div className="mb-4 pb-4 border-b border-[#23262f]">
                     <div className="text-2xl font-bold text-white">
                       {plan.monthlyFee === 0 ? "Free" : `$${plan.monthlyFee}/mo`}
                     </div>
@@ -220,7 +220,7 @@ export default function PlansPage() {
                       { label: "Positions", value: plan.maxPositions >= 999 ? "∞" : String(plan.maxPositions) },
                       { label: "Commission", value: plan.commission },
                     ].map(({ label, value }) => (
-                      <div key={label} className="rounded-lg bg-[#131722] px-2.5 py-2">
+                      <div key={label} className="rounded-lg bg-[#0a0b0d] px-2.5 py-2">
                         <div className="text-[10px] text-[#5d6673]">{label}</div>
                         <div className="text-xs font-bold text-white">{value}</div>
                       </div>
@@ -263,10 +263,10 @@ export default function PlansPage() {
           {/* Comparison table */}
           <div>
             <h2 className="text-sm font-bold text-white mb-4">Full Feature Comparison</h2>
-            <div className="rounded-xl border border-[#363a45] overflow-hidden">
+            <div className="rounded-xl border border-[#23262f] overflow-hidden">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-[#363a45] bg-[#1e222d]">
+                  <tr className="border-b border-[#23262f] bg-[#111318]">
                     <th className="px-4 py-3 text-left text-xs font-semibold text-[#5d6673]">Feature</th>
                     {PLANS.map((p) => (
                       <th key={p.id} className="px-4 py-3 text-center text-xs font-bold" style={{ color: p.color }}>
@@ -278,14 +278,14 @@ export default function PlansPage() {
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#1e222d]">
+                <tbody className="divide-y divide-[#111318]">
                   {COMPARISON_ROWS.map((row) => (
-                    <tr key={row.feature} className="hover:bg-[#1e222d] transition-colors">
+                    <tr key={row.feature} className="hover:bg-[#111318] transition-colors">
                       <td className="px-4 py-2.5 text-xs text-[#b2b5be]">{row.feature}</td>
                       {(["DEFAULT", "SILVER", "GOLD", "PLATINUM"] as PlanTier[]).map((tier) => (
                         <td key={tier} className="px-4 py-2.5 text-center text-xs">
                           {(row as Record<string, string>)[tier] === "✓" ? (
-                            <Check className="h-3.5 w-3.5 text-[#26a69a] mx-auto" />
+                            <Check className="h-3.5 w-3.5 text-[#2ebd85] mx-auto" />
                           ) : (row as Record<string, string>)[tier] === "✗" ? (
                             <span className="text-[#5d6673]">—</span>
                           ) : (
@@ -301,7 +301,7 @@ export default function PlansPage() {
           </div>
 
           {/* Note */}
-          <div className="rounded-xl border border-[#363a45] bg-[#1e222d] p-4 text-center">
+          <div className="rounded-xl border border-[#23262f] bg-[#111318] p-4 text-center">
             <p className="text-xs text-[#5d6673]">
               All plans use <span className="text-[#b2b5be] font-medium">simulated funds only</span> — no real money is involved.
               Plans are activated by depositing into your trading account.

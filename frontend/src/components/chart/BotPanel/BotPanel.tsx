@@ -21,7 +21,7 @@ function VerdictBanner({ analysis }: { analysis: BotAnalysisResponse }) {
   const isSell = verdict.action === "SELL";
   const isHold = verdict.action === "HOLD";
 
-  const bannerColor = isBuy ? "#26a69a" : isSell ? "#ef5350" : "#f59e0b";
+  const bannerColor = isBuy ? "#2ebd85" : isSell ? "#f6465d" : "#f59e0b";
   const bgColor = isBuy ? "rgba(38,166,154,0.12)" : isSell ? "rgba(239,83,80,0.12)" : "rgba(245,158,11,0.12)";
   const Icon = isBuy ? TrendingUp : isSell ? TrendingDown : Minus;
 
@@ -40,7 +40,7 @@ function VerdictBanner({ analysis }: { analysis: BotAnalysisResponse }) {
         <span className="text-xs font-bold" style={{ color: bannerColor }}>{verdict.confidence}%</span>
       </div>
       {/* Confidence bar */}
-      <div className="w-full h-1.5 rounded-full" style={{ background: "#363a45" }}>
+      <div className="w-full h-1.5 rounded-full" style={{ background: "#23262f" }}>
         <div
           className="h-full rounded-full transition-all duration-700"
           style={{ width: `${verdict.confidence}%`, background: bannerColor }}
@@ -53,8 +53,8 @@ function VerdictBanner({ analysis }: { analysis: BotAnalysisResponse }) {
 // ── Indicator badge ───────────────────────────────────────────────────────────
 function SignalBadge({ signal }: { signal: "bullish" | "bearish" | "neutral" }) {
   const map = {
-    bullish: { color: "#26a69a", label: "🟢" },
-    bearish: { color: "#ef5350", label: "🔴" },
+    bullish: { color: "#2ebd85", label: "🟢" },
+    bearish: { color: "#f6465d", label: "🔴" },
     neutral: { color: "#f59e0b", label: "🟡" },
   };
   return <span className="text-[11px]">{map[signal].label}</span>;
@@ -128,7 +128,7 @@ function AnalysisTab() {
       <VerdictBanner analysis={a} />
 
       {/* Summary */}
-      <div className="rounded-lg p-3" style={{ background: "#131722" }}>
+      <div className="rounded-lg p-3" style={{ background: "#0a0b0d" }}>
         <p className="text-[11px] leading-relaxed" style={{ color: "#b2b5be" }}>{a.verdict.summary}</p>
       </div>
 
@@ -136,9 +136,9 @@ function AnalysisTab() {
       <Section title="Trade Levels">
         {[
           { label: "Entry", value: fmtP(a.levels.entry), color: "#2962ff" },
-          { label: "Stop Loss", value: fmtP(a.levels.stopLoss), color: "#ef5350" },
-          { label: "TP1", value: fmtP(a.levels.takeProfit1), color: "#26a69a" },
-          { label: "TP2", value: fmtP(a.levels.takeProfit2), color: "#26a69a" },
+          { label: "Stop Loss", value: fmtP(a.levels.stopLoss), color: "#f6465d" },
+          { label: "TP1", value: fmtP(a.levels.takeProfit1), color: "#2ebd85" },
+          { label: "TP2", value: fmtP(a.levels.takeProfit2), color: "#2ebd85" },
           { label: "Risk:Reward", value: `1:${a.levels.riskRewardRatio}`, color: "#d1d4dc" },
         ].map(({ label, value, color }) => (
           <div key={label} className="flex justify-between items-center py-1">
@@ -162,9 +162,9 @@ function AnalysisTab() {
           </div>
         ))}
         {a.technicals.trend && (
-          <div className="mt-1 pt-1 border-t" style={{ borderColor: "#363a45" }}>
+          <div className="mt-1 pt-1 border-t" style={{ borderColor: "#23262f" }}>
             <span className="text-[10px] uppercase tracking-wider" style={{ color: "#5d6673" }}>Trend: </span>
-            <span className="text-[10px] font-semibold capitalize" style={{ color: a.technicals.trend === "bullish" ? "#26a69a" : a.technicals.trend === "bearish" ? "#ef5350" : "#f59e0b" }}>
+            <span className="text-[10px] font-semibold capitalize" style={{ color: a.technicals.trend === "bullish" ? "#2ebd85" : a.technicals.trend === "bearish" ? "#f6465d" : "#f59e0b" }}>
               {a.technicals.trend}
             </span>
           </div>
@@ -179,14 +179,14 @@ function AnalysisTab() {
               <span className="text-[11px] font-mono" style={{ color: "#5d6673" }}>{m.timeframe}</span>
               <div className="flex items-center gap-1">
                 <SignalBadge signal={m.signal} />
-                <span className="text-[10px] capitalize" style={{ color: m.signal === "bullish" ? "#26a69a" : m.signal === "bearish" ? "#ef5350" : "#f59e0b" }}>
+                <span className="text-[10px] capitalize" style={{ color: m.signal === "bullish" ? "#2ebd85" : m.signal === "bearish" ? "#f6465d" : "#f59e0b" }}>
                   {m.signal}
                 </span>
                 <span className="text-[10px]" style={{ color: "#5d6673" }}>({m.confidence}%)</span>
               </div>
             </div>
           ))}
-          <div className="mt-1 pt-1 border-t text-[10px]" style={{ borderColor: "#363a45", color: "#5d6673" }}>
+          <div className="mt-1 pt-1 border-t text-[10px]" style={{ borderColor: "#23262f", color: "#5d6673" }}>
             Confluence: <span className="font-semibold" style={{ color: "#d1d4dc" }}>{(a.confluenceScore * 100).toFixed(0)}%</span>
           </div>
         </Section>
@@ -209,7 +209,7 @@ function AnalysisTab() {
         {a.fundamentals.marketData && (
           <>
             {a.fundamentals.marketData.fearGreedIndex !== undefined && (
-              <div className="flex justify-between py-1 mt-1 border-t" style={{ borderColor: "#363a45" }}>
+              <div className="flex justify-between py-1 mt-1 border-t" style={{ borderColor: "#23262f" }}>
                 <span className="text-[11px]" style={{ color: "#5d6673" }}>Fear & Greed</span>
                 <span className="text-[11px] font-mono" style={{ color: "#d1d4dc" }}>{a.fundamentals.marketData.fearGreedIndex}</span>
               </div>
@@ -217,7 +217,7 @@ function AnalysisTab() {
             {a.fundamentals.marketData.fundingRate !== undefined && (
               <div className="flex justify-between py-1">
                 <span className="text-[11px]" style={{ color: "#5d6673" }}>Funding Rate</span>
-                <span className="text-[11px] font-mono" style={{ color: a.fundamentals.marketData.fundingRate > 0 ? "#26a69a" : "#ef5350" }}>
+                <span className="text-[11px] font-mono" style={{ color: a.fundamentals.marketData.fundingRate > 0 ? "#2ebd85" : "#f6465d" }}>
                   {(a.fundamentals.marketData.fundingRate * 100).toFixed(4)}%
                 </span>
               </div>
@@ -244,7 +244,7 @@ function AnalysisTab() {
         onClick={handleAnalyze}
         disabled={botAnalyzing}
         className="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-semibold transition-all hover:opacity-90 disabled:opacity-50"
-        style={{ background: "#1e222d", border: "1px solid #363a45", color: "#5d6673" }}
+        style={{ background: "#111318", border: "1px solid #23262f", color: "#5d6673" }}
       >
         <RefreshCw size={11} /> Refresh Analysis
       </button>
@@ -283,16 +283,16 @@ function SignalsTab() {
 
   if (botSignals.length === 0) return (
     <div className="flex flex-col items-center justify-center py-12 gap-3 text-center">
-      <Bell size={28} style={{ color: "#363a45" }} />
+      <Bell size={28} style={{ color: "#23262f" }} />
       <p className="text-sm font-medium" style={{ color: "#5d6673" }}>No signals yet</p>
-      <p className="text-xs" style={{ color: "#363a45" }}>Signals appear here when market conditions match</p>
+      <p className="text-xs" style={{ color: "#23262f" }}>Signals appear here when market conditions match</p>
     </div>
   );
 
   return (
     <div className="space-y-2 pb-4">
       <div className="flex justify-end">
-        <button onClick={load} className="p-1 rounded transition-colors hover:bg-[#1e222d]" style={{ color: "#5d6673" }}>
+        <button onClick={load} className="p-1 rounded transition-colors hover:bg-[#111318]" style={{ color: "#5d6673" }}>
           <RefreshCw size={11} />
         </button>
       </div>
@@ -306,11 +306,11 @@ function SignalsTab() {
 function SignalCard({ signal, onExecute }: { signal: BotSignal; onExecute: (id: string) => void }) {
   const isBuy = signal.action === "BUY";
   const isSell = signal.action === "SELL";
-  const color = isBuy ? "#26a69a" : isSell ? "#ef5350" : "#f59e0b";
+  const color = isBuy ? "#2ebd85" : isSell ? "#f6465d" : "#f59e0b";
   const ago = Math.floor((Date.now() - new Date(signal.createdAt).getTime()) / 60000);
 
   return (
-    <div className="rounded-xl p-3" style={{ background: "#1e222d", border: "1px solid #363a45" }}>
+    <div className="rounded-xl p-3" style={{ background: "#111318", border: "1px solid #23262f" }}>
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold" style={{ color: "#d1d4dc" }}>{signal.asset}</span>
@@ -321,7 +321,7 @@ function SignalCard({ signal, onExecute }: { signal: BotSignal; onExecute: (id: 
       </div>
       {/* Confidence */}
       <div className="flex items-center gap-2 mb-2">
-        <div className="flex-1 h-1 rounded-full" style={{ background: "#363a45" }}>
+        <div className="flex-1 h-1 rounded-full" style={{ background: "#23262f" }}>
           <div className="h-full rounded-full" style={{ width: `${(signal.confidence * 100).toFixed(0)}%`, background: color }} />
         </div>
         <span className="text-[10px] font-mono" style={{ color }}>{(signal.confidence * 100).toFixed(0)}%</span>
@@ -330,8 +330,8 @@ function SignalCard({ signal, onExecute }: { signal: BotSignal; onExecute: (id: 
       {signal.entryPrice && (
         <div className="flex gap-3 text-[10px] font-mono mb-2" style={{ color: "#5d6673" }}>
           <span>E: <span style={{ color: "#d1d4dc" }}>${formatPrice(signal.entryPrice)}</span></span>
-          {signal.stopLoss && <span>SL: <span style={{ color: "#ef5350" }}>${formatPrice(signal.stopLoss)}</span></span>}
-          {signal.takeProfit && <span>TP: <span style={{ color: "#26a69a" }}>${formatPrice(signal.takeProfit)}</span></span>}
+          {signal.stopLoss && <span>SL: <span style={{ color: "#f6465d" }}>${formatPrice(signal.stopLoss)}</span></span>}
+          {signal.takeProfit && <span>TP: <span style={{ color: "#2ebd85" }}>${formatPrice(signal.takeProfit)}</span></span>}
         </div>
       )}
       {/* Status + actions */}
@@ -346,7 +346,7 @@ function SignalCard({ signal, onExecute }: { signal: BotSignal; onExecute: (id: 
           </button>
         )}
         {(signal.autoExecuted || signal.status === "EXECUTED") && (
-          <span className="text-[10px] px-2 py-1 rounded font-semibold" style={{ background: "rgba(38,166,154,0.15)", color: "#26a69a" }}>✓ Executed</span>
+          <span className="text-[10px] px-2 py-1 rounded font-semibold" style={{ background: "rgba(38,166,154,0.15)", color: "#2ebd85" }}>✓ Executed</span>
         )}
         {signal.status === "EXPIRED" && (
           <span className="text-[10px]" style={{ color: "#5d6673" }}>Expired</span>
@@ -392,23 +392,23 @@ function StrategiesTab() {
 
   if (strategies.length === 0) return (
     <div className="flex flex-col items-center justify-center py-12 gap-3 text-center">
-      <Zap size={28} style={{ color: "#363a45" }} />
+      <Zap size={28} style={{ color: "#23262f" }} />
       <p className="text-sm font-medium" style={{ color: "#5d6673" }}>No strategies yet</p>
-      <p className="text-xs" style={{ color: "#363a45" }}>Create strategies on the bot page to manage them here</p>
+      <p className="text-xs" style={{ color: "#23262f" }}>Create strategies on the bot page to manage them here</p>
     </div>
   );
 
   return (
     <div className="space-y-2 pb-4">
       {strategies.map((s) => (
-        <div key={s.id} className="rounded-xl p-3" style={{ background: "#1e222d", border: "1px solid #363a45" }}>
+        <div key={s.id} className="rounded-xl p-3" style={{ background: "#111318", border: "1px solid #23262f" }}>
           <div className="flex items-start justify-between mb-2">
             <div>
               <span className="text-xs font-semibold" style={{ color: "#d1d4dc" }}>{s.name}</span>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-[10px]" style={{ color: "#5d6673" }}>{s.assetClass}</span>
                 {s.winRate != null && (
-                  <span className="text-[10px]" style={{ color: s.winRate > 0.5 ? "#26a69a" : "#ef5350" }}>
+                  <span className="text-[10px]" style={{ color: s.winRate > 0.5 ? "#2ebd85" : "#f6465d" }}>
                     {(s.winRate * 100).toFixed(0)}% WR
                   </span>
                 )}
@@ -418,7 +418,7 @@ function StrategiesTab() {
             <button
               onClick={() => handleToggle(s.id, s.isActive)}
               className="relative inline-flex h-4 w-7 cursor-pointer rounded-full transition-colors"
-              style={{ background: s.isActive ? "#2962ff" : "#363a45" }}
+              style={{ background: s.isActive ? "#2962ff" : "#23262f" }}
             >
               <span
                 className="absolute top-0.5 left-0.5 h-3 w-3 rounded-full bg-white transition-transform"
@@ -428,8 +428,8 @@ function StrategiesTab() {
           </div>
           <button
             onClick={() => handleBacktest(s.id)}
-            className="w-full py-1 rounded text-[10px] font-medium transition-colors hover:bg-[#2a2e39]"
-            style={{ border: "1px solid #363a45", color: "#5d6673" }}
+            className="w-full py-1 rounded text-[10px] font-medium transition-colors hover:bg-[#181b22]"
+            style={{ border: "1px solid #23262f", color: "#5d6673" }}
           >
             Run Backtest
           </button>
@@ -478,8 +478,8 @@ function SettingsTab() {
         />
         <button
           onClick={() => { clearBotDrawings(); addToast({ type: "info", message: "Bot drawings cleared" }); }}
-          className="w-full py-1.5 rounded text-[11px] font-medium mt-2 transition-colors hover:bg-[#2a2e39]"
-          style={{ border: "1px solid #363a45", color: "#ef5350" }}
+          className="w-full py-1.5 rounded text-[11px] font-medium mt-2 transition-colors hover:bg-[#181b22]"
+          style={{ border: "1px solid #23262f", color: "#f6465d" }}
         >
           Clear All Bot Drawings
         </button>
@@ -511,7 +511,7 @@ function SettingsTab() {
                   className="flex-1 py-1 rounded text-[9px] font-semibold uppercase tracking-wider transition-all"
                   style={settings.riskLevel === lvl
                     ? { background: "#2962ff", color: "#fff" }
-                    : { background: "#1e222d", border: "1px solid #363a45", color: "#5d6673" }
+                    : { background: "#111318", border: "1px solid #23262f", color: "#5d6673" }
                   }
                 >
                   {lvl.slice(0, 4)}
@@ -540,11 +540,11 @@ function SettingsTab() {
 // ── Shared sub-components ─────────────────────────────────────────────────────
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl overflow-hidden" style={{ border: "1px solid #363a45" }}>
-      <div className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider" style={{ background: "#131722", color: "#5d6673" }}>
+    <div className="rounded-xl overflow-hidden" style={{ border: "1px solid #23262f" }}>
+      <div className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider" style={{ background: "#0a0b0d", color: "#5d6673" }}>
         {title}
       </div>
-      <div className="px-3 py-2" style={{ background: "#1e222d" }}>{children}</div>
+      <div className="px-3 py-2" style={{ background: "#111318" }}>{children}</div>
     </div>
   );
 }
@@ -556,7 +556,7 @@ function ToggleRow({ label, checked, onChange }: { label: string; checked: boole
       <button
         onClick={() => onChange(!checked)}
         className="relative inline-flex h-4 w-7 cursor-pointer rounded-full transition-colors"
-        style={{ background: checked ? "#2962ff" : "#363a45" }}
+        style={{ background: checked ? "#2962ff" : "#23262f" }}
       >
         <span
           className="absolute top-0.5 left-0.5 h-3 w-3 rounded-full bg-white transition-transform"
@@ -584,24 +584,24 @@ export function BotPanel() {
   return (
     <div
       className="flex flex-col border-l shrink-0 overflow-hidden"
-      style={{ width: 320, background: "#1e222d", borderColor: "#363a45" }}
+      style={{ width: 320, background: "#111318", borderColor: "#23262f" }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b shrink-0" style={{ background: "#131722", borderColor: "#363a45" }}>
+      <div className="flex items-center justify-between px-3 py-2 border-b shrink-0" style={{ background: "#0a0b0d", borderColor: "#23262f" }}>
         <div className="flex items-center gap-2">
           <div className="w-5 h-5 rounded flex items-center justify-center" style={{ background: "rgba(41,98,255,0.15)" }}>
             <Bot size={11} color="#2962ff" />
           </div>
           <span className="text-[11px] font-semibold" style={{ color: "#d1d4dc" }}>AI Analyst</span>
           {selectedAsset && (
-            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ background: "#363a45", color: "#5d6673" }}>
+            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ background: "#23262f", color: "#5d6673" }}>
               {selectedAsset.symbol} · {timeframe}
             </span>
           )}
         </div>
         <button
           onClick={() => setBotPanelOpen(false)}
-          className="p-0.5 rounded hover:bg-[#363a45] transition-colors"
+          className="p-0.5 rounded hover:bg-[#23262f] transition-colors"
           style={{ color: "#5d6673" }}
         >
           <X size={13} />
@@ -609,7 +609,7 @@ export function BotPanel() {
       </div>
 
       {/* Tab bar */}
-      <div className="flex border-b shrink-0" style={{ borderColor: "#363a45" }}>
+      <div className="flex border-b shrink-0" style={{ borderColor: "#23262f" }}>
         {TABS.map(({ id, label, icon }) => (
           <button
             key={id}

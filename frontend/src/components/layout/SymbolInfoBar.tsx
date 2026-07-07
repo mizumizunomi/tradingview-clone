@@ -3,7 +3,7 @@ import { useTradingStore } from "@/store/trading.store";
 import { cn } from "@/lib/utils";
 
 const CATEGORY_COLORS: Record<string, string> = {
-  CRYPTO: "#f59e0b", FOREX: "#2962ff", STOCKS: "#26a69a",
+  CRYPTO: "#f59e0b", FOREX: "#2962ff", STOCKS: "#2ebd85",
   INDICES: "#9c27b0", COMMODITIES: "#ff9800", FUNDS: "#00bcd4",
 };
 
@@ -43,7 +43,7 @@ export function SymbolInfoBar() {
       </span>
 
       {/* Change */}
-      <span className={cn("text-[11px] font-medium shrink-0", isPos ? "text-[#26a69a]" : "text-[#ef5350]")}>
+      <span className={cn("text-[11px] font-medium shrink-0", isPos ? "text-[#2ebd85]" : "text-[#f6465d]")}>
         {isPos ? "▲" : "▼"} {Math.abs(pd.change).toFixed(pd.price < 10 ? 5 : 2)} ({isPos ? "+" : ""}{pd.changePercent.toFixed(2)}%)
       </span>
 
@@ -57,8 +57,8 @@ export function SymbolInfoBar() {
 
       {/* Bid / Ask */}
       <div className="flex items-center gap-2 shrink-0">
-        <span className="text-[10px] text-[#ef5350]">Bid <span className="font-mono">{pd.bid?.toFixed(pd.bid < 10 ? 5 : 2)}</span></span>
-        <span className="text-[10px] text-[#26a69a]">Ask <span className="font-mono">{pd.ask?.toFixed(pd.ask < 10 ? 5 : 2)}</span></span>
+        <span className="text-[10px] text-[#f6465d]">Bid <span className="font-mono">{pd.bid?.toFixed(pd.bid < 10 ? 5 : 2)}</span></span>
+        <span className="text-[10px] text-[#2ebd85]">Ask <span className="font-mono">{pd.ask?.toFixed(pd.ask < 10 ? 5 : 2)}</span></span>
       </div>
 
       {/* Broker */}

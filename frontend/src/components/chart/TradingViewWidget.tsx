@@ -111,7 +111,7 @@ export function TradingViewWidget({ symbol, timeframe, assetType, height = "100%
         theme: isDark ? "dark" : "light",
         style: "1",
         locale: "en",
-        toolbar_bg: isDark ? "#131722" : "#f1f3fa",
+        toolbar_bg: isDark ? "#0a0b0d" : "#f1f3fa",
         enable_publishing: false,
         allow_symbol_change: false,
         container_id: `tv_widget_${containerId}`,

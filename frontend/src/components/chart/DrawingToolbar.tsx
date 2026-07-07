@@ -83,8 +83,8 @@ const TOOL_GROUPS: ToolGroup[] = [
     label: "Patterns",
     icon: <Flag className="h-4 w-4" />,
     tools: [
-      { id: "longposition", label: "Long Position", icon: <Flag className="h-3.5 w-3.5 text-[#26a69a]" /> },
-      { id: "shortposition", label: "Short Position", icon: <Flag className="h-3.5 w-3.5 text-[#ef5350]" /> },
+      { id: "longposition", label: "Long Position", icon: <Flag className="h-3.5 w-3.5 text-[#2ebd85]" /> },
+      { id: "shortposition", label: "Short Position", icon: <Flag className="h-3.5 w-3.5 text-[#f6465d]" /> },
       { id: "forecast", label: "Price Range", icon: <Target className="h-3.5 w-3.5" /> },
       { id: "measure", label: "Measure", icon: <BarChart2 className="h-3.5 w-3.5" /> },
     ],
@@ -212,7 +212,7 @@ export function DrawingToolbar() {
         onClick={clearDrawings}
         className="flex items-center justify-center w-[28px] h-[28px] rounded my-0.5 transition-colors"
         style={{ color: "var(--tv-muted)" }}
-        onMouseEnter={(e) => { e.currentTarget.style.background = "var(--tv-bg3)"; e.currentTarget.style.color = "#ef5350"; }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = "var(--tv-bg3)"; e.currentTarget.style.color = "#f6465d"; }}
         onMouseLeave={(e) => { e.currentTarget.style.background = ""; e.currentTarget.style.color = "var(--tv-muted)"; }}
       >
         <Trash2 className="h-3.5 w-3.5" />

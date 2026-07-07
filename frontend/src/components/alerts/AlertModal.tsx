@@ -124,7 +124,7 @@ export function AlertModal() {
                         <span className="text-xs font-mono" style={{ color: "var(--tv-text-light)" }}>{a.price.toFixed(2)}</span>
                         {a.message && <div className="text-[10px] truncate" style={{ color: "var(--tv-muted)" }}>{a.message}</div>}
                       </div>
-                      <button onClick={() => removeAlert(a.id)} className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:text-[#ef5350]">
+                      <button onClick={() => removeAlert(a.id)} className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:text-[#f6465d]">
                         <X className="h-3 w-3" />
                       </button>
                     </div>

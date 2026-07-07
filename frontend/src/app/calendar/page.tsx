@@ -7,9 +7,9 @@ import { cn } from "@/lib/utils";
 import { Calendar, Filter, ChevronDown, TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 const IMPACT_CONFIG = {
-  high: { label: "High", color: "#ef5350", bg: "#ef535020", dot: "🔴" },
+  high: { label: "High", color: "#f6465d", bg: "#f6465d20", dot: "🔴" },
   medium: { label: "Medium", color: "#f59e0b", bg: "#f59e0b20", dot: "🟡" },
-  low: { label: "Low", color: "#26a69a", bg: "#26a69a20", dot: "🟢" },
+  low: { label: "Low", color: "#2ebd85", bg: "#2ebd8520", dot: "🟢" },
 };
 
 const COUNTRIES = ["All", "US", "EU", "UK", "CA", "DE", "JP", "AU", "CH"];
@@ -34,11 +34,11 @@ function ActualBadge({ actual, forecast }: { actual?: string; forecast?: string 
   const worse = forecast && actual < forecast;
   return (
     <div className="flex items-center gap-1">
-      <span className={cn("text-[11px] font-bold font-mono", better ? "text-[#26a69a]" : worse ? "text-[#ef5350]" : "")}>
+      <span className={cn("text-[11px] font-bold font-mono", better ? "text-[#2ebd85]" : worse ? "text-[#f6465d]" : "")}>
         {actual}
       </span>
-      {better && <TrendingUp className="h-3 w-3 text-[#26a69a]" />}
-      {worse && <TrendingDown className="h-3 w-3 text-[#ef5350]" />}
+      {better && <TrendingUp className="h-3 w-3 text-[#2ebd85]" />}
+      {worse && <TrendingDown className="h-3 w-3 text-[#f6465d]" />}
       {!better && !worse && <Minus className="h-3 w-3" style={{ color: "var(--tv-muted)" }} />}
     </div>
   );

@@ -2,7 +2,7 @@
 import { useTradingStore } from "@/store/trading.store";
 import { Trash2, Lock, Unlock, Eye, EyeOff, Minus } from "lucide-react";
 
-const COLORS = ["#2962ff","#ef5350","#26a69a","#f59e0b","#9c27b0","#ff9800","#00bcd4","#ffffff","#b2b5be","#5d6673"];
+const COLORS = ["#2962ff","#f6465d","#2ebd85","#f59e0b","#9c27b0","#ff9800","#00bcd4","#ffffff","#b2b5be","#5d6673"];
 const WIDTHS = [1, 2, 3] as const;
 const STYLES = ["solid", "dashed", "dotted"] as const;
 
@@ -106,7 +106,7 @@ export function DrawingPropertiesBar() {
       {/* Delete */}
       <button
         onClick={() => { removeDrawing(drawing.id); setSelectedDrawingId(null); }}
-        className="flex items-center justify-center w-7 h-7 rounded transition-colors text-[#ef5350] hover:bg-[#ef535020]"
+        className="flex items-center justify-center w-7 h-7 rounded transition-colors text-[#f6465d] hover:bg-[#f6465d20]"
         title="Delete"
       >
         <Trash2 className="h-3.5 w-3.5" />

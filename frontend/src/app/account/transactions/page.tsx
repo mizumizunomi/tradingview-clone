@@ -27,17 +27,17 @@ interface TransactionsResponse {
 const PAGE_SIZE = 20;
 
 const TYPE_COLORS: Record<string, { bg: string; text: string }> = {
-  DEPOSIT: { bg: "#26a69a22", text: "#26a69a" },
-  WITHDRAWAL: { bg: "#ef535022", text: "#ef5350" },
+  DEPOSIT: { bg: "#2ebd8522", text: "#2ebd85" },
+  WITHDRAWAL: { bg: "#f6465d22", text: "#f6465d" },
   TRADE_FEE: { bg: "#f59e0b22", text: "#f59e0b" },
   ADMIN_ADJUSTMENT: { bg: "#2962ff22", text: "#2962ff" },
   SUBSCRIPTION_FEE: { bg: "#a78bfa22", text: "#a78bfa" },
 };
 
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
-  COMPLETED: { bg: "#26a69a22", text: "#26a69a" },
+  COMPLETED: { bg: "#2ebd8522", text: "#2ebd85" },
   PENDING: { bg: "#f59e0b22", text: "#f59e0b" },
-  FAILED: { bg: "#ef535022", text: "#ef5350" },
+  FAILED: { bg: "#f6465d22", text: "#f6465d" },
 };
 
 function Badge({ value, colorMap }: { value: string; colorMap: Record<string, { bg: string; text: string }> }) {
@@ -134,11 +134,11 @@ export default function TransactionsPage() {
   };
 
   return (
-    <div className="min-h-screen" style={{ background: "#131722", color: "#d1d4dc" }}>
+    <div className="min-h-screen" style={{ background: "#0a0b0d", color: "#d1d4dc" }}>
       {/* Header */}
       <div
         className="flex items-center gap-3 border-b px-6 py-4"
-        style={{ borderColor: "#2a2e39", background: "#1e222d" }}
+        style={{ borderColor: "#181b22", background: "#111318" }}
       >
         <ReceiptText className="h-5 w-5 text-[#2962ff]" />
         <h1 className="text-lg font-bold text-white">Transaction History</h1>
@@ -146,8 +146,8 @@ export default function TransactionsPage() {
           <button
             onClick={exportCSV}
             disabled={transactions.length === 0}
-            className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-[#2a2e39] disabled:opacity-40 disabled:cursor-not-allowed"
-            style={{ borderColor: "#363a45", color: "#b2b5be" }}
+            className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-[#181b22] disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{ borderColor: "#23262f", color: "#b2b5be" }}
           >
             <Download className="h-3.5 w-3.5" />
             Export CSV
@@ -159,14 +159,14 @@ export default function TransactionsPage() {
         {/* Summary row */}
         <div className="grid grid-cols-3 gap-3">
           {[
-            { label: "Total Deposited", value: totalDeposited, color: "#26a69a" },
-            { label: "Total Withdrawn", value: totalWithdrawn, color: "#ef5350" },
-            { label: "Net Change", value: netChange, color: netChange >= 0 ? "#26a69a" : "#ef5350" },
+            { label: "Total Deposited", value: totalDeposited, color: "#2ebd85" },
+            { label: "Total Withdrawn", value: totalWithdrawn, color: "#f6465d" },
+            { label: "Net Change", value: netChange, color: netChange >= 0 ? "#2ebd85" : "#f6465d" },
           ].map((item) => (
             <div
               key={item.label}
               className="rounded-xl border p-4"
-              style={{ borderColor: "#2a2e39", background: "#1e222d" }}
+              style={{ borderColor: "#181b22", background: "#111318" }}
             >
               <div className="text-xs mb-1" style={{ color: "#5d6673" }}>{item.label}</div>
               <div className="text-lg font-mono font-semibold" style={{ color: item.color }}>
@@ -179,7 +179,7 @@ export default function TransactionsPage() {
         {/* Filters */}
         <div
           className="flex flex-wrap items-center gap-3 rounded-xl border p-4"
-          style={{ borderColor: "#2a2e39", background: "#1e222d" }}
+          style={{ borderColor: "#181b22", background: "#111318" }}
         >
           <div className="flex items-center gap-2">
             <label className="text-xs font-medium" style={{ color: "#5d6673" }}>Type</label>
@@ -187,7 +187,7 @@ export default function TransactionsPage() {
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
               className="rounded border px-2 py-1 text-xs outline-none"
-              style={{ background: "#2a2e39", borderColor: "#363a45", color: "#d1d4dc" }}
+              style={{ background: "#181b22", borderColor: "#23262f", color: "#d1d4dc" }}
             >
               <option value="">All Types</option>
               <option value="DEPOSIT">Deposit</option>
@@ -202,7 +202,7 @@ export default function TransactionsPage() {
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
               className="rounded border px-2 py-1 text-xs outline-none"
-              style={{ background: "#2a2e39", borderColor: "#363a45", color: "#d1d4dc" }}
+              style={{ background: "#181b22", borderColor: "#23262f", color: "#d1d4dc" }}
             >
               <option value="">All Statuses</option>
               <option value="COMPLETED">Completed</option>
@@ -217,7 +217,7 @@ export default function TransactionsPage() {
               disabled
               placeholder="Start date"
               className="rounded border px-2 py-1 text-xs outline-none opacity-40 cursor-not-allowed"
-              style={{ background: "#2a2e39", borderColor: "#363a45", color: "#d1d4dc" }}
+              style={{ background: "#181b22", borderColor: "#23262f", color: "#d1d4dc" }}
             />
           </div>
           <div className="flex items-center gap-2">
@@ -227,7 +227,7 @@ export default function TransactionsPage() {
               disabled
               placeholder="End date"
               className="rounded border px-2 py-1 text-xs outline-none opacity-40 cursor-not-allowed"
-              style={{ background: "#2a2e39", borderColor: "#363a45", color: "#d1d4dc" }}
+              style={{ background: "#181b22", borderColor: "#23262f", color: "#d1d4dc" }}
             />
           </div>
           <div className="ml-auto text-xs" style={{ color: "#5d6673" }}>
@@ -238,7 +238,7 @@ export default function TransactionsPage() {
         {/* Table */}
         <div
           className="rounded-xl border overflow-hidden"
-          style={{ borderColor: "#2a2e39", background: "#1e222d" }}
+          style={{ borderColor: "#181b22", background: "#111318" }}
         >
           {loading ? (
             <div className="py-16 text-center text-sm" style={{ color: "#5d6673" }}>
@@ -263,7 +263,7 @@ export default function TransactionsPage() {
                 <thead>
                   <tr
                     className="border-b text-left"
-                    style={{ borderColor: "#2a2e39", color: "#5d6673" }}
+                    style={{ borderColor: "#181b22", color: "#5d6673" }}
                   >
                     <th className="px-4 py-3 font-medium">Date</th>
                     <th className="px-4 py-3 font-medium">Type</th>
@@ -281,8 +281,8 @@ export default function TransactionsPage() {
                     return (
                       <tr
                         key={tx.id}
-                        className="border-b transition-colors hover:bg-[#2a2e39]"
-                        style={{ borderColor: "#2a2e3933" }}
+                        className="border-b transition-colors hover:bg-[#181b22]"
+                        style={{ borderColor: "#181b2233" }}
                       >
                         <td className="px-4 py-3 whitespace-nowrap" style={{ color: "#b2b5be" }}>
                           <div>{new Date(tx.createdAt).toLocaleDateString()}</div>
@@ -297,11 +297,11 @@ export default function TransactionsPage() {
                           {tx.method.replace(/_/g, " ")}
                         </td>
                         <td className="px-4 py-3 text-right font-mono">
-                          <span style={{ color: isFee ? "#ef5350" : tx.type === "DEPOSIT" ? "#26a69a" : "white" }}>
+                          <span style={{ color: isFee ? "#f6465d" : tx.type === "DEPOSIT" ? "#2ebd85" : "white" }}>
                             {tx.type === "DEPOSIT" ? "+" : "-"}${formatPrice(tx.amount)}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-right font-mono" style={{ color: "#ef5350" }}>
+                        <td className="px-4 py-3 text-right font-mono" style={{ color: "#f6465d" }}>
                           {feeNote ? `-$${feeNote}` : "—"}
                         </td>
                         <td className="px-4 py-3">
@@ -329,8 +329,8 @@ export default function TransactionsPage() {
               <button
                 onClick={() => setPage((p) => Math.max(0, p - 1))}
                 disabled={page === 0}
-                className="flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-[#2a2e39] disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{ borderColor: "#363a45", color: "#b2b5be" }}
+                className="flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-[#181b22] disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{ borderColor: "#23262f", color: "#b2b5be" }}
               >
                 <ChevronLeft className="h-3.5 w-3.5" />
                 Prev
@@ -338,8 +338,8 @@ export default function TransactionsPage() {
               <button
                 onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
                 disabled={page >= totalPages - 1}
-                className="flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-[#2a2e39] disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{ borderColor: "#363a45", color: "#b2b5be" }}
+                className="flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-[#181b22] disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{ borderColor: "#23262f", color: "#b2b5be" }}
               >
                 Next
                 <ChevronRight className="h-3.5 w-3.5" />

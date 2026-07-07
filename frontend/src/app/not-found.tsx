@@ -3,7 +3,7 @@ import { Home, BarChart2 } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <div className="flex h-screen flex-col items-center justify-center gap-4 bg-[#131722] text-[#d1d4dc]">
+    <div className="flex h-screen flex-col items-center justify-center gap-4 bg-[#0a0b0d] text-[#d1d4dc]">
       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#2962ff]">
         <BarChart2 className="h-8 w-8 text-white" />
       </div>

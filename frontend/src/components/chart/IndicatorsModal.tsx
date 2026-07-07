@@ -55,7 +55,7 @@ const INDICATOR_DEFS: IndicatorDef[] = [
   },
   {
     type: "ichimoku", label: "Ichimoku Cloud", description: "Ichimoku Kinko Hyo", category: "Trend",
-    pane: "main", defaultParams: { tenkan: 9, kijun: 26, senkou: 52 }, colors: ["#26a69a", "#ef5350"],
+    pane: "main", defaultParams: { tenkan: 9, kijun: 26, senkou: 52 }, colors: ["#2ebd85", "#f6465d"],
     paramDefs: [
       { key: "tenkan", label: "Tenkan", type: "number", min: 1, max: 100 },
       { key: "kijun", label: "Kijun", type: "number", min: 1, max: 100 },
@@ -78,7 +78,7 @@ const INDICATOR_DEFS: IndicatorDef[] = [
   },
   {
     type: "macd", label: "MACD", description: "Moving Average Convergence Divergence", category: "Oscillators",
-    pane: "macd", defaultParams: { fast: 12, slow: 26, signal: 9 }, colors: ["#2962ff", "#ef5350", "#26a69a"],
+    pane: "macd", defaultParams: { fast: 12, slow: 26, signal: 9 }, colors: ["#2962ff", "#f6465d", "#2ebd85"],
     paramDefs: [
       { key: "fast", label: "Fast Period", type: "number", min: 1, max: 100 },
       { key: "slow", label: "Slow Period", type: "number", min: 1, max: 200 },
@@ -87,7 +87,7 @@ const INDICATOR_DEFS: IndicatorDef[] = [
   },
   {
     type: "stoch", label: "Stochastic", description: "Stochastic Oscillator", category: "Oscillators",
-    pane: "stoch", defaultParams: { period: 14, smoothK: 3, smoothD: 3 }, colors: ["#2962ff", "#ef5350"],
+    pane: "stoch", defaultParams: { period: 14, smoothK: 3, smoothD: 3 }, colors: ["#2962ff", "#f6465d"],
     paramDefs: [
       { key: "period", label: "Period", type: "number", min: 1, max: 100 },
       { key: "smoothK", label: "Smooth K", type: "number", min: 1, max: 20 },
@@ -101,7 +101,7 @@ const INDICATOR_DEFS: IndicatorDef[] = [
   },
   {
     type: "cci", label: "CCI", description: "Commodity Channel Index", category: "Oscillators",
-    pane: "rsi", defaultParams: { period: 20 }, colors: ["#26a69a"],
+    pane: "rsi", defaultParams: { period: 20 }, colors: ["#2ebd85"],
     paramDefs: [{ key: "period", label: "Period", type: "number", min: 2, max: 200 }],
   },
   {
@@ -129,7 +129,7 @@ const INDICATOR_DEFS: IndicatorDef[] = [
 
 const CATEGORIES = ["All", ...Array.from(new Set(INDICATOR_DEFS.map((d) => d.category)))];
 const INDICATOR_COLORS: string[] = [
-  "#2962ff", "#f59e0b", "#26a69a", "#ef5350", "#9c27b0", "#ff9800",
+  "#2962ff", "#f59e0b", "#2ebd85", "#f6465d", "#9c27b0", "#ff9800",
   "#00bcd4", "#e91e63", "#4caf50", "#ff5722",
 ];
 
@@ -265,7 +265,7 @@ export function IndicatorsModal() {
                         className="p-1 rounded hover:bg-[var(--tv-bg3)]"
                         title="Remove"
                       >
-                        <Trash2 className="h-3.5 w-3.5 text-[#ef5350]" />
+                        <Trash2 className="h-3.5 w-3.5 text-[#f6465d]" />
                       </button>
                     </div>
                   </div>
@@ -336,9 +336,9 @@ export function IndicatorsModal() {
                       </div>
                       <div className={cn(
                         "flex-shrink-0 h-6 w-6 rounded flex items-center justify-center transition-colors",
-                        alreadyAdded ? "text-[#26a69a]" : "opacity-0 group-hover:opacity-100"
+                        alreadyAdded ? "text-[#2ebd85]" : "opacity-0 group-hover:opacity-100"
                       )}
-                        style={{ background: alreadyAdded ? "#26a69a20" : "var(--tv-bg3)" }}>
+                        style={{ background: alreadyAdded ? "#2ebd8520" : "var(--tv-bg3)" }}>
                         <Plus className="h-3.5 w-3.5" />
                       </div>
                     </button>

@@ -374,9 +374,9 @@ export const useTradingStore = create<TradingState>((set, get) => ({
 
   // Chart settings
   chartSettings: {
-    bgColor: "#131722", gridColor: "#1e222d",
-    upColor: "#26a69a", downColor: "#ef5350",
-    wickUpColor: "#26a69a", wickDownColor: "#ef5350",
+    bgColor: "#0a0b0d", gridColor: "#111318",
+    upColor: "#2ebd85", downColor: "#f6465d",
+    wickUpColor: "#2ebd85", wickDownColor: "#f6465d",
     logScale: false, percentScale: false,
   },
   setChartSettings: (patch) =>

@@ -41,9 +41,9 @@ export function DOMPanel() {
           {asks.map((row, i) => (
             <div key={i} className="relative grid grid-cols-3 px-2 py-px hover:bg-[var(--tv-bg3)] cursor-default">
               <div className="absolute inset-0 right-auto opacity-10"
-                style={{ width: `${(row.total / maxTotal) * 100}%`, background: "#ef5350" }} />
+                style={{ width: `${(row.total / maxTotal) * 100}%`, background: "#f6465d" }} />
               <span className="relative text-[10px] font-mono" style={{ color: "var(--tv-text)" }}>{row.size.toFixed(3)}</span>
-              <span className="relative text-[10px] font-mono text-center text-[#ef5350]">{fmt(row.price)}</span>
+              <span className="relative text-[10px] font-mono text-center text-[#f6465d]">{fmt(row.price)}</span>
               <span className="relative text-[10px] font-mono text-right" style={{ color: "var(--tv-muted)" }}>{row.total.toFixed(2)}</span>
             </div>
           ))}
@@ -65,9 +65,9 @@ export function DOMPanel() {
           {bids.map((row, i) => (
             <div key={i} className="relative grid grid-cols-3 px-2 py-px hover:bg-[var(--tv-bg3)] cursor-default">
               <div className="absolute inset-0 right-auto opacity-10"
-                style={{ width: `${(row.total / maxTotal) * 100}%`, background: "#26a69a" }} />
+                style={{ width: `${(row.total / maxTotal) * 100}%`, background: "#2ebd85" }} />
               <span className="relative text-[10px] font-mono" style={{ color: "var(--tv-text)" }}>{row.size.toFixed(3)}</span>
-              <span className="relative text-[10px] font-mono text-center text-[#26a69a]">{fmt(row.price)}</span>
+              <span className="relative text-[10px] font-mono text-center text-[#2ebd85]">{fmt(row.price)}</span>
               <span className="relative text-[10px] font-mono text-right" style={{ color: "var(--tv-muted)" }}>{row.total.toFixed(2)}</span>
             </div>
           ))}

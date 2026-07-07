@@ -11,9 +11,9 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
   }, [error]);
 
   return (
-    <div className="flex h-screen flex-col items-center justify-center gap-4 bg-[#131722] text-[#d1d4dc]">
-      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#ef535020]">
-        <AlertTriangle className="h-8 w-8 text-[#ef5350]" />
+    <div className="flex h-screen flex-col items-center justify-center gap-4 bg-[#0a0b0d] text-[#d1d4dc]">
+      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#f6465d20]">
+        <AlertTriangle className="h-8 w-8 text-[#f6465d]" />
       </div>
       <div className="text-center">
         <h1 className="text-xl font-bold text-white mb-2">Something went wrong</h1>
@@ -29,7 +29,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
         </button>
         <button
           onClick={() => router.push("/trade")}
-          className="flex items-center gap-1.5 rounded-lg border border-[#363a45] px-4 py-2 text-sm text-[#b2b5be] hover:text-white transition-colors"
+          className="flex items-center gap-1.5 rounded-lg border border-[#23262f] px-4 py-2 text-sm text-[#b2b5be] hover:text-white transition-colors"
         >
           <Home className="h-4 w-4" />
           Go home

@@ -56,12 +56,12 @@ function StatCard({
   return (
     <div
       className="rounded-xl p-4 flex flex-col gap-1"
-      style={{ background: "#1e222d", border: "1px solid #363a45" }}
+      style={{ background: "#111318", border: "1px solid #23262f" }}
     >
       <span className="text-xs" style={{ color: "#5d6673" }}>{label}</span>
       <span
         className="text-xl font-semibold"
-        style={{ color: positive === undefined ? "#d1d4dc" : positive ? "#26a69a" : "#ef5350" }}
+        style={{ color: positive === undefined ? "#d1d4dc" : positive ? "#2ebd85" : "#f6465d" }}
       >
         {value}
       </span>
@@ -139,12 +139,12 @@ function EquityChart({
 
   const zeroY = scaleY(0);
   const endValue = points[points.length - 1]?.value ?? 0;
-  const lineColor = endValue >= 0 ? "#26a69a" : "#ef5350";
+  const lineColor = endValue >= 0 ? "#2ebd85" : "#f6465d";
 
   return (
     <div
       className="rounded-xl p-4"
-      style={{ background: "#1e222d", border: "1px solid #363a45" }}
+      style={{ background: "#111318", border: "1px solid #23262f" }}
     >
       <div className="flex items-center justify-between mb-3">
         <span className="text-sm font-semibold" style={{ color: "#d1d4dc" }}>
@@ -159,7 +159,7 @@ function EquityChart({
               style={
                 timeFilter === f
                   ? { background: "#2962ff", color: "#fff" }
-                  : { background: "#131722", color: "#5d6673" }
+                  : { background: "#0a0b0d", color: "#5d6673" }
               }
             >
               {f}
@@ -171,7 +171,7 @@ function EquityChart({
       {isEmpty ? (
         <div
           className="flex items-center justify-center rounded-lg"
-          style={{ height: H, background: "#131722", color: "#5d6673", fontSize: 13 }}
+          style={{ height: H, background: "#0a0b0d", color: "#5d6673", fontSize: 13 }}
         >
           Trade to build your equity history
         </div>
@@ -189,7 +189,7 @@ function EquityChart({
             y1={zeroY}
             x2={W - PAD.right}
             y2={zeroY}
-            stroke="#363a45"
+            stroke="#23262f"
             strokeWidth={1}
             strokeDasharray="4 3"
           />
@@ -254,7 +254,7 @@ function AssetAllocation({ openPositions }: { openPositions: Position[] }) {
 
   const catColors: Record<string, string> = {
     CRYPTO: "#2962ff",
-    FOREX:  "#26a69a",
+    FOREX:  "#2ebd85",
     STOCKS: "#f59e0b",
     OTHER:  "#7c3aed",
   };
@@ -279,14 +279,14 @@ function AssetAllocation({ openPositions }: { openPositions: Position[] }) {
     return (
       <div
         className="rounded-xl p-4 flex flex-col"
-        style={{ background: "#1e222d", border: "1px solid #363a45" }}
+        style={{ background: "#111318", border: "1px solid #23262f" }}
       >
         <span className="text-sm font-semibold mb-3" style={{ color: "#d1d4dc" }}>
           Asset Allocation
         </span>
         <div
           className="flex items-center justify-center rounded-lg flex-1 py-8"
-          style={{ background: "#131722", color: "#5d6673", fontSize: 13 }}
+          style={{ background: "#0a0b0d", color: "#5d6673", fontSize: 13 }}
         >
           No open positions
         </div>
@@ -297,7 +297,7 @@ function AssetAllocation({ openPositions }: { openPositions: Position[] }) {
   return (
     <div
       className="rounded-xl p-4 flex flex-col"
-      style={{ background: "#1e222d", border: "1px solid #363a45" }}
+      style={{ background: "#111318", border: "1px solid #23262f" }}
     >
       <span className="text-sm font-semibold mb-3" style={{ color: "#d1d4dc" }}>
         Asset Allocation
@@ -311,7 +311,7 @@ function AssetAllocation({ openPositions }: { openPositions: Position[] }) {
             cy={C}
             r={R}
             fill="none"
-            stroke="#363a45"
+            stroke="#23262f"
             strokeWidth={14}
           />
           {strokes.map((s, i) => (
@@ -371,12 +371,12 @@ function PerformanceMetrics({ closedPositions }: { closedPositions: Position[] }
 
   const rows: { label: string; value: string; color?: string }[] = metrics
     ? [
-        { label: "Win Rate", value: `${metrics.winRate.toFixed(1)}%`, color: metrics.winRate >= 50 ? "#26a69a" : "#ef5350" },
+        { label: "Win Rate", value: `${metrics.winRate.toFixed(1)}%`, color: metrics.winRate >= 50 ? "#2ebd85" : "#f6465d" },
         { label: "Total Trades", value: String(metrics.total) },
-        { label: "Best Trade", value: `+$${formatPrice(metrics.bestTrade)}`, color: "#26a69a" },
-        { label: "Worst Trade", value: `-$${formatPrice(Math.abs(metrics.worstTrade))}`, color: "#ef5350" },
-        { label: "Avg Win", value: `+$${formatPrice(metrics.avgWin)}`, color: "#26a69a" },
-        { label: "Avg Loss", value: `-$${formatPrice(Math.abs(metrics.avgLoss))}`, color: "#ef5350" },
+        { label: "Best Trade", value: `+$${formatPrice(metrics.bestTrade)}`, color: "#2ebd85" },
+        { label: "Worst Trade", value: `-$${formatPrice(Math.abs(metrics.worstTrade))}`, color: "#f6465d" },
+        { label: "Avg Win", value: `+$${formatPrice(metrics.avgWin)}`, color: "#2ebd85" },
+        { label: "Avg Loss", value: `-$${formatPrice(Math.abs(metrics.avgLoss))}`, color: "#f6465d" },
       ]
     : [
         { label: "Win Rate", value: "—" },
@@ -390,7 +390,7 @@ function PerformanceMetrics({ closedPositions }: { closedPositions: Position[] }
   return (
     <div
       className="rounded-xl p-4"
-      style={{ background: "#1e222d", border: "1px solid #363a45" }}
+      style={{ background: "#111318", border: "1px solid #23262f" }}
     >
       <span className="text-sm font-semibold mb-3 block" style={{ color: "#d1d4dc" }}>
         Performance Metrics
@@ -428,7 +428,7 @@ function PositionCard({
   return (
     <div
       className="rounded-xl p-4"
-      style={{ background: "#1e222d", border: "1px solid #363a45" }}
+      style={{ background: "#111318", border: "1px solid #23262f" }}
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -439,19 +439,19 @@ function PositionCard({
             className="text-[10px] font-bold px-1.5 py-0.5 rounded"
             style={
               position.side === "BUY"
-                ? { background: "rgba(38,166,154,0.15)", color: "#26a69a" }
-                : { background: "rgba(239,83,80,0.15)", color: "#ef5350" }
+                ? { background: "rgba(38,166,154,0.15)", color: "#2ebd85" }
+                : { background: "rgba(239,83,80,0.15)", color: "#f6465d" }
             }
           >
             {position.side}
           </span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: "#131722", color: "#5d6673" }}>
+          <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: "#0a0b0d", color: "#5d6673" }}>
             {position.leverage}x
           </span>
         </div>
         <button
           onClick={() => onClose(position.id)}
-          className="p-1 rounded transition-colors hover:bg-[#ef5350]/10"
+          className="p-1 rounded transition-colors hover:bg-[#f6465d]/10"
           style={{ color: "#5d6673" }}
           title="Close position"
         >
@@ -480,7 +480,7 @@ function PositionCard({
         </div>
         <div>
           <span className="text-[11px]" style={{ color: "#5d6673" }}>Unrealized P&L</span>
-          <div className="text-xs font-semibold" style={{ color: isProfit ? "#26a69a" : "#ef5350" }}>
+          <div className="text-xs font-semibold" style={{ color: isProfit ? "#2ebd85" : "#f6465d" }}>
             {formatPnL(pnl)}
           </div>
         </div>
@@ -556,7 +556,7 @@ export default function PortfolioPage() {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center" style={{ background: "#131722" }}>
+      <div className="flex h-screen items-center justify-center" style={{ background: "#0a0b0d" }}>
         <div className="flex flex-col items-center gap-3">
           <Loader2 size={32} color="#2962ff" className="animate-spin" />
           <span className="text-sm" style={{ color: "#5d6673" }}>Loading portfolio…</span>
@@ -566,14 +566,14 @@ export default function PortfolioPage() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: "#131722" }}>
+    <div className="flex h-screen overflow-hidden" style={{ background: "#0a0b0d" }}>
       <SideNav />
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         {/* Page header */}
         <div
           className="flex items-center gap-3 px-5 py-3 border-b shrink-0"
-          style={{ background: "#1e222d", borderColor: "#363a45" }}
+          style={{ background: "#111318", borderColor: "#23262f" }}
         >
           <div className="p-1.5 rounded-lg" style={{ background: "rgba(41,98,255,0.15)" }}>
             <PieChart size={16} color="#2962ff" />
@@ -642,7 +642,7 @@ export default function PortfolioPage() {
             {openPositions.length === 0 ? (
               <div
                 className="rounded-xl flex items-center justify-center py-10"
-                style={{ background: "#1e222d", border: "1px solid #363a45", color: "#5d6673", fontSize: 13 }}
+                style={{ background: "#111318", border: "1px solid #23262f", color: "#5d6673", fontSize: 13 }}
               >
                 No open positions
               </div>

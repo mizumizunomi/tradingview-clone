@@ -73,10 +73,10 @@ const DEFAULT_SECTIONS: WatchlistSection[] = [
 ];
 
 const TAG_COLORS: { color: string; label: string }[] = [
-  { color: "#ef5350", label: "Red" },
+  { color: "#f6465d", label: "Red" },
   { color: "#2962ff", label: "Blue" },
   { color: "#f59e0b", label: "Yellow" },
-  { color: "#26a69a", label: "Green" },
+  { color: "#2ebd85", label: "Green" },
   { color: "#ff9800", label: "Orange" },
   { color: "#00bcd4", label: "Cyan" },
   { color: "#ffffff", label: "White" },

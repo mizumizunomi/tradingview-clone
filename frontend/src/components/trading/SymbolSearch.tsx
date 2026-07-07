@@ -20,7 +20,7 @@ const TABS = [
 const CATEGORY_COLOR: Record<string, string> = {
   CRYPTO: "#f59e0b",
   FOREX: "#2962ff",
-  STOCKS: "#26a69a",
+  STOCKS: "#2ebd85",
   INDICES: "#a78bfa",
   COMMODITIES: "#fb923c",
   FUNDS: "#34d399",
@@ -89,11 +89,11 @@ export function SymbolSearch({ onClose }: SymbolSearchProps) {
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
-        className="flex w-[580px] flex-col rounded-xl border border-[#363a45] bg-[#1e222d] shadow-2xl overflow-hidden"
+        className="flex w-[580px] flex-col rounded-xl border border-[#23262f] bg-[#111318] shadow-2xl overflow-hidden"
         style={{ maxHeight: "65vh" }}
       >
         {/* Search input */}
-        <div className="flex items-center gap-3 border-b border-[#363a45] px-4 py-3 bg-[#131722]">
+        <div className="flex items-center gap-3 border-b border-[#23262f] px-4 py-3 bg-[#0a0b0d]">
           <Search className="h-4 w-4 shrink-0 text-[#5d6673]" />
           <input
             ref={inputRef}
@@ -115,7 +115,7 @@ export function SymbolSearch({ onClose }: SymbolSearchProps) {
         </div>
 
         {/* Category tabs */}
-        <div className="flex gap-0 border-b border-[#363a45] bg-[#1e222d] px-2 overflow-x-auto">
+        <div className="flex gap-0 border-b border-[#23262f] bg-[#111318] px-2 overflow-x-auto">
           {TABS.map((tab) => (
             <button
               key={tab.value}
@@ -140,7 +140,7 @@ export function SymbolSearch({ onClose }: SymbolSearchProps) {
               <div className="text-sm">No symbols found</div>
             </div>
           ) : (
-            <div className="divide-y divide-[#1e222d]">
+            <div className="divide-y divide-[#111318]">
               {assets.map((asset) => {
                 const pd = prices[asset.symbol];
                 const isPositive = (pd?.changePercent ?? 0) >= 0;
@@ -149,7 +149,7 @@ export function SymbolSearch({ onClose }: SymbolSearchProps) {
                   <button
                     key={asset.id}
                     onClick={() => handleSelect(asset)}
-                    className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors group hover:bg-[#2a2e39]"
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors group hover:bg-[#181b22]"
                   >
                     {/* Category badge */}
                     <div
@@ -185,7 +185,7 @@ export function SymbolSearch({ onClose }: SymbolSearchProps) {
                               ? pd.price.toFixed(5)
                               : pd.price.toFixed(2)}
                           </div>
-                          <div className={cn("text-[10px] font-medium", isPositive ? "text-[#26a69a]" : "text-[#ef5350]")}>
+                          <div className={cn("text-[10px] font-medium", isPositive ? "text-[#2ebd85]" : "text-[#f6465d]")}>
                             {isPositive ? "+" : ""}{pd.changePercent.toFixed(2)}%
                           </div>
                         </>

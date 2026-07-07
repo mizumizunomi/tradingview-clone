@@ -91,7 +91,7 @@ function PnLCell({ value }: { value: number }) {
   return (
     <span
       className="font-mono font-semibold text-xs"
-      style={{ color: pos ? "#26a69a" : "#ef5350" }}
+      style={{ color: pos ? "#2ebd85" : "#f6465d" }}
     >
       {formatPnL(value)}
     </span>
@@ -109,12 +109,12 @@ function SummaryBar({ positions }: { positions: Position[] }) {
   return (
     <div
       className="flex flex-wrap gap-4 px-4 py-3 rounded-xl mb-4"
-      style={{ background: "#1e222d", border: "1px solid #363a45" }}
+      style={{ background: "#111318", border: "1px solid #23262f" }}
     >
       {[
         { label: "Total Trades", value: String(total) },
-        { label: "Win Rate", value: total > 0 ? `${winRate}%` : "—", color: parseFloat(winRate) >= 50 ? "#26a69a" : "#ef5350" },
-        { label: "Total P&L", value: total > 0 ? formatPnL(totalPnL) : "—", color: totalPnL >= 0 ? "#26a69a" : "#ef5350" },
+        { label: "Win Rate", value: total > 0 ? `${winRate}%` : "—", color: parseFloat(winRate) >= 50 ? "#2ebd85" : "#f6465d" },
+        { label: "Total P&L", value: total > 0 ? formatPnL(totalPnL) : "—", color: totalPnL >= 0 ? "#2ebd85" : "#f6465d" },
         { label: "Total Fees", value: total > 0 ? `$${formatPrice(totalFees)}` : "—" },
       ].map(({ label, value, color }) => (
         <div key={label} className="flex flex-col gap-0.5">
@@ -166,11 +166,11 @@ function OpenOrdersTable({
     return (
       <div
         className="flex flex-col items-center justify-center py-20 rounded-xl"
-        style={{ background: "#1e222d", border: "1px solid #363a45" }}
+        style={{ background: "#111318", border: "1px solid #23262f" }}
       >
-        <ClipboardList size={36} style={{ color: "#363a45" }} className="mb-3" />
+        <ClipboardList size={36} style={{ color: "#23262f" }} className="mb-3" />
         <p className="text-sm font-medium" style={{ color: "#5d6673" }}>No open positions</p>
-        <p className="text-xs mt-1" style={{ color: "#363a45" }}>Place your first trade to get started</p>
+        <p className="text-xs mt-1" style={{ color: "#23262f" }}>Place your first trade to get started</p>
       </div>
     );
   }
@@ -178,10 +178,10 @@ function OpenOrdersTable({
   const thProps = { currentSort: sort, currentDir: dir, onSort: handleSort };
 
   return (
-    <div className="rounded-xl overflow-hidden" style={{ border: "1px solid #363a45" }}>
+    <div className="rounded-xl overflow-hidden" style={{ border: "1px solid #23262f" }}>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[700px]">
-          <thead style={{ background: "#131722" }}>
+          <thead style={{ background: "#0a0b0d" }}>
             <tr>
               <Th label="Asset" sortKey="symbol" {...thProps} />
               <Th label="Side" {...thProps} sortKey={undefined} />
@@ -194,7 +194,7 @@ function OpenOrdersTable({
               <Th label="" {...thProps} sortKey={undefined} />
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#363a45]">
+          <tbody className="divide-y divide-[#23262f]">
             {sorted.map((p) => {
               const live = prices[p.symbol]?.price ?? p.currentPrice;
               const pnl = p.side === "BUY"
@@ -205,9 +205,9 @@ function OpenOrdersTable({
                 <tr
                   key={p.id}
                   style={{
-                    background: isClosing ? "rgba(239,83,80,0.05)" : "#1e222d",
+                    background: isClosing ? "rgba(239,83,80,0.05)" : "#111318",
                     opacity: isClosing ? 0.6 : 1,
-                    borderColor: "#363a45",
+                    borderColor: "#23262f",
                   }}
                 >
                   <td className="px-3 py-2.5">
@@ -217,8 +217,8 @@ function OpenOrdersTable({
                     <span
                       className="text-[10px] font-bold px-1.5 py-0.5 rounded"
                       style={p.side === "BUY"
-                        ? { background: "rgba(38,166,154,0.15)", color: "#26a69a" }
-                        : { background: "rgba(239,83,80,0.15)", color: "#ef5350" }
+                        ? { background: "rgba(38,166,154,0.15)", color: "#2ebd85" }
+                        : { background: "rgba(239,83,80,0.15)", color: "#f6465d" }
                       }
                     >
                       {p.side}
@@ -232,7 +232,7 @@ function OpenOrdersTable({
                     ${live < 10 ? live.toFixed(5) : formatPrice(live)}
                   </td>
                   <td className="px-3 py-2.5">
-                    <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: "#131722", color: "#5d6673" }}>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: "#0a0b0d", color: "#5d6673" }}>
                       {p.leverage}x
                     </span>
                   </td>
@@ -242,7 +242,7 @@ function OpenOrdersTable({
                     <button
                       onClick={() => onClose(p.id)}
                       disabled={isClosing}
-                      className="p-1 rounded transition-colors hover:bg-[#ef5350]/10 disabled:opacity-40"
+                      className="p-1 rounded transition-colors hover:bg-[#f6465d]/10 disabled:opacity-40"
                       style={{ color: "#5d6673" }}
                       title="Close position"
                     >
@@ -309,11 +309,11 @@ function HistoryTable({ positions }: { positions: Position[] }) {
     return (
       <div
         className="flex flex-col items-center justify-center py-20 rounded-xl"
-        style={{ background: "#1e222d", border: "1px solid #363a45" }}
+        style={{ background: "#111318", border: "1px solid #23262f" }}
       >
-        <ClipboardList size={36} style={{ color: "#363a45" }} className="mb-3" />
+        <ClipboardList size={36} style={{ color: "#23262f" }} className="mb-3" />
         <p className="text-sm font-medium" style={{ color: "#5d6673" }}>No trade history yet</p>
-        <p className="text-xs mt-1" style={{ color: "#363a45" }}>Your completed trades will appear here</p>
+        <p className="text-xs mt-1" style={{ color: "#23262f" }}>Your completed trades will appear here</p>
       </div>
     );
   }
@@ -330,7 +330,7 @@ function HistoryTable({ positions }: { positions: Position[] }) {
           value={filter}
           onChange={(e) => { setFilter(e.target.value); setPage(0); }}
           className="rounded border px-3 py-1.5 text-xs outline-none"
-          style={{ background: "#1e222d", borderColor: "#363a45", color: "#d1d4dc", width: 160 }}
+          style={{ background: "#111318", borderColor: "#23262f", color: "#d1d4dc", width: 160 }}
         />
         {(["ALL", "BUY", "SELL"] as const).map((s) => (
           <button
@@ -339,7 +339,7 @@ function HistoryTable({ positions }: { positions: Position[] }) {
             className="px-3 py-1 rounded text-[11px] font-semibold transition-colors"
             style={sideFilter === s
               ? { background: "#2962ff", color: "#fff" }
-              : { background: "#1e222d", color: "#5d6673", border: "1px solid #363a45" }
+              : { background: "#111318", color: "#5d6673", border: "1px solid #23262f" }
             }
           >
             {s}
@@ -351,8 +351,8 @@ function HistoryTable({ positions }: { positions: Position[] }) {
             onClick={() => { setPnlFilter(s); setPage(0); }}
             className="px-3 py-1 rounded text-[11px] font-semibold transition-colors"
             style={pnlFilter === s
-              ? { background: s === "WIN" ? "#26a69a" : s === "LOSS" ? "#ef5350" : "#2962ff", color: "#fff" }
-              : { background: "#1e222d", color: "#5d6673", border: "1px solid #363a45" }
+              ? { background: s === "WIN" ? "#2ebd85" : s === "LOSS" ? "#f6465d" : "#2962ff", color: "#fff" }
+              : { background: "#111318", color: "#5d6673", border: "1px solid #23262f" }
             }
           >
             {s}
@@ -361,17 +361,17 @@ function HistoryTable({ positions }: { positions: Position[] }) {
         <button
           onClick={() => exportToCsv(sorted, "trade_history.csv")}
           className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded text-[11px] font-semibold transition-colors"
-          style={{ background: "#1e222d", border: "1px solid #363a45", color: "#5d6673" }}
+          style={{ background: "#111318", border: "1px solid #23262f", color: "#5d6673" }}
         >
           <Download size={11} /> Export CSV
         </button>
       </div>
 
       {/* Table */}
-      <div className="rounded-xl overflow-hidden" style={{ border: "1px solid #363a45" }}>
+      <div className="rounded-xl overflow-hidden" style={{ border: "1px solid #23262f" }}>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[850px]">
-            <thead style={{ background: "#131722" }}>
+            <thead style={{ background: "#0a0b0d" }}>
               <tr>
                 <Th label="Asset" sortKey="symbol" {...thProps} />
                 <Th label="Side" {...thProps} sortKey={undefined} />
@@ -391,7 +391,7 @@ function HistoryTable({ positions }: { positions: Position[] }) {
                   ? ((p.realizedPnL / (p.entryPrice * p.quantity)) * 100).toFixed(2)
                   : "0.00";
                 return (
-                  <tr key={p.id} style={{ background: "#1e222d", borderTop: "1px solid #363a45" }}>
+                  <tr key={p.id} style={{ background: "#111318", borderTop: "1px solid #23262f" }}>
                     <td className="px-3 py-2.5">
                       <span className="text-xs font-semibold" style={{ color: "#d1d4dc" }}>{p.symbol}</span>
                     </td>
@@ -399,8 +399,8 @@ function HistoryTable({ positions }: { positions: Position[] }) {
                       <span
                         className="text-[10px] font-bold px-1.5 py-0.5 rounded"
                         style={p.side === "BUY"
-                          ? { background: "rgba(38,166,154,0.15)", color: "#26a69a" }
-                          : { background: "rgba(239,83,80,0.15)", color: "#ef5350" }
+                          ? { background: "rgba(38,166,154,0.15)", color: "#2ebd85" }
+                          : { background: "rgba(239,83,80,0.15)", color: "#f6465d" }
                         }
                       >
                         {p.side}
@@ -447,8 +447,8 @@ function HistoryTable({ positions }: { positions: Position[] }) {
             <button
               onClick={() => setPage((p) => Math.max(0, p - 1))}
               disabled={page === 0}
-              className="px-2 py-1 rounded disabled:opacity-30 hover:bg-[#1e222d] transition-colors"
-              style={{ border: "1px solid #363a45" }}
+              className="px-2 py-1 rounded disabled:opacity-30 hover:bg-[#111318] transition-colors"
+              style={{ border: "1px solid #23262f" }}
             >
               ‹ Prev
             </button>
@@ -456,8 +456,8 @@ function HistoryTable({ positions }: { positions: Position[] }) {
             <button
               onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               disabled={page >= totalPages - 1}
-              className="px-2 py-1 rounded disabled:opacity-30 hover:bg-[#1e222d] transition-colors"
-              style={{ border: "1px solid #363a45" }}
+              className="px-2 py-1 rounded disabled:opacity-30 hover:bg-[#111318] transition-colors"
+              style={{ border: "1px solid #23262f" }}
             >
               Next ›
             </button>
@@ -515,7 +515,7 @@ export default function OrdersPage() {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center" style={{ background: "#131722" }}>
+      <div className="flex h-screen items-center justify-center" style={{ background: "#0a0b0d" }}>
         <div className="flex flex-col items-center gap-3">
           <Loader2 size={28} color="#2962ff" className="animate-spin" />
           <span className="text-sm" style={{ color: "#5d6673" }}>Loading orders…</span>
@@ -525,14 +525,14 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: "#131722" }}>
+    <div className="flex h-screen overflow-hidden" style={{ background: "#0a0b0d" }}>
       <SideNav />
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         {/* Page header */}
         <div
           className="flex items-center justify-between px-5 py-3 border-b shrink-0"
-          style={{ background: "#1e222d", borderColor: "#363a45" }}
+          style={{ background: "#111318", borderColor: "#23262f" }}
         >
           <div className="flex items-center gap-3">
             <div className="p-1.5 rounded-lg" style={{ background: "rgba(41,98,255,0.15)" }}>
@@ -540,7 +540,7 @@ export default function OrdersPage() {
             </div>
             <span className="font-semibold text-sm" style={{ color: "#d1d4dc" }}>Orders</span>
             {/* Tab switcher */}
-            <div className="flex rounded overflow-hidden ml-4" style={{ border: "1px solid #363a45" }}>
+            <div className="flex rounded overflow-hidden ml-4" style={{ border: "1px solid #23262f" }}>
               {([["open", "Open Positions"], ["history", "Order History"]] as [Tab, string][]).map(([t, label]) => (
                 <button
                   key={t}
@@ -566,7 +566,7 @@ export default function OrdersPage() {
             onClick={() => loadData(true)}
             disabled={refreshing}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded text-[11px] transition-colors disabled:opacity-50"
-            style={{ background: "#1e222d", border: "1px solid #363a45", color: "#5d6673" }}
+            style={{ background: "#111318", border: "1px solid #23262f", color: "#5d6673" }}
             title="Refresh"
           >
             <RefreshCw size={11} className={refreshing ? "animate-spin" : ""} />

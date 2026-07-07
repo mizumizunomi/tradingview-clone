@@ -14,12 +14,12 @@ interface Notification {
 }
 
 const TYPE_COLORS: Record<string, string> = {
-  DEPOSIT_CONFIRMED: "#26a69a",
-  DEPOSIT_REJECTED: "#ef5350",
-  WITHDRAWAL_COMPLETED: "#26a69a",
+  DEPOSIT_CONFIRMED: "#2ebd85",
+  DEPOSIT_REJECTED: "#f6465d",
+  WITHDRAWAL_COMPLETED: "#2ebd85",
   POSITION_CLOSED: "#f59e0b",
-  KYC_APPROVED: "#26a69a",
-  KYC_REJECTED: "#ef5350",
+  KYC_APPROVED: "#2ebd85",
+  KYC_REJECTED: "#f6465d",
   SUPPORT_REPLY: "#2962ff",
   SYSTEM: "#5d6673",
 };
@@ -96,7 +96,7 @@ export function NotificationBell() {
       >
         <Bell className="h-4 w-4" style={{ color: "var(--tv-muted)" }} />
         {unreadCount > 0 && (
-          <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#ef5350] text-[9px] font-bold text-white">
+          <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#f6465d] text-[9px] font-bold text-white">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
@@ -112,7 +112,7 @@ export function NotificationBell() {
           <div className="flex items-center justify-between px-3 py-2.5 border-b"
             style={{ borderColor: "var(--tv-border)" }}>
             <span className="text-xs font-bold" style={{ color: "var(--tv-text)" }}>
-              Notifications {unreadCount > 0 && <span className="text-[#ef5350]">({unreadCount})</span>}
+              Notifications {unreadCount > 0 && <span className="text-[#f6465d]">({unreadCount})</span>}
             </span>
             <div className="flex items-center gap-1">
               {unreadCount > 0 && (

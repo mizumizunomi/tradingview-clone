@@ -114,7 +114,7 @@ export function PositionsPanel() {
               <span className="text-[11px] text-[#5d6673]">Total P&L</span>
               <span className={cn(
                 "font-mono text-xs font-bold",
-                totalPnL >= 0 ? "text-[#26a69a]" : "text-[#ef5350]"
+                totalPnL >= 0 ? "text-[#2ebd85]" : "text-[#f6465d]"
               )}>
                 {totalPnL >= 0 ? "+" : ""}${formatPrice(Math.abs(totalPnL))}
               </span>
@@ -135,7 +135,7 @@ export function PositionsPanel() {
           ) : (
             <table className="w-full">
               <thead>
-                <tr className="border-b border-[#363a45] bg-[#1e222d]">
+                <tr className="border-b border-[#23262f] bg-[#111318]">
                   {["Symbol", "Side", "Qty", "Lev", "Entry", "Current", "P&L", "Margin", "S/L", "T/P", ""].map((h) => (
                     <th key={h} className={cn(
                       "px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#5d6673] whitespace-nowrap",
@@ -144,14 +144,14 @@ export function PositionsPanel() {
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#1e222d]">
+              <tbody className="divide-y divide-[#111318]">
                 {openPositions.map((pos) => {
                   const pnl = getPositionPnL(pos);
                   const currentPrice = prices[pos.symbol]?.price || pos.currentPrice;
                   const isProfit = pnl >= 0;
                   const isBuy = pos.side === "BUY";
                   return (
-                    <tr key={pos.id} className="group hover:bg-[#1e222d] transition-colors">
+                    <tr key={pos.id} className="group hover:bg-[#111318] transition-colors">
                       <td className="px-3 py-2">
                         <div className="text-xs font-bold text-white">{pos.symbol}</div>
                         <div className="text-[10px] text-[#5d6673] truncate max-w-[80px]">{pos.assetName?.split(" ").slice(0, 2).join(" ")}</div>
@@ -159,7 +159,7 @@ export function PositionsPanel() {
                       <td className="px-3 py-2">
                         <span className={cn(
                           "inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold uppercase",
-                          isBuy ? "bg-[#26a69a20] text-[#26a69a]" : "bg-[#ef535020] text-[#ef5350]"
+                          isBuy ? "bg-[#2ebd8520] text-[#2ebd85]" : "bg-[#f6465d20] text-[#f6465d]"
                         )}>
                           {pos.side}
                         </span>
@@ -173,27 +173,27 @@ export function PositionsPanel() {
                         {currentPrice < 10 ? currentPrice.toFixed(5) : formatPrice(currentPrice)}
                       </td>
                       <td className="px-3 py-2 text-right">
-                        <div className={cn("font-mono text-xs font-bold", isProfit ? "text-[#26a69a]" : "text-[#ef5350]")}>
+                        <div className={cn("font-mono text-xs font-bold", isProfit ? "text-[#2ebd85]" : "text-[#f6465d]")}>
                           {isProfit ? "+" : ""}${formatPrice(Math.abs(pnl))}
                         </div>
-                        <div className={cn("text-[10px]", isProfit ? "text-[#26a69a]" : "text-[#ef5350]")}>
+                        <div className={cn("text-[10px]", isProfit ? "text-[#2ebd85]" : "text-[#f6465d]")}>
                           {pos.entryPrice > 0
                             ? `${isProfit ? "+" : ""}${(((pnl / (pos.margin || 1)) * 100)).toFixed(1)}%`
                             : ""}
                         </div>
                       </td>
                       <td className="px-3 py-2 text-right font-mono text-xs text-[#b2b5be]">${formatPrice(pos.margin)}</td>
-                      <td className="px-3 py-2 text-right font-mono text-xs text-[#ef5350]">
+                      <td className="px-3 py-2 text-right font-mono text-xs text-[#f6465d]">
                         {pos.stopLoss ? (pos.stopLoss < 10 ? pos.stopLoss.toFixed(5) : formatPrice(pos.stopLoss)) : <span className="text-[#5d6673]">—</span>}
                       </td>
-                      <td className="px-3 py-2 text-right font-mono text-xs text-[#26a69a]">
+                      <td className="px-3 py-2 text-right font-mono text-xs text-[#2ebd85]">
                         {pos.takeProfit ? (pos.takeProfit < 10 ? pos.takeProfit.toFixed(5) : formatPrice(pos.takeProfit)) : <span className="text-[#5d6673]">—</span>}
                       </td>
                       <td className="px-3 py-2 text-right">
                         <button
                           onClick={() => handleClose(pos)}
                           disabled={closingId === pos.id}
-                          className="rounded border border-[#ef535040] px-2 py-0.5 text-[10px] font-medium text-[#ef5350] opacity-0 group-hover:opacity-100 hover:bg-[#ef5350] hover:text-white hover:border-[#ef5350] disabled:opacity-50 transition-all"
+                          className="rounded border border-[#f6465d40] px-2 py-0.5 text-[10px] font-medium text-[#f6465d] opacity-0 group-hover:opacity-100 hover:bg-[#f6465d] hover:text-white hover:border-[#f6465d] disabled:opacity-50 transition-all"
                         >
                           {closingId === pos.id ? "..." : "Close"}
                         </button>
@@ -230,7 +230,7 @@ export function PositionsPanel() {
                     <td className="px-3 py-2 text-xs font-bold" style={{ color: "var(--tv-text-light)" }}>{order.symbol}</td>
                     <td className="px-3 py-2">
                       <span className={cn("inline-flex rounded px-1.5 py-0.5 text-[10px] font-bold uppercase",
-                        order.side === "BUY" ? "bg-[#26a69a20] text-[#26a69a]" : "bg-[#ef535020] text-[#ef5350]")}>
+                        order.side === "BUY" ? "bg-[#2ebd8520] text-[#2ebd85]" : "bg-[#f6465d20] text-[#f6465d]")}>
                         {order.side}
                       </span>
                     </td>
@@ -245,8 +245,8 @@ export function PositionsPanel() {
                     </td>
                     <td className="px-3 py-2 text-right">
                       <button onClick={() => handleCancelOrder(order.id)} disabled={cancellingId === order.id}
-                        className="rounded border px-2 py-0.5 text-[10px] font-medium opacity-0 group-hover:opacity-100 transition-all hover:bg-[#ef5350] hover:text-white hover:border-[#ef5350]"
-                        style={{ borderColor: "#ef535040", color: "#ef5350" }}>
+                        className="rounded border px-2 py-0.5 text-[10px] font-medium opacity-0 group-hover:opacity-100 transition-all hover:bg-[#f6465d] hover:text-white hover:border-[#f6465d]"
+                        style={{ borderColor: "#f6465d40", color: "#f6465d" }}>
                         {cancellingId === order.id ? "..." : "Cancel"}
                       </button>
                     </td>
@@ -283,14 +283,14 @@ export function PositionsPanel() {
                     <td className="px-3 py-2 text-xs" style={{ color: "var(--tv-text)" }}>{alert.condition ?? "—"}</td>
                     <td className="px-3 py-2">
                       <span className={cn("inline-flex rounded px-1.5 py-0.5 text-[10px] font-bold uppercase",
-                        alert.triggered ? "bg-[#ef535020] text-[#ef5350]" : "bg-[#26a69a20] text-[#26a69a]")}>
+                        alert.triggered ? "bg-[#f6465d20] text-[#f6465d]" : "bg-[#2ebd8520] text-[#2ebd85]")}>
                         {alert.triggered ? "Triggered" : "Active"}
                       </span>
                     </td>
                     <td className="px-3 py-2 text-right">
                       <button onClick={() => removeAlert(alert.id)}
-                        className="rounded p-1 opacity-0 group-hover:opacity-100 hover:bg-[#ef535020] transition-all"
-                        style={{ color: "#ef5350" }}>
+                        className="rounded p-1 opacity-0 group-hover:opacity-100 hover:bg-[#f6465d20] transition-all"
+                        style={{ color: "#f6465d" }}>
                         <Trash2 className="h-3 w-3" />
                       </button>
                     </td>
@@ -310,7 +310,7 @@ export function PositionsPanel() {
           ) : (
             <table className="w-full">
               <thead>
-                <tr className="border-b border-[#363a45] bg-[#1e222d]">
+                <tr className="border-b border-[#23262f] bg-[#111318]">
                   {["Symbol", "Side", "Qty", "Entry", "Close", "P&L", "Commission", "Closed At"].map((h) => (
                     <th key={h} className={cn(
                       "px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#5d6673]",
@@ -319,18 +319,18 @@ export function PositionsPanel() {
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#1e222d]">
+              <tbody className="divide-y divide-[#111318]">
                 {closedPositions.map((pos) => {
                   const isProfit = pos.realizedPnL >= 0;
                   return (
-                    <tr key={pos.id} className="hover:bg-[#1e222d] transition-colors">
+                    <tr key={pos.id} className="hover:bg-[#111318] transition-colors">
                       <td className="px-3 py-2">
                         <div className="text-xs font-bold text-white">{pos.symbol}</div>
                       </td>
                       <td className="px-3 py-2">
                         <span className={cn(
                           "inline-flex rounded px-1.5 py-0.5 text-[10px] font-bold uppercase",
-                          pos.side === "BUY" ? "bg-[#26a69a20] text-[#26a69a]" : "bg-[#ef535020] text-[#ef5350]"
+                          pos.side === "BUY" ? "bg-[#2ebd8520] text-[#2ebd85]" : "bg-[#f6465d20] text-[#f6465d]"
                         )}>{pos.side}</span>
                       </td>
                       <td className="px-3 py-2 text-xs font-mono text-[#d1d4dc]">{pos.quantity}</td>
@@ -341,7 +341,7 @@ export function PositionsPanel() {
                         {pos.currentPrice < 10 ? pos.currentPrice.toFixed(5) : formatPrice(pos.currentPrice)}
                       </td>
                       <td className="px-3 py-2 text-right">
-                        <span className={cn("font-mono text-xs font-bold", isProfit ? "text-[#26a69a]" : "text-[#ef5350]")}>
+                        <span className={cn("font-mono text-xs font-bold", isProfit ? "text-[#2ebd85]" : "text-[#f6465d]")}>
                           {isProfit ? "+" : ""}${formatPrice(Math.abs(pos.realizedPnL))}
                         </span>
                       </td>

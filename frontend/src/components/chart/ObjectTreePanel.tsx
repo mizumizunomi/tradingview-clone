@@ -74,7 +74,7 @@ export function ObjectTreePanel() {
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); removeDrawing(d.id); if (selectedDrawingId === d.id) setSelectedDrawingId(null); }}
-                  className="p-1 rounded hover:bg-[var(--tv-bg3)] text-[#ef5350]"
+                  className="p-1 rounded hover:bg-[var(--tv-bg3)] text-[#f6465d]"
                 >
                   <Trash2 className="h-3 w-3" />
                 </button>

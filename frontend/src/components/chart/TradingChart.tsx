@@ -311,18 +311,18 @@ export function TradingChart() {
           if (p2px) {
             const rx = Math.min(p1px.x, p2px.x), ry = Math.min(p1px.y, p2px.y);
             const rw = Math.abs(p2px.x - p1px.x), rh = Math.abs(p2px.y - p1px.y);
-            ctx.save(); ctx.fillStyle = "#26a69a22"; ctx.strokeStyle = "#26a69a"; ctx.lineWidth = lw;
+            ctx.save(); ctx.fillStyle = "#2ebd8522"; ctx.strokeStyle = "#2ebd85"; ctx.lineWidth = lw;
             ctx.fillRect(rx, ry, rw, rh); ctx.strokeRect(rx, ry, rw, rh);
-            ctx.fillStyle = "#26a69a"; ctx.font = "10px sans-serif"; ctx.fillText("LONG", rx + 4, ry + 14); ctx.restore();
+            ctx.fillStyle = "#2ebd85"; ctx.font = "10px sans-serif"; ctx.fillText("LONG", rx + 4, ry + 14); ctx.restore();
           }
           break;
         case "shortposition":
           if (p2px) {
             const rx = Math.min(p1px.x, p2px.x), ry = Math.min(p1px.y, p2px.y);
             const rw = Math.abs(p2px.x - p1px.x), rh = Math.abs(p2px.y - p1px.y);
-            ctx.save(); ctx.fillStyle = "#ef535022"; ctx.strokeStyle = "#ef5350"; ctx.lineWidth = lw;
+            ctx.save(); ctx.fillStyle = "#f6465d22"; ctx.strokeStyle = "#f6465d"; ctx.lineWidth = lw;
             ctx.fillRect(rx, ry, rw, rh); ctx.strokeRect(rx, ry, rw, rh);
-            ctx.fillStyle = "#ef5350"; ctx.font = "10px sans-serif"; ctx.fillText("SHORT", rx + 4, ry + 14); ctx.restore();
+            ctx.fillStyle = "#f6465d"; ctx.font = "10px sans-serif"; ctx.fillText("SHORT", rx + 4, ry + 14); ctx.restore();
           }
           break;
         case "parallelchannel":
@@ -385,7 +385,7 @@ export function TradingChart() {
           if (data.length > 0) {
             const last = data[data.length - 1];
             vals.push({ label: `MACD`, value: last.macd.toFixed(2), color });
-            vals.push({ label: `Sig`, value: last.signal.toFixed(2), color: "#ef5350" });
+            vals.push({ label: `Sig`, value: last.signal.toFixed(2), color: "#f6465d" });
           }
         }
       } catch {}
@@ -430,8 +430,8 @@ export function TradingChart() {
         s.setData(calculateRSI(candles, ind.params.period as number).map((p) => ({ time: p.time as any, value: p.value })));
         const data = calculateRSI(candles, ind.params.period as number);
         if (data.length > 1) {
-          const ob = chart.addSeries(LineSeries, { ...lo("#ef535066"), lineStyle: LineStyle.Dashed });
-          const os = chart.addSeries(LineSeries, { ...lo("#26a69a66"), lineStyle: LineStyle.Dashed });
+          const ob = chart.addSeries(LineSeries, { ...lo("#f6465d66"), lineStyle: LineStyle.Dashed });
+          const os = chart.addSeries(LineSeries, { ...lo("#2ebd8566"), lineStyle: LineStyle.Dashed });
           ob.setData([data[0], data[data.length - 1]].map((p) => ({ time: p.time as any, value: 70 })));
           os.setData([data[0], data[data.length - 1]].map((p) => ({ time: p.time as any, value: 30 })));
           series.push(s, ob, os);
@@ -440,15 +440,15 @@ export function TradingChart() {
         const data = calculateMACD(candles, ind.params.fast as number, ind.params.slow as number, ind.params.signal as number);
         const hist = chart.addSeries(HistogramSeries, { priceScaleId: scaleId, priceLineVisible: false, lastValueVisible: false });
         const ml = chart.addSeries(LineSeries, lo(color));
-        const sl2 = chart.addSeries(LineSeries, lo("#ef5350"));
-        hist.setData(data.map((p) => ({ time: p.time as any, value: p.histogram, color: p.histogram >= 0 ? "#26a69a88" : "#ef535088" })));
+        const sl2 = chart.addSeries(LineSeries, lo("#f6465d"));
+        hist.setData(data.map((p) => ({ time: p.time as any, value: p.histogram, color: p.histogram >= 0 ? "#2ebd8588" : "#f6465d88" })));
         ml.setData(data.map((p) => ({ time: p.time as any, value: p.macd })));
         sl2.setData(data.map((p) => ({ time: p.time as any, value: p.signal })));
         series.push(hist, ml, sl2);
       } else if (ind.type === "stoch") {
         const data = calculateStochastic(candles, ind.params.period as number, ind.params.smoothK as number, ind.params.smoothD as number);
         const k = chart.addSeries(LineSeries, lo(color));
-        const d2 = chart.addSeries(LineSeries, lo("#ef5350"));
+        const d2 = chart.addSeries(LineSeries, lo("#f6465d"));
         k.setData(data.map((p) => ({ time: p.time as any, value: p.k })));
         d2.setData(data.map((p) => ({ time: p.time as any, value: p.d })));
         series.push(k, d2);
@@ -471,7 +471,7 @@ export function TradingChart() {
     const chart = chartRef.current;
     if (!chart) return;
     chart.applyOptions({
-      layout: { background: { type: ColorType.Solid, color: chartSettings.bgColor }, textColor: theme === "dark" ? "#b2b5be" : "#434651" },
+      layout: { background: { type: ColorType.Solid, color: chartSettings.bgColor }, textColor: theme === "dark" ? "#b2b5be" : "#2f333d" },
       grid: { vertLines: { color: chartSettings.gridColor }, horzLines: { color: chartSettings.gridColor } },
     });
     if (mainSeriesRef.current && (chartType === "candlestick" || chartType === "heikin-ashi")) {
@@ -506,7 +506,7 @@ export function TradingChart() {
       mainSeriesRef.current.setData(
         display.map((c) => isLineType ? { time: c.time as any, value: c.close } : { time: c.time as any, open: c.open, high: c.high, low: c.low, close: c.close })
       );
-      volumeSeriesRef.current?.setData(candles.map((c) => ({ time: c.time as any, value: c.volume || 0, color: c.close >= c.open ? "#26a69a33" : "#ef535033" })));
+      volumeSeriesRef.current?.setData(candles.map((c) => ({ time: c.time as any, value: c.volume || 0, color: c.close >= c.open ? "#2ebd8533" : "#f6465d33" })));
       chartRef.current.timeScale().fitContent();
       rebuildIndicators(candles);
     } catch (err) { console.error("Failed to load candles:", err); }
@@ -520,9 +520,9 @@ export function TradingChart() {
     const t = state.theme;
     const cs = state.chartSettings;
     const bg = cs.bgColor;
-    const textCol = t === "dark" ? "#b2b5be" : "#434651";
+    const textCol = t === "dark" ? "#b2b5be" : "#2f333d";
     const grid = cs.gridColor;
-    const border = t === "dark" ? "#363a45" : "#d1d4dc";
+    const border = t === "dark" ? "#23262f" : "#d1d4dc";
 
     const chart = createChart(containerRef.current, {
       layout: { background: { type: ColorType.Solid, color: bg }, textColor: textCol, fontSize: 11 },
@@ -672,7 +672,7 @@ export function TradingChart() {
     if (needsTwoPts(activeTool)) {
       if (!drawingStartRef.current) { drawingStartRef.current = pos; }
       else {
-        const toolColor = activeTool === "longposition" ? "#26a69a" : activeTool === "shortposition" ? "#ef5350" : "#2962ff";
+        const toolColor = activeTool === "longposition" ? "#2ebd85" : activeTool === "shortposition" ? "#f6465d" : "#2962ff";
         addDrawing({ id: `d_${Date.now()}`, tool: activeTool, points: [drawingStartRef.current, pos], color: toolColor, lineWidth: 1, style: "solid" });
         drawingStartRef.current = null;
         renderDrawings();
@@ -766,9 +766,9 @@ export function TradingChart() {
           {ohlc && (
             <div className="flex items-center gap-2.5 text-[11px] shrink-0">
               <span style={{ color: "var(--tv-text)" }}>O <span className="font-mono" style={{ color: "var(--tv-text-light)" }}>{fmtOHLC(ohlc.open)}</span></span>
-              <span style={{ color: "var(--tv-text)" }}>H <span className="font-mono text-[#26a69a]">{fmtOHLC(ohlc.high)}</span></span>
-              <span style={{ color: "var(--tv-text)" }}>L <span className="font-mono text-[#ef5350]">{fmtOHLC(ohlc.low)}</span></span>
-              <span style={{ color: "var(--tv-text)" }}>C <span className={`font-mono ${isPositive ? "text-[#26a69a]" : "text-[#ef5350]"}`}>{fmtOHLC(ohlc.close)}</span></span>
+              <span style={{ color: "var(--tv-text)" }}>H <span className="font-mono text-[#2ebd85]">{fmtOHLC(ohlc.high)}</span></span>
+              <span style={{ color: "var(--tv-text)" }}>L <span className="font-mono text-[#f6465d]">{fmtOHLC(ohlc.low)}</span></span>
+              <span style={{ color: "var(--tv-text)" }}>C <span className={`font-mono ${isPositive ? "text-[#2ebd85]" : "text-[#f6465d]"}`}>{fmtOHLC(ohlc.close)}</span></span>
             </div>
           )}
 
@@ -900,9 +900,9 @@ export function TradingChart() {
             <div className="text-[10px] font-bold mb-1" style={{ color: "var(--tv-muted)" }}>DATA WINDOW</div>
             {[
               { label: "O", value: fmtOHLC(ohlc.open), color: "var(--tv-text-light)" },
-              { label: "H", value: fmtOHLC(ohlc.high), color: "#26a69a" },
-              { label: "L", value: fmtOHLC(ohlc.low), color: "#ef5350" },
-              { label: "C", value: fmtOHLC(ohlc.close), color: ohlc.close >= ohlc.open ? "#26a69a" : "#ef5350" },
+              { label: "H", value: fmtOHLC(ohlc.high), color: "#2ebd85" },
+              { label: "L", value: fmtOHLC(ohlc.low), color: "#f6465d" },
+              { label: "C", value: fmtOHLC(ohlc.close), color: ohlc.close >= ohlc.open ? "#2ebd85" : "#f6465d" },
               { label: "V", value: ohlc.volume ? ohlc.volume.toLocaleString() : "—", color: "var(--tv-text)" },
             ].map(({ label, value, color }) => (
               <div key={label} className="flex items-center justify-between gap-4">

@@ -83,13 +83,13 @@ export default function WithdrawPage() {
   };
 
   return (
-    <div className="min-h-screen" style={{ background: "#131722", color: "#d1d4dc" }}>
+    <div className="min-h-screen" style={{ background: "#0a0b0d", color: "#d1d4dc" }}>
       {/* Header */}
       <div
         className="flex items-center gap-3 border-b px-6 py-4"
-        style={{ borderColor: "#2a2e39", background: "#1e222d" }}
+        style={{ borderColor: "#181b22", background: "#111318" }}
       >
-        <ArrowDownCircle className="h-5 w-5 text-[#ef5350]" />
+        <ArrowDownCircle className="h-5 w-5 text-[#f6465d]" />
         <h1 className="text-lg font-bold text-white">Withdraw Funds</h1>
         <div className="ml-auto flex items-center gap-2 text-sm">
           <span style={{ color: "#b2b5be" }}>Available:</span>
@@ -118,7 +118,7 @@ export default function WithdrawPage() {
         {wallet && (
           <div
             className="grid grid-cols-2 gap-3 rounded-xl border p-4"
-            style={{ borderColor: "#2a2e39", background: "#1e222d" }}
+            style={{ borderColor: "#181b22", background: "#111318" }}
           >
             {[
               { label: "Balance", value: wallet.balance },
@@ -130,7 +130,7 @@ export default function WithdrawPage() {
                 <div className="text-xs" style={{ color: "#5d6673" }}>{item.label}</div>
                 <div
                   className="font-mono font-semibold"
-                  style={{ color: item.highlight ? "#26a69a" : "white" }}
+                  style={{ color: item.highlight ? "#2ebd85" : "white" }}
                 >
                   ${formatPrice(item.value)}
                 </div>
@@ -143,9 +143,9 @@ export default function WithdrawPage() {
         {step === "processing" && (
           <div
             className="rounded-xl border p-12 flex flex-col items-center gap-4"
-            style={{ borderColor: "#2a2e39", background: "#1e222d" }}
+            style={{ borderColor: "#181b22", background: "#111318" }}
           >
-            <Loader2 className="h-12 w-12 animate-spin text-[#ef5350]" />
+            <Loader2 className="h-12 w-12 animate-spin text-[#f6465d]" />
             <p className="text-lg font-semibold text-white">Processing withdrawal…</p>
             <p className="text-sm" style={{ color: "#b2b5be" }}>Please do not close this window.</p>
           </div>
@@ -155,24 +155,24 @@ export default function WithdrawPage() {
         {step === "success" && withdrawResult && (
           <div
             className="rounded-xl border p-10 flex flex-col items-center gap-4"
-            style={{ borderColor: "#26a69a44", background: "#1e222d" }}
+            style={{ borderColor: "#2ebd8544", background: "#111318" }}
           >
-            <CheckCircle className="h-16 w-16 text-[#26a69a]" />
+            <CheckCircle className="h-16 w-16 text-[#2ebd85]" />
             <p className="text-2xl font-bold text-white">Withdrawal Successful!</p>
-            <p className="text-3xl font-mono font-bold text-[#26a69a]">
+            <p className="text-3xl font-mono font-bold text-[#2ebd85]">
               -${formatPrice(parsedAmount)}
             </p>
 
-            <div className="w-full space-y-2 rounded-lg p-4" style={{ background: "#131722" }}>
+            <div className="w-full space-y-2 rounded-lg p-4" style={{ background: "#0a0b0d" }}>
               <div className="flex justify-between text-sm">
                 <span style={{ color: "#b2b5be" }}>Amount</span>
                 <span className="font-mono text-white">${formatPrice(parsedAmount)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span style={{ color: "#b2b5be" }}>Fee (0.5%)</span>
-                <span className="font-mono text-[#ef5350]">-${formatPrice(withdrawResult.fee)}</span>
+                <span className="font-mono text-[#f6465d]">-${formatPrice(withdrawResult.fee)}</span>
               </div>
-              <div className="border-t pt-2 flex justify-between text-sm font-semibold" style={{ borderColor: "#2a2e39" }}>
+              <div className="border-t pt-2 flex justify-between text-sm font-semibold" style={{ borderColor: "#181b22" }}>
                 <span style={{ color: "#b2b5be" }}>You Receive</span>
                 <span className="font-mono text-white">${formatPrice(parsedAmount - withdrawResult.fee)}</span>
               </div>
@@ -196,8 +196,8 @@ export default function WithdrawPage() {
             <div className="flex gap-3 mt-2 w-full">
               <button
                 onClick={() => { setStep("form"); setAmount(""); }}
-                className="flex-1 rounded-lg border py-2.5 text-sm font-medium transition-colors hover:bg-[#2a2e39]"
-                style={{ borderColor: "#363a45", color: "#b2b5be" }}
+                className="flex-1 rounded-lg border py-2.5 text-sm font-medium transition-colors hover:bg-[#181b22]"
+                style={{ borderColor: "#23262f", color: "#b2b5be" }}
               >
                 Withdraw More
               </button>
@@ -216,7 +216,7 @@ export default function WithdrawPage() {
         {step === "form" && (
           <div
             className="rounded-xl border p-6 space-y-5"
-            style={{ borderColor: "#2a2e39", background: "#1e222d" }}
+            style={{ borderColor: "#181b22", background: "#111318" }}
           >
             {/* Payment method */}
             <div>
@@ -232,8 +232,8 @@ export default function WithdrawPage() {
                     className="flex flex-col items-center gap-1.5 rounded-lg border p-3 text-center transition-all"
                     style={
                       method === m.id
-                        ? { borderColor: "#ef5350", background: "#ef535015", color: "white" }
-                        : { borderColor: "#363a45", color: "#b2b5be" }
+                        ? { borderColor: "#f6465d", background: "#f6465d15", color: "white" }
+                        : { borderColor: "#23262f", color: "#b2b5be" }
                     }
                   >
                     <m.icon className="h-5 w-5" />
@@ -264,8 +264,8 @@ export default function WithdrawPage() {
                   min={10}
                   max={freeMargin}
                   step="0.01"
-                  className="w-full rounded-lg border bg-transparent py-3 pl-7 pr-4 text-lg font-mono text-white outline-none transition-colors focus:border-[#ef5350]"
-                  style={{ borderColor: error ? "#ef5350" : "#363a45" }}
+                  className="w-full rounded-lg border bg-transparent py-3 pl-7 pr-4 text-lg font-mono text-white outline-none transition-colors focus:border-[#f6465d]"
+                  style={{ borderColor: error ? "#f6465d" : "#23262f" }}
                 />
               </div>
               <p className="mt-1 text-xs" style={{ color: "#5d6673" }}>
@@ -281,11 +281,11 @@ export default function WithdrawPage() {
                   type="button"
                   onClick={() => { setAmount(p.toString()); setError(null); }}
                   disabled={p > freeMargin}
-                  className="rounded-lg border px-3 py-1.5 text-xs font-medium transition-all hover:border-[#ef5350] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="rounded-lg border px-3 py-1.5 text-xs font-medium transition-all hover:border-[#f6465d] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
                   style={
                     amount === p.toString()
-                      ? { borderColor: "#ef5350", background: "#ef535015", color: "white" }
-                      : { borderColor: "#363a45", color: "#b2b5be" }
+                      ? { borderColor: "#f6465d", background: "#f6465d15", color: "white" }
+                      : { borderColor: "#23262f", color: "#b2b5be" }
                   }
                 >
                   ${p.toLocaleString("en-US")}
@@ -300,8 +300,8 @@ export default function WithdrawPage() {
                   setError(null);
                 }}
                 disabled={freeMargin < 10}
-                className="rounded-lg border px-3 py-1.5 text-xs font-medium transition-all hover:border-[#ef5350] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
-                style={{ borderColor: "#363a45", color: "#b2b5be" }}
+                className="rounded-lg border px-3 py-1.5 text-xs font-medium transition-all hover:border-[#f6465d] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+                style={{ borderColor: "#23262f", color: "#b2b5be" }}
               >
                 All
               </button>
@@ -311,7 +311,7 @@ export default function WithdrawPage() {
             {parsedAmount > 0 && (
               <div
                 className="rounded-lg p-3 space-y-1.5 text-sm"
-                style={{ background: "#131722" }}
+                style={{ background: "#0a0b0d" }}
               >
                 <div className="flex justify-between">
                   <span style={{ color: "#b2b5be" }}>Withdrawal Amount</span>
@@ -319,14 +319,14 @@ export default function WithdrawPage() {
                 </div>
                 <div className="flex justify-between">
                   <span style={{ color: "#b2b5be" }}>Fee (0.5%, min $1)</span>
-                  <span className="font-mono text-[#ef5350]">-${formatPrice(fee)}</span>
+                  <span className="font-mono text-[#f6465d]">-${formatPrice(fee)}</span>
                 </div>
                 <div
                   className="border-t pt-1.5 flex justify-between font-semibold"
-                  style={{ borderColor: "#2a2e39" }}
+                  style={{ borderColor: "#181b22" }}
                 >
                   <span style={{ color: "#d1d4dc" }}>Net Amount You&apos;ll Receive</span>
-                  <span className="font-mono text-[#26a69a]">${formatPrice(netAmount)}</span>
+                  <span className="font-mono text-[#2ebd85]">${formatPrice(netAmount)}</span>
                 </div>
               </div>
             )}
@@ -335,7 +335,7 @@ export default function WithdrawPage() {
             {error && (
               <div
                 className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm"
-                style={{ background: "#ef535022", color: "#ef5350" }}
+                style={{ background: "#f6465d22", color: "#f6465d" }}
               >
                 <X className="h-4 w-4 shrink-0" />
                 {error}
@@ -347,7 +347,7 @@ export default function WithdrawPage() {
               onClick={handleWithdraw}
               disabled={!isValidAmount}
               className="w-full rounded-lg py-3 text-sm font-bold text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ background: "#ef5350" }}
+              style={{ background: "#f6465d" }}
             >
               {parsedAmount > 0
                 ? `Withdraw $${formatPrice(parsedAmount)}`

@@ -32,7 +32,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
       return (
         <div className="flex flex-col items-center justify-center h-full min-h-[200px] gap-3 p-6"
           style={{ color: "var(--tv-muted)" }}>
-          <AlertTriangle className="h-8 w-8 text-[#ef5350] opacity-70" />
+          <AlertTriangle className="h-8 w-8 text-[#f6465d] opacity-70" />
           <p className="text-sm font-medium" style={{ color: "var(--tv-text)" }}>Something went wrong</p>
           <p className="text-xs text-center max-w-xs" style={{ color: "var(--tv-muted)" }}>
             {this.state.error?.message ?? "An unexpected error occurred."}

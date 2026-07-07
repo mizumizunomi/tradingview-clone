@@ -114,7 +114,7 @@ export function OrderPanel() {
       {/* Panel header with collapse button */}
       <div className="flex items-center justify-between px-3 pt-2 pb-1">
         <span className="text-[10px] font-semibold uppercase tracking-wider text-[#5d6673]">Order Panel</span>
-        <button onClick={() => setShowOrderPanel(false)} title="Collapse" className="p-0.5 rounded hover:bg-[#363a45] text-[#5d6673] hover:text-white transition-colors">
+        <button onClick={() => setShowOrderPanel(false)} title="Collapse" className="p-0.5 rounded hover:bg-[#23262f] text-[#5d6673] hover:text-white transition-colors">
           <ChevronRight className="h-3.5 w-3.5" />
         </button>
       </div>
@@ -122,26 +122,26 @@ export function OrderPanel() {
       <div className="px-3 pt-3 pb-2">
         {priceData ? (
           <div className="flex gap-2">
-            <div className="flex-1 rounded bg-[#ef535015] border border-[#ef535030] px-2 py-1.5 text-center">
+            <div className="flex-1 rounded bg-[#f6465d15] border border-[#f6465d30] px-2 py-1.5 text-center">
               <div className="text-[10px] text-[#5d6673] uppercase tracking-wider mb-0.5">Bid</div>
-              <div className="font-mono text-sm font-bold text-[#ef5350]">
+              <div className="font-mono text-sm font-bold text-[#f6465d]">
                 {priceData.bid < 10 ? priceData.bid.toFixed(5) : priceData.bid.toFixed(2)}
               </div>
             </div>
-            <div className="flex-1 rounded bg-[#26a69a15] border border-[#26a69a30] px-2 py-1.5 text-center">
+            <div className="flex-1 rounded bg-[#2ebd8515] border border-[#2ebd8530] px-2 py-1.5 text-center">
               <div className="text-[10px] text-[#5d6673] uppercase tracking-wider mb-0.5">Ask</div>
-              <div className="font-mono text-sm font-bold text-[#26a69a]">
+              <div className="font-mono text-sm font-bold text-[#2ebd85]">
                 {priceData.ask < 10 ? priceData.ask.toFixed(5) : priceData.ask.toFixed(2)}
               </div>
             </div>
           </div>
         ) : (
           <div className="flex gap-2">
-            <div className="flex-1 rounded bg-[#2a2e39] border border-[#363a45] px-2 py-1.5 text-center">
+            <div className="flex-1 rounded bg-[#181b22] border border-[#23262f] px-2 py-1.5 text-center">
               <div className="text-[10px] text-[#5d6673] uppercase tracking-wider mb-0.5">Bid</div>
               <div className="font-mono text-sm font-bold text-[#5d6673]">—</div>
             </div>
-            <div className="flex-1 rounded bg-[#2a2e39] border border-[#363a45] px-2 py-1.5 text-center">
+            <div className="flex-1 rounded bg-[#181b22] border border-[#23262f] px-2 py-1.5 text-center">
               <div className="text-[10px] text-[#5d6673] uppercase tracking-wider mb-0.5">Ask</div>
               <div className="font-mono text-sm font-bold text-[#5d6673]">—</div>
             </div>
@@ -155,26 +155,26 @@ export function OrderPanel() {
       </div>
 
       {/* BUY / SELL toggle */}
-      <div className="mx-3 mb-3 flex rounded overflow-hidden border border-[#363a45]">
+      <div className="mx-3 mb-3 flex rounded overflow-hidden border border-[#23262f]">
         <button
           onClick={() => setOrderSide("BUY")}
           className={cn(
             "flex-1 py-2 text-xs font-bold tracking-widest uppercase transition-all",
             isBuy
-              ? "bg-[#26a69a] text-white shadow-inner"
-              : "bg-[#1e222d] text-[#26a69a] hover:bg-[#26a69a18]"
+              ? "bg-[#2ebd85] text-white shadow-inner"
+              : "bg-[#111318] text-[#2ebd85] hover:bg-[#2ebd8518]"
           )}
         >
           Buy
         </button>
-        <div className="w-px bg-[#363a45]" />
+        <div className="w-px bg-[#23262f]" />
         <button
           onClick={() => setOrderSide("SELL")}
           className={cn(
             "flex-1 py-2 text-xs font-bold tracking-widest uppercase transition-all",
             !isBuy
-              ? "bg-[#ef5350] text-white shadow-inner"
-              : "bg-[#1e222d] text-[#ef5350] hover:bg-[#ef535018]"
+              ? "bg-[#f6465d] text-white shadow-inner"
+              : "bg-[#111318] text-[#f6465d] hover:bg-[#f6465d18]"
           )}
         >
           Sell
@@ -191,7 +191,7 @@ export function OrderPanel() {
           <select
             value={orderType}
             onChange={(e) => setOrderType(e.target.value as "MARKET" | "LIMIT")}
-            className="w-full rounded border border-[#363a45] bg-[#2a2e39] px-2 py-1.5 text-xs text-[#d1d4dc] outline-none hover:border-[#434651] focus:border-[#2962ff] cursor-pointer"
+            className="w-full rounded border border-[#23262f] bg-[#181b22] px-2 py-1.5 text-xs text-[#d1d4dc] outline-none hover:border-[#2f333d] focus:border-[#2962ff] cursor-pointer"
           >
             <option value="MARKET">Market Order</option>
             {(planConfig.orderTypes as readonly string[]).includes("LIMIT") && (
@@ -201,7 +201,7 @@ export function OrderPanel() {
           {!(planConfig.orderTypes as readonly string[]).includes("LIMIT") && (
             <button
               onClick={() => router.push("/plans")}
-              className="mt-1 flex w-full items-center justify-center gap-1 rounded px-2 py-1 text-[10px] text-[#5d6673] bg-[#2a2e39] hover:bg-[#363a45] transition-colors border border-[#363a45]"
+              className="mt-1 flex w-full items-center justify-center gap-1 rounded px-2 py-1 text-[10px] text-[#5d6673] bg-[#181b22] hover:bg-[#23262f] transition-colors border border-[#23262f]"
             >
               Limit orders require Gold plan
               <ArrowRight className="h-2.5 w-2.5" />
@@ -214,14 +214,14 @@ export function OrderPanel() {
           <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-[#5d6673]">
             Volume (Lots)
           </label>
-          <div className="flex rounded border border-[#363a45] overflow-hidden hover:border-[#434651] focus-within:border-[#2962ff]">
+          <div className="flex rounded border border-[#23262f] overflow-hidden hover:border-[#2f333d] focus-within:border-[#2962ff]">
             <button
               onClick={() => {
                 const next = Math.max(0.01, parseFloat((quantity - 0.01).toFixed(2)));
                 setQuantity(next);
                 setQtyInput(String(next));
               }}
-              className="px-2.5 bg-[#2a2e39] text-[#b2b5be] hover:bg-[#363a45] hover:text-white text-base leading-none select-none"
+              className="px-2.5 bg-[#181b22] text-[#b2b5be] hover:bg-[#23262f] hover:text-white text-base leading-none select-none"
             >
               −
             </button>
@@ -244,7 +244,7 @@ export function OrderPanel() {
                 setQuantity(valid);
                 setQtyInput(String(valid));
               }}
-              className="flex-1 bg-[#2a2e39] px-2 py-1.5 text-center text-xs font-mono text-white outline-none w-0"
+              className="flex-1 bg-[#181b22] px-2 py-1.5 text-center text-xs font-mono text-white outline-none w-0"
             />
             <button
               onClick={() => {
@@ -252,7 +252,7 @@ export function OrderPanel() {
                 setQuantity(next);
                 setQtyInput(String(next));
               }}
-              className="px-2.5 bg-[#2a2e39] text-[#b2b5be] hover:bg-[#363a45] hover:text-white text-base leading-none select-none"
+              className="px-2.5 bg-[#181b22] text-[#b2b5be] hover:bg-[#23262f] hover:text-white text-base leading-none select-none"
             >
               +
             </button>
@@ -273,7 +273,7 @@ export function OrderPanel() {
             onChange={(e) => setLeverage(parseInt(e.target.value))}
             className="w-full"
             style={{
-              background: `linear-gradient(to right, #2962ff ${(Math.min(leverage, maxLeverage) / maxLeverage) * 100}%, #363a45 ${(Math.min(leverage, maxLeverage) / maxLeverage) * 100}%)`,
+              background: `linear-gradient(to right, #2962ff ${(Math.min(leverage, maxLeverage) / maxLeverage) * 100}%, #23262f ${(Math.min(leverage, maxLeverage) / maxLeverage) * 100}%)`,
             }}
           />
           {leverage > maxLeverage && (
@@ -294,7 +294,7 @@ export function OrderPanel() {
                   "flex-1 rounded py-0.5 text-[9px] font-medium transition-colors",
                   leverage === l
                     ? "bg-[#2962ff] text-white"
-                    : "bg-[#2a2e39] text-[#5d6673] hover:bg-[#363a45] hover:text-[#b2b5be]"
+                    : "bg-[#181b22] text-[#5d6673] hover:bg-[#23262f] hover:text-[#b2b5be]"
                 )}
               >
                 {l}×
@@ -314,7 +314,7 @@ export function OrderPanel() {
               value={limitPrice}
               onChange={(e) => setLimitPrice(e.target.value)}
               placeholder={currentPrice > 0 ? currentPrice.toFixed(5) : "0.00000"}
-              className="w-full rounded border border-[#363a45] bg-[#2a2e39] px-2.5 py-1.5 text-xs font-mono text-white outline-none hover:border-[#434651] focus:border-[#2962ff] placeholder:text-[#5d6673]"
+              className="w-full rounded border border-[#23262f] bg-[#181b22] px-2.5 py-1.5 text-xs font-mono text-white outline-none hover:border-[#2f333d] focus:border-[#2962ff] placeholder:text-[#5d6673]"
             />
           </div>
         )}
@@ -323,7 +323,7 @@ export function OrderPanel() {
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className="mb-1 flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-[#5d6673]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#ef5350] inline-block" />
+              <span className="h-1.5 w-1.5 rounded-full bg-[#f6465d] inline-block" />
               Stop Loss
             </label>
             <input
@@ -331,12 +331,12 @@ export function OrderPanel() {
               value={stopLoss}
               onChange={(e) => setStopLoss(e.target.value)}
               placeholder="—"
-              className="w-full rounded border border-[#363a45] bg-[#2a2e39] px-2 py-1.5 text-xs font-mono text-white outline-none hover:border-[#ef535050] focus:border-[#ef5350] placeholder:text-[#5d6673]"
+              className="w-full rounded border border-[#23262f] bg-[#181b22] px-2 py-1.5 text-xs font-mono text-white outline-none hover:border-[#f6465d50] focus:border-[#f6465d] placeholder:text-[#5d6673]"
             />
           </div>
           <div>
             <label className="mb-1 flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-[#5d6673]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#26a69a] inline-block" />
+              <span className="h-1.5 w-1.5 rounded-full bg-[#2ebd85] inline-block" />
               Take Profit
             </label>
             <input
@@ -344,17 +344,17 @@ export function OrderPanel() {
               value={takeProfit}
               onChange={(e) => setTakeProfit(e.target.value)}
               placeholder="—"
-              className="w-full rounded border border-[#363a45] bg-[#2a2e39] px-2 py-1.5 text-xs font-mono text-white outline-none hover:border-[#26a69a50] focus:border-[#26a69a] placeholder:text-[#5d6673]"
+              className="w-full rounded border border-[#23262f] bg-[#181b22] px-2 py-1.5 text-xs font-mono text-white outline-none hover:border-[#2ebd8550] focus:border-[#2ebd85] placeholder:text-[#5d6673]"
             />
           </div>
         </div>
 
         {/* Order summary card */}
-        <div className="rounded border border-[#363a45] overflow-hidden">
-          <div className="bg-[#131722] px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#5d6673]">
+        <div className="rounded border border-[#23262f] overflow-hidden">
+          <div className="bg-[#0a0b0d] px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#5d6673]">
             Order Summary
           </div>
-          <div className="bg-[#131722] border-t border-[#363a45] divide-y divide-[#1e222d]">
+          <div className="bg-[#0a0b0d] border-t border-[#23262f] divide-y divide-[#111318]">
             {[
               { label: "Entry Price", value: currentPrice > 0 ? (currentPrice < 10 ? currentPrice.toFixed(5) : currentPrice.toFixed(2)) : "—" },
               { label: "Notional", value: `$${formatPrice(notionalValue)}` },
@@ -372,18 +372,18 @@ export function OrderPanel() {
 
         {/* Wallet mini */}
         {wallet && (
-          <div className="rounded border border-[#363a45] overflow-hidden">
-            <div className="bg-[#131722] px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#5d6673]">
+          <div className="rounded border border-[#23262f] overflow-hidden">
+            <div className="bg-[#0a0b0d] px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#5d6673]">
               Account
             </div>
-            <div className="bg-[#131722] border-t border-[#363a45] divide-y divide-[#1e222d]">
+            <div className="bg-[#0a0b0d] border-t border-[#23262f] divide-y divide-[#111318]">
               {[
                 { label: "Balance", value: `$${formatPrice(wallet.balance)}` },
                 { label: "Equity", value: `$${formatPrice(wallet.equity)}` },
                 {
                   label: "Free Margin",
                   value: `$${formatPrice(wallet.freeMargin)}`,
-                  color: wallet.freeMargin >= marginRequired ? "#26a69a" : "#ef5350",
+                  color: wallet.freeMargin >= marginRequired ? "#2ebd85" : "#f6465d",
                 },
                 { label: "Margin Used", value: `$${formatPrice(wallet.margin)}` },
               ].map(({ label, value, color }) => (
@@ -401,8 +401,8 @@ export function OrderPanel() {
           <div className={cn(
             "flex items-center gap-2 rounded px-3 py-2 text-xs",
             message.type === "success"
-              ? "bg-[#26a69a15] border border-[#26a69a40] text-[#26a69a]"
-              : "bg-[#ef535015] border border-[#ef535040] text-[#ef5350]"
+              ? "bg-[#2ebd8515] border border-[#2ebd8540] text-[#2ebd85]"
+              : "bg-[#f6465d15] border border-[#f6465d40] text-[#f6465d]"
           )}>
             {message.type === "success"
               ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
@@ -413,15 +413,15 @@ export function OrderPanel() {
       </div>
 
       {/* Place order button */}
-      <div className="p-3 border-t border-[#363a45]">
+      <div className="p-3 border-t border-[#23262f]">
         <button
           onClick={handlePlaceOrder}
           disabled={loading || !selectedAsset}
           className={cn(
             "w-full rounded py-3 text-xs font-bold uppercase tracking-widest text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed",
             isBuy
-              ? "bg-[#26a69a] hover:bg-[#2bbb9d] active:bg-[#1f8f84] shadow-[0_2px_8px_#26a69a33]"
-              : "bg-[#ef5350] hover:bg-[#f26360] active:bg-[#d44a48] shadow-[0_2px_8px_#ef535033]"
+              ? "bg-[#2ebd85] hover:bg-[#2bbb9d] active:bg-[#1f8f84] shadow-[0_2px_8px_#2ebd8533]"
+              : "bg-[#f6465d] hover:bg-[#f26360] active:bg-[#d44a48] shadow-[0_2px_8px_#f6465d33]"
           )}
         >
           {loading ? (

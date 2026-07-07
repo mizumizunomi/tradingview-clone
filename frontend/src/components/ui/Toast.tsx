@@ -5,14 +5,14 @@ import { Toast as ToastType } from "@/types";
 import { useTradingStore } from "@/store/trading.store";
 
 const ICONS = {
-  success: <CheckCircle className="h-4 w-4 text-[#26a69a] shrink-0" />,
-  error: <AlertCircle className="h-4 w-4 text-[#ef5350] shrink-0" />,
+  success: <CheckCircle className="h-4 w-4 text-[#2ebd85] shrink-0" />,
+  error: <AlertCircle className="h-4 w-4 text-[#f6465d] shrink-0" />,
   warning: <AlertTriangle className="h-4 w-4 text-[#f59e0b] shrink-0" />,
   info: <Info className="h-4 w-4 text-[#2962ff] shrink-0" />,
 };
 
 const BAR_COLORS = {
-  success: "#26a69a", error: "#ef5350", warning: "#f59e0b", info: "#2962ff",
+  success: "#2ebd85", error: "#f6465d", warning: "#f59e0b", info: "#2962ff",
 };
 
 export function ToastItem({ toast }: { toast: ToastType }) {
