@@ -252,7 +252,7 @@ export default function PlansPage() {
                       color: isActive ? "white" : plan.popular ? "#000" : plan.color,
                     }}
                   >
-                    {isActive ? "Current Plan" : `Deposit $${plan.depositRequired.toLocaleString()}`}
+                    {isActive ? "Current Plan" : `Deposit $${plan.depositRequired.toLocaleString("en-US")}`}
                     {!isActive && <ArrowRight className="h-3.5 w-3.5" />}
                   </button>
                 </div>

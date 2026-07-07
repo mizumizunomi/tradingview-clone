@@ -191,8 +191,8 @@ export default function DepositPage() {
             {nextThreshold && (
               <>
                 <div className="flex justify-between text-xs mb-1.5" style={{ color: "#b2b5be" }}>
-                  <span>${totalDeposited.toLocaleString()} deposited</span>
-                  <span>${nextThreshold.toLocaleString()} for next tier</span>
+                  <span>${totalDeposited.toLocaleString("en-US")} deposited</span>
+                  <span>${nextThreshold.toLocaleString("en-US")} for next tier</span>
                 </div>
                 <div className="h-1.5 rounded-full" style={{ background: "#2a2e39" }}>
                   <div
@@ -379,7 +379,7 @@ export default function DepositPage() {
                       : { borderColor: "#363a45", color: "#b2b5be" }
                   }
                 >
-                  ${p.toLocaleString()}
+                  ${p.toLocaleString("en-US")}
                 </button>
               ))}
             </div>
@@ -402,7 +402,7 @@ export default function DepositPage() {
               className="w-full rounded-lg py-3 text-sm font-bold text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ background: "#2962ff" }}
             >
-              {parsedAmount > 0 ? `Deposit $${parsedAmount.toLocaleString()}` : "Enter Amount"}
+              {parsedAmount > 0 ? `Deposit $${parsedAmount.toLocaleString("en-US")}` : "Enter Amount"}
             </button>
           </div>
         )}

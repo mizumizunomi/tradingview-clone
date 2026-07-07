@@ -92,7 +92,10 @@ function EquityChart({
     let cumulative = 0;
     pts.push({ x: 0, y: 0, label: "", value: 0 });
     sorted.forEach((p) => {
-      cumulative += p.realizedPnL;
+      // realizedPnL may arrive as null or a Decimal string — coerce so a bad value
+      // doesn't poison the whole series with NaN (which broke the SVG y attributes).
+      const pnl = Number(p.realizedPnL);
+      cumulative += Number.isFinite(pnl) ? pnl : 0;
       pts.push({
         x: new Date(p.closedAt!).getTime(),
         y: cumulative,
@@ -118,8 +121,10 @@ function EquityChart({
 
   const scaleX = (i: number) =>
     PAD.left + (points.length <= 1 ? 0 : (i / (points.length - 1)) * chartW);
-  const scaleY = (v: number) =>
-    PAD.top + chartH - ((v - minY) / rangeY) * chartH;
+  const scaleY = (v: number) => {
+    const y = PAD.top + chartH - ((v - minY) / rangeY) * chartH;
+    return Number.isFinite(y) ? y : PAD.top + chartH;
+  };
 
   const polylinePoints = points
     .map((p, i) => `${scaleX(i)},${scaleY(p.y)}`)

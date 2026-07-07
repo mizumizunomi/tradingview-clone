@@ -288,7 +288,7 @@ export default function WithdrawPage() {
                       : { borderColor: "#363a45", color: "#b2b5be" }
                   }
                 >
-                  ${p.toLocaleString()}
+                  ${p.toLocaleString("en-US")}
                 </button>
               ))}
               <button
