@@ -442,14 +442,22 @@ function StrategiesTab() {
 // ── Settings tab ──────────────────────────────────────────────────────────────
 function SettingsTab() {
   const { showBotDrawings, setShowBotDrawings, clearBotDrawings, addToast } = useTradingStore();
-  const [settings, setSettings] = useState<any>(null);
+  interface BotSettings {
+    autoTradeEnabled: boolean;
+    riskLevel: string;
+    maxDailyTrades: number;
+    maxDrawdownPercent: number;
+    enabledAssetClasses: string[];
+    notifyOnSignal: boolean;
+  }
+  const [settings, setSettings] = useState<BotSettings | null>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     api.get(endpoints.botSettings).then((r) => setSettings(r.data)).catch(() => {});
   }, []);
 
-  const save = async (patch: any) => {
+  const save = async (patch: Partial<BotSettings>) => {
     setSaving(true);
     try {
       const res = await api.put(endpoints.botSettings, patch);

@@ -56,13 +56,14 @@ export default function ScreenerPage() {
         };
       })
       .sort((a, b) => {
-        let va: any, vb: any;
+        let va: number | string = 0, vb: number | string = 0;
         if (sortKey === "price") { va = a.price; vb = b.price; }
         else if (sortKey === "change") { va = a.change; vb = b.change; }
         else if (sortKey === "changePercent") { va = a.changePercent; vb = b.changePercent; }
         else if (sortKey === "spread") { va = a.spread; vb = b.spread; }
         else if (sortKey === "leverage") { va = a.maxLeverage; vb = b.maxLeverage; }
-        else { va = (a as any)[sortKey]; vb = (b as any)[sortKey]; }
+        else if (sortKey === "symbol") { va = a.symbol; vb = b.symbol; }
+        else if (sortKey === "name") { va = a.name; vb = b.name; }
         if (va < vb) return sortDir === "asc" ? -1 : 1;
         if (va > vb) return sortDir === "asc" ? 1 : -1;
         return 0;

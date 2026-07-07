@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useTradingStore } from "@/store/trading.store";
 import { TradingChart } from "./TradingChart";
 import { PanelChart } from "./PanelChart";
+import type { Asset, Timeframe, ChartPanelConfig } from "@/types";
 import { TradingViewWidget } from "./TradingViewWidget";
 import { ChevronDown } from "lucide-react";
 import { ChartLayout } from "@/types";
@@ -113,8 +114,16 @@ export function MultiChartLayout() {
   );
 }
 
-function PanelHeader({ panel, updateChartPanel, assets }: any) {
-  const TIMEFRAMES = ["1m", "5m", "15m", "30m", "1h", "4h", "1D", "1W"];
+function PanelHeader({
+  panel,
+  updateChartPanel,
+  assets,
+}: {
+  panel: ChartPanelConfig;
+  updateChartPanel: (id: string, patch: Partial<ChartPanelConfig>) => void;
+  assets: Asset[];
+}) {
+  const TIMEFRAMES: Timeframe[] = ["1m", "5m", "15m", "30m", "1h", "4h", "1D", "1W", "1M"];
   return (
     <div
       className="flex items-center gap-2 px-2 border-b h-8 shrink-0 overflow-hidden"
@@ -127,7 +136,7 @@ function PanelHeader({ panel, updateChartPanel, assets }: any) {
         className="text-[10px] rounded px-2 py-1 border outline-none max-w-[90px] transition-colors duration-150"
         style={{ background: "var(--tv-bg3)", borderColor: "var(--tv-border)", color: "var(--tv-text-light)" }}
       >
-        {assets.slice(0, 30).map((a: any) => (
+        {assets.slice(0, 30).map((a) => (
           <option key={a.symbol} value={a.symbol}>{a.symbol}</option>
         ))}
       </select>

@@ -78,16 +78,17 @@ export default function TradePage() {
         ]);
         setUser(meRes.data);
         setWallet(walletRes.data);
+        type RawPos = Record<string, unknown> & { asset: { symbol: string; name: string } };
         setPositions([
-          ...posRes.data.map((p: any) => ({ ...p, symbol: p.asset.symbol, assetName: p.asset.name })),
-          ...closedRes.data.map((p: any) => ({ ...p, symbol: p.asset.symbol, assetName: p.asset.name })),
+          ...posRes.data.map((p: RawPos) => ({ ...p, symbol: p.asset.symbol, assetName: p.asset.name })),
+          ...closedRes.data.map((p: RawPos) => ({ ...p, symbol: p.asset.symbol, assetName: p.asset.name })),
         ]);
         setAssets(assetsRes.data);
-        const assets = assetsRes.data as { symbol: string; [k: string]: unknown }[];
+        const assets = assetsRes.data as import("@/types").Asset[];
         const btc = assets.find((a) => a.symbol === "BTCUSD");
         const first = assets[0];
-        if (btc) setSelectedAsset(btc as any);
-        else if (first) setSelectedAsset(first as any);
+        if (btc) setSelectedAsset(btc);
+        else if (first) setSelectedAsset(first);
       } catch { router.replace("/auth/login"); }
     };
     init();

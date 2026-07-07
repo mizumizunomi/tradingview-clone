@@ -16,7 +16,9 @@ export class MarketDataService implements OnModuleInit {
   private readonly logger = new Logger(MarketDataService.name);
   private prices: Map<string, PriceData> = new Map();
   private prevPrices: Map<string, number> = new Map();
-  private ws: any = null;
+  // WebSocket instance — typed loosely since 'ws' types may not be installed
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private ws: { on: (...args: any[]) => void; send: (data: string) => void; close?: () => void } | null = null;
   private subscribers: Map<string, Set<(data: PriceData) => void>> = new Map();
 
   private readonly KEY = process.env.TWELVE_DATA_API_KEY;
@@ -140,17 +142,18 @@ export class MarketDataService implements OnModuleInit {
   private connectWS() {
     try {
       const WebSocket = require('ws');
-      this.ws = new WebSocket(`wss://ws.twelvedata.com/v1/quotes/price?apikey=${this.KEY}`);
+      const ws = new WebSocket(`wss://ws.twelvedata.com/v1/quotes/price?apikey=${this.KEY}`);
+      this.ws = ws;
 
-      this.ws.on('open', () => {
+      ws.on('open', () => {
         this.logger.log('Twelve Data WS connected — subscribing to all symbols');
-        this.ws.send(JSON.stringify({
+        ws.send(JSON.stringify({
           action: 'subscribe',
           params: { symbols: Object.values(this.TD_MAP).join(',') },
         }));
       });
 
-      this.ws.on('message', (raw: Buffer) => {
+      ws.on('message', (raw: Buffer) => {
         try {
           const msg = JSON.parse(raw.toString());
           if (msg.event !== 'price' || !msg.price) return;
@@ -163,8 +166,8 @@ export class MarketDataService implements OnModuleInit {
         } catch {}
       });
 
-      this.ws.on('error', (err: Error) => this.logger.warn('WS error: ' + err.message));
-      this.ws.on('close', () => {
+      ws.on('error', (err: Error) => this.logger.warn('WS error: ' + err.message));
+      ws.on('close', () => {
         this.logger.warn('WS closed, reconnecting in 5s...');
         setTimeout(() => this.connectWS(), 5000);
       });
@@ -204,11 +207,12 @@ export class MarketDataService implements OnModuleInit {
         if (res.data.status === 'error' || !res.data.values?.length) {
           throw new Error(res.data.message || 'No data');
         }
-        return res.data.values.reverse().map((c: any) => ({
+        interface TdCandle { datetime: string; open: string; high: string; low: string; close: string; volume?: string; }
+        return res.data.values.reverse().map((c: TdCandle) => ({
           time: Math.floor(new Date(c.datetime).getTime() / 1000),
           open: parseFloat(c.open),   high: parseFloat(c.high),
           low:  parseFloat(c.low),    close: parseFloat(c.close),
-          volume: parseFloat(c.volume || '0'),
+          volume: parseFloat(c.volume ?? '0'),
         }));
       } catch (err) {
         this.logger.warn(`Candles failed for ${symbol}: ${err.message}`);

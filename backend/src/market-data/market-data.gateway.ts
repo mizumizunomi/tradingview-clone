@@ -72,11 +72,11 @@ export class MarketDataGateway implements OnGatewayConnection, OnGatewayDisconne
     if (price) client.emit('price:update', price);
   }
 
-  emitToUser(userId: string, event: string, data: any) {
+  emitToUser(userId: string, event: string, data: unknown) {
     this.server.to(`user:${userId}`).emit(event, data);
   }
 
-  emitToAll(event: string, data: any) {
+  emitToAll(event: string, data: unknown) {
     this.server.emit(event, data);
   }
 }

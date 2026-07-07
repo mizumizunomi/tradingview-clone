@@ -47,7 +47,7 @@ export class TradingBotController {
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   async analyzeForChart(
-    @Request() req: { user: { userId: string } },
+    @Request() req: { user: { id: string } },
     @Body() body: { symbol: string; assetClass: string; timeframe?: string },
   ) {
     const { symbol, assetClass, timeframe = '1h' } = body;
@@ -57,7 +57,7 @@ export class TradingBotController {
 
     const result = await this.analysisEngine.analyze(
       symbol,
-      assetClass as any,
+      (assetClass?.toUpperCase() ?? 'CRYPTO') as AssetClass,
       timeframe,
     );
 
@@ -69,13 +69,13 @@ export class TradingBotController {
 
   @Get('signals')
   async getSignals(
-    @Request() req: { user: { userId: string } },
+    @Request() req: { user: { id: string } },
     @Query('asset') asset?: string,
     @Query('action') action?: string,
     @Query('status') status?: string,
     @Query('limit') limit?: string,
   ) {
-    return this.signalEngine.getSignals(req.user.userId, {
+    return this.signalEngine.getSignals(req.user.id, {
       asset, action, status, limit: limit ? parseInt(limit) : undefined,
     });
   }
@@ -84,11 +84,11 @@ export class TradingBotController {
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   async generateSignal(
-    @Request() req: { user: { userId: string } },
+    @Request() req: { user: { id: string } },
     @Body() dto: GenerateSignalDto,
   ) {
     return this.signalEngine.generateSignal(
-      req.user.userId,
+      req.user.id,
       dto.asset,
       dto.assetClass,
       dto.timeframe ?? '1h',
@@ -99,19 +99,19 @@ export class TradingBotController {
   @Post('signals/:id/execute')
   @HttpCode(HttpStatus.OK)
   async executeSignal(
-    @Request() req: { user: { userId: string } },
+    @Request() req: { user: { id: string } },
     @Param('id') id: string,
   ) {
-    return this.autoTrader.manualExecute(req.user.userId, id);
+    return this.autoTrader.manualExecute(req.user.id, id);
   }
 
   @Post('signals/:id/cancel')
   @HttpCode(HttpStatus.OK)
   async cancelSignal(
-    @Request() req: { user: { userId: string } },
+    @Request() req: { user: { id: string } },
     @Param('id') id: string,
   ) {
-    await this.autoTrader.cancelSignal(req.user.userId, id);
+    await this.autoTrader.cancelSignal(req.user.id, id);
     return { cancelled: true };
   }
 
@@ -145,46 +145,46 @@ export class TradingBotController {
   // ── Strategies ────────────────────────────────────────────────────────────────
 
   @Get('strategies')
-  async getStrategies(@Request() req: { user: { userId: string } }) {
-    return this.strategyService.getStrategies(req.user.userId);
+  async getStrategies(@Request() req: { user: { id: string } }) {
+    return this.strategyService.getStrategies(req.user.id);
   }
 
   @Post('strategies')
   async createStrategy(
-    @Request() req: { user: { userId: string } },
+    @Request() req: { user: { id: string } },
     @Body() dto: CreateStrategyDto,
   ) {
-    return this.strategyService.createStrategy(req.user.userId, dto);
+    return this.strategyService.createStrategy(req.user.id, dto);
   }
 
   @Put('strategies/:id')
   async updateStrategy(
-    @Request() req: { user: { userId: string } },
+    @Request() req: { user: { id: string } },
     @Param('id') id: string,
     @Body() dto: UpdateStrategyDto,
   ) {
-    return this.strategyService.updateStrategy(req.user.userId, id, dto);
+    return this.strategyService.updateStrategy(req.user.id, id, dto);
   }
 
   @Delete('strategies/:id')
   async deleteStrategy(
-    @Request() req: { user: { userId: string } },
+    @Request() req: { user: { id: string } },
     @Param('id') id: string,
   ) {
-    return this.strategyService.deleteStrategy(req.user.userId, id);
+    return this.strategyService.deleteStrategy(req.user.id, id);
   }
 
   @Post('strategies/:id/backtest')
   @HttpCode(HttpStatus.OK)
   async backtestStrategy(
-    @Request() req: { user: { userId: string } },
+    @Request() req: { user: { id: string } },
     @Param('id') id: string,
     @Query('symbol') symbol: string,
     @Query('timeframe') timeframe = '1h',
     @Query('days') days?: string,
   ) {
     const result = await this.strategyService.backtest(
-      req.user.userId, id, symbol, timeframe, days ? parseInt(days) : 90,
+      req.user.id, id, symbol, timeframe, days ? parseInt(days) : 90,
     );
     await this.prisma.botStrategy.update({
       where: { id },
@@ -196,17 +196,17 @@ export class TradingBotController {
   // ── Settings ──────────────────────────────────────────────────────────────────
 
   @Get('settings')
-  async getSettings(@Request() req: { user: { userId: string } }) {
-    return this.upsertDefaultSettings(req.user.userId);
+  async getSettings(@Request() req: { user: { id: string } }) {
+    return this.upsertDefaultSettings(req.user.id);
   }
 
   @Put('settings')
   async updateSettings(
-    @Request() req: { user: { userId: string } },
+    @Request() req: { user: { id: string } },
     @Body() dto: UpdateSettingsDto,
   ) {
     return this.prisma.botSettings.upsert({
-      where: { userId: req.user.userId },
+      where: { userId: req.user.id },
       update: {
         ...(dto.autoTradeEnabled !== undefined && { autoTradeEnabled: dto.autoTradeEnabled }),
         ...(dto.riskLevel && { riskLevel: dto.riskLevel }),
@@ -216,7 +216,7 @@ export class TradingBotController {
         ...(dto.notifyOnSignal !== undefined && { notifyOnSignal: dto.notifyOnSignal }),
       },
       create: {
-        userId: req.user.userId,
+        userId: req.user.id,
         autoTradeEnabled: dto.autoTradeEnabled ?? false,
         riskLevel: dto.riskLevel ?? 'MODERATE',
         maxDailyTrades: dto.maxDailyTrades ?? 10,
@@ -230,8 +230,8 @@ export class TradingBotController {
   // ── Dashboard ─────────────────────────────────────────────────────────────────
 
   @Get('dashboard')
-  async getDashboard(@Request() req: { user: { userId: string } }) {
-    const userId = req.user.userId;
+  async getDashboard(@Request() req: { user: { id: string } }) {
+    const userId = req.user.id;
     const cacheKey = `dashboard:${userId}`;
     const cached = this.responseCache.get(cacheKey);
     if (cached && Date.now() < cached.expiresAt) return cached.data;

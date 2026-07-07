@@ -164,6 +164,10 @@ export class AutoTraderService {
         takeProfit: signal.takeProfit ? Number(signal.takeProfit) : undefined,
       });
 
+      if (!result.position) {
+        return { success: false, signalId, reason: 'Order placed but no position was opened' };
+      }
+
       // Mark signal as executed
       this.lastTradeTimes.set(userId, Date.now());
       await this.prisma.tradingSignal.update({

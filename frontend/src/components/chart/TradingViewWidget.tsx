@@ -70,7 +70,7 @@ interface Props {
 export function TradingViewWidget({ symbol, timeframe, assetType, height = "100%" }: Props) {
   const store = useTradingStore();
   const resolvedSymbol = symbol ?? store.selectedAsset?.symbol ?? "BTCUSD";
-  const resolvedType = assetType ?? store.selectedAsset?.type;
+  const resolvedType = assetType ?? store.selectedAsset?.category;
   const resolvedTimeframe = timeframe ?? store.timeframe;
   const theme = store.theme;
 

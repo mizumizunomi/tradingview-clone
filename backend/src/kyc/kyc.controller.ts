@@ -2,18 +2,20 @@ import { Body, Controller, Get, Post, UseGuards, Request } from '@nestjs/common'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { KycService } from './kyc.service';
 
+type AuthReq = { user: { id: string } };
+
 @Controller('kyc')
 @UseGuards(JwtAuthGuard)
 export class KycController {
   constructor(private kycService: KycService) {}
 
   @Get('status')
-  getStatus(@Request() req: any) {
+  getStatus(@Request() req: AuthReq) {
     return this.kycService.getStatus(req.user.id);
   }
 
   @Post('submit')
-  submit(@Request() req: any, @Body() dto: {
+  submit(@Request() req: AuthReq, @Body() dto: {
     fullName: string;
     dateOfBirth: string;
     country: string;

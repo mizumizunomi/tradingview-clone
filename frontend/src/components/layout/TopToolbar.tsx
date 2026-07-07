@@ -6,9 +6,9 @@ import { useTradingStore } from "@/store/trading.store";
 import { SymbolSearch } from "@/components/trading/SymbolSearch";
 import { formatPrice } from "@/lib/utils";
 import { cn } from "@/lib/utils";
-import { ChartLayout } from "@/types";
+import { ChartLayout, Timeframe } from "@/types";
 
-const TIMEFRAMES = ["1m", "5m", "15m", "30m", "1h", "4h", "1D", "1W", "1M"];
+const TIMEFRAMES: Timeframe[] = ["1m", "5m", "15m", "30m", "1h", "4h", "1D", "1W", "1M"];
 
 const CATEGORY_ICONS: Record<string, string> = {
   CRYPTO: "₿", FOREX: "💱", STOCKS: "📈", INDICES: "📊",
@@ -135,7 +135,7 @@ export function TopToolbar() {
           {TIMEFRAMES.slice(0, 4).map((tf) => (
             <button
               key={tf}
-              onClick={() => setTimeframe(tf as any)}
+              onClick={() => setTimeframe(tf)}
               className={cn("px-2 py-1 rounded text-xs font-medium transition-colors", timeframe === tf ? "bg-[#2962ff] text-white" : "hover:bg-[var(--tv-bg3)]")}
               style={{ color: timeframe === tf ? "white" : "var(--tv-muted)" }}
             >

@@ -1,4 +1,5 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { PaymentMethod, TransactionType, TransactionStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 type PlanTier = 'NONE' | 'DEFAULT' | 'SILVER' | 'GOLD' | 'PLATINUM';
@@ -50,7 +51,7 @@ export class WalletService {
     return wallet;
   }
 
-  async deposit(userId: string, dto: { amount: number; method: string }) {
+  async deposit(userId: string, dto: { amount: number; method: PaymentMethod }) {
     if (dto.amount < 50) throw new BadRequestException('Minimum deposit is $50');
     if (dto.amount > 100000) throw new BadRequestException('Maximum deposit is $100,000 per transaction');
 
@@ -63,7 +64,7 @@ export class WalletService {
         walletId: wallet.id,
         userId,
         type: 'DEPOSIT',
-        method: dto.method as any,
+        method: dto.method,
         amount: dto.amount,
         status: 'PENDING',
       },
@@ -179,7 +180,7 @@ export class WalletService {
     });
   }
 
-  async withdraw(userId: string, dto: { amount: number; method: string }) {
+  async withdraw(userId: string, dto: { amount: number; method: PaymentMethod }) {
     if (dto.amount < 10) throw new BadRequestException('Minimum withdrawal is $10');
 
     // KYC check: withdrawals require approved KYC
@@ -204,7 +205,7 @@ export class WalletService {
         walletId: wallet.id,
         userId,
         type: 'WITHDRAWAL',
-        method: dto.method as any,
+        method: dto.method,
         amount: dto.amount,
         status: 'COMPLETED',
         completedAt: new Date(),
@@ -218,7 +219,7 @@ export class WalletService {
         walletId: wallet.id,
         userId,
         type: 'TRADE_FEE',
-        method: dto.method as any,
+        method: dto.method,
         amount: fee,
         status: 'COMPLETED',
         completedAt: new Date(),
@@ -265,9 +266,9 @@ export class WalletService {
     const wallet = await this.prisma.wallet.findUnique({ where: { userId } });
     if (!wallet) throw new NotFoundException('Wallet not found');
 
-    const where: any = { walletId: wallet.id };
-    if (filters.type) where.type = filters.type;
-    if (filters.status) where.status = filters.status;
+    const where: { walletId: string; type?: TransactionType; status?: TransactionStatus } = { walletId: wallet.id };
+    if (filters.type) where.type = filters.type as TransactionType;
+    if (filters.status) where.status = filters.status as TransactionStatus;
 
     const limit = filters.limit ?? 20;
     const offset = filters.offset ?? 0;

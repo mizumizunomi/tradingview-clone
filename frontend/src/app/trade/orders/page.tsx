@@ -184,14 +184,14 @@ function OpenOrdersTable({
           <thead style={{ background: "#131722" }}>
             <tr>
               <Th label="Asset" sortKey="symbol" {...thProps} />
-              <Th label="Side" {...thProps} sortKey={undefined as any} />
-              <Th label="Qty" {...thProps} sortKey={undefined as any} />
-              <Th label="Entry" {...thProps} sortKey={undefined as any} />
-              <Th label="Current" {...thProps} sortKey={undefined as any} />
-              <Th label="Lev" {...thProps} sortKey={undefined as any} />
+              <Th label="Side" {...thProps} sortKey={undefined} />
+              <Th label="Qty" {...thProps} sortKey={undefined} />
+              <Th label="Entry" {...thProps} sortKey={undefined} />
+              <Th label="Current" {...thProps} sortKey={undefined} />
+              <Th label="Lev" {...thProps} sortKey={undefined} />
               <Th label="Unrealized P&L" sortKey="unrealizedPnL" {...thProps} />
               <Th label="Opened" sortKey="openedAt" {...thProps} />
-              <Th label="" {...thProps} sortKey={undefined as any} />
+              <Th label="" {...thProps} sortKey={undefined} />
             </tr>
           </thead>
           <tbody className="divide-y divide-[#363a45]">
@@ -374,13 +374,13 @@ function HistoryTable({ positions }: { positions: Position[] }) {
             <thead style={{ background: "#131722" }}>
               <tr>
                 <Th label="Asset" sortKey="symbol" {...thProps} />
-                <Th label="Side" {...thProps} sortKey={undefined as any} />
-                <Th label="Qty" {...thProps} sortKey={undefined as any} />
-                <Th label="Entry" {...thProps} sortKey={undefined as any} />
-                <Th label="Exit" {...thProps} sortKey={undefined as any} />
+                <Th label="Side" {...thProps} sortKey={undefined} />
+                <Th label="Qty" {...thProps} sortKey={undefined} />
+                <Th label="Entry" {...thProps} sortKey={undefined} />
+                <Th label="Exit" {...thProps} sortKey={undefined} />
                 <Th label="P&L" sortKey="realizedPnL" {...thProps} />
-                <Th label="Fee" {...thProps} sortKey={undefined as any} />
-                <Th label="Duration" {...thProps} sortKey={undefined as any} />
+                <Th label="Fee" {...thProps} sortKey={undefined} />
+                <Th label="Duration" {...thProps} sortKey={undefined} />
                 <Th label="Opened" sortKey="openedAt" {...thProps} />
                 <Th label="Closed" sortKey="closedAt" {...thProps} />
               </tr>
@@ -487,7 +487,7 @@ export default function OrdersPage() {
       ]);
       type PositionRaw = { asset: { symbol: string; name: string }; [key: string]: unknown };
       setPositions((openRes.data ?? []).map((p: PositionRaw) => ({ ...p, symbol: p.asset.symbol, assetName: p.asset.name })));
-      setClosedPositions(closedRes.data ?? []);
+      setClosedPositions((closedRes.data ?? []).map((p: PositionRaw) => ({ ...p, symbol: p.asset.symbol, assetName: p.asset.name })));
     } catch {
       if (!silent) addToast({ message: "Failed to load orders", type: "error" });
     } finally {

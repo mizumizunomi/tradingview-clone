@@ -7,10 +7,10 @@ interface Props { totalCandles: number; }
 
 export function ReplayControls({ totalCandles }: Props) {
   const { replayMode, replayIndex, replayPlaying, replaySpeed,
-    setReplayMode, setReplayIndex, setReplayPlaying } = useTradingStore() as any;
+    setReplayMode, setReplayIndex, setReplayPlaying, setReplaySpeed } = useTradingStore();
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const speed = replaySpeed ?? 500;
+  const speed = replaySpeed;
 
   useEffect(() => {
     if (replayPlaying) {
@@ -72,7 +72,7 @@ export function ReplayControls({ totalCandles }: Props) {
       {/* Speed */}
       <select
         value={speed}
-        onChange={(e) => useTradingStore.setState({ replaySpeed: parseInt(e.target.value) } as any)}
+        onChange={(e) => setReplaySpeed(parseInt(e.target.value))}
         className="text-[10px] rounded px-1 py-0.5 border outline-none"
         style={{ background: "var(--tv-bg3)", borderColor: "var(--tv-border)", color: "var(--tv-text)" }}
       >

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { useTradingStore } from "@/store/trading.store";
 import { api, endpoints } from "@/lib/api";
+import type { PriceUpdate } from "@/types";
 
 export function useWebSocket(): { socketRef: React.RefObject<Socket | null>; connected: boolean } {
   const socketRef = useRef<Socket | null>(null);
@@ -39,11 +40,11 @@ export function useWebSocket(): { socketRef: React.RefObject<Socket | null>; con
 
       socket.on("disconnect", () => setConnected(false));
 
-      socket.on("prices:all", (prices: any[]) => {
+      socket.on("prices:all", (prices: PriceUpdate[]) => {
         prices.forEach((p) => updatePrice(p));
       });
 
-      socket.on("price:update", (data: any) => {
+      socket.on("price:update", (data: PriceUpdate) => {
         updatePrice(data);
       });
 
@@ -61,9 +62,10 @@ export function useWebSocket(): { socketRef: React.RefObject<Socket | null>; con
             api.get(endpoints.closedPositions),
             api.get(endpoints.wallet),
           ]);
+          type RawPosition = Record<string, unknown> & { asset: { symbol: string; name: string } };
           useTradingStore.getState().setPositions([
-            ...posRes.data.map((p: any) => ({ ...p, symbol: p.asset.symbol, assetName: p.asset.name })),
-            ...closedRes.data.map((p: any) => ({ ...p, symbol: p.asset.symbol, assetName: p.asset.name })),
+            ...posRes.data.map((p: RawPosition) => ({ ...p, symbol: p.asset.symbol, assetName: p.asset.name })),
+            ...closedRes.data.map((p: RawPosition) => ({ ...p, symbol: p.asset.symbol, assetName: p.asset.name })),
           ]);
           useTradingStore.getState().setWallet(walletRes.data);
         } catch {}

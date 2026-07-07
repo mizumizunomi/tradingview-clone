@@ -9,27 +9,27 @@ export class TradingController {
   constructor(private tradingService: TradingService) {}
 
   @Post('orders')
-  placeOrder(@Request() req: any, @Body() dto: PlaceOrderDto) {
+  placeOrder(@Request() req: { user: { id: string } }, @Body() dto: PlaceOrderDto) {
     return this.tradingService.placeOrder(req.user.id, dto);
   }
 
   @Get('orders')
-  getOrders(@Request() req: any) {
+  getOrders(@Request() req: { user: { id: string } }) {
     return this.tradingService.getOrders(req.user.id);
   }
 
   @Get('positions')
-  getPositions(@Request() req: any) {
+  getPositions(@Request() req: { user: { id: string } }) {
     return this.tradingService.getPositions(req.user.id);
   }
 
   @Get('positions/closed')
-  getClosedPositions(@Request() req: any) {
+  getClosedPositions(@Request() req: { user: { id: string } }) {
     return this.tradingService.getClosedPositions(req.user.id);
   }
 
   @Post('positions/:id/close')
-  closePosition(@Request() req: any, @Param('id') id: string) {
+  closePosition(@Request() req: { user: { id: string } }, @Param('id') id: string) {
     return this.tradingService.closePosition(req.user.id, id);
   }
 }

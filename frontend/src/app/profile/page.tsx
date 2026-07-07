@@ -90,8 +90,9 @@ export default function ProfilePage() {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-    } catch (err: any) {
-      addToast({ type: "error", message: err?.response?.data?.message || "Failed to change password" });
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      addToast({ type: "error", message: msg ?? "Failed to change password" });
     } finally {
       setChangingPw(false);
     }

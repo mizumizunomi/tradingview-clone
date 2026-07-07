@@ -1,9 +1,14 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import type { Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
+  // Validate required env vars at startup
+  if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL environment variable is required');
+  if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET environment variable is required');
+
   const app = await NestFactory.create(AppModule);
 
   app.use(helmet({
@@ -11,7 +16,7 @@ async function bootstrap() {
     crossOriginEmbedderPolicy: false,
   }));
 
-  app.use((_req: any, res: any, next: () => void) => {
+  app.use((_req: Request, res: Response, next: NextFunction) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');

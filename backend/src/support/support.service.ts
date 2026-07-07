@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { SupportPriority } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -11,7 +12,7 @@ export class SupportService {
         userId,
         subject: dto.subject,
         message: dto.message,
-        priority: (dto.priority as any) ?? 'NORMAL',
+        priority: (dto.priority as SupportPriority | undefined) ?? SupportPriority.NORMAL,
       },
     });
   }

@@ -16,9 +16,10 @@ export function PositionsPanel() {
   useEffect(() => {
     if (activeBottomTab === "orders") {
       api.get(endpoints.orders).then((res) => {
-        const pending = res.data
-          .filter((o: any) => o.status === "PENDING")
-          .map((o: any) => ({ ...o, symbol: o.asset?.symbol || o.symbol, assetName: o.asset?.name }));
+        type RawOrder = Order & { asset?: { symbol: string; name: string } };
+        const pending = (res.data as RawOrder[])
+          .filter((o) => o.status === "PENDING")
+          .map((o) => ({ ...o, symbol: o.asset?.symbol ?? o.symbol, assetName: o.asset?.name }));
         setPendingOrders(pending);
       }).catch(() => {});
     }
@@ -58,12 +59,13 @@ export function PositionsPanel() {
         api.get(endpoints.closedPositions),
         api.get(endpoints.wallet),
       ]);
+      type RawPos = Record<string, unknown> & { asset: { symbol: string; name: string } };
       setPositions([
-        ...posRes.data.map((p: any) => ({ ...p, symbol: p.asset.symbol, assetName: p.asset.name })),
-        ...closedRes.data.map((p: any) => ({ ...p, symbol: p.asset.symbol, assetName: p.asset.name })),
+        ...posRes.data.map((p: RawPos) => ({ ...p, symbol: p.asset.symbol, assetName: p.asset.name })),
+        ...closedRes.data.map((p: RawPos) => ({ ...p, symbol: p.asset.symbol, assetName: p.asset.name })),
       ]);
       setWallet(walletRes.data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to close position:", err);
     } finally {
       setClosingId(null);

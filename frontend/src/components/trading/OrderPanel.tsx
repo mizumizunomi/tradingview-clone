@@ -190,7 +190,7 @@ export function OrderPanel() {
           </label>
           <select
             value={orderType}
-            onChange={(e) => setOrderType(e.target.value as any)}
+            onChange={(e) => setOrderType(e.target.value as "MARKET" | "LIMIT")}
             className="w-full rounded border border-[#363a45] bg-[#2a2e39] px-2 py-1.5 text-xs text-[#d1d4dc] outline-none hover:border-[#434651] focus:border-[#2962ff] cursor-pointer"
           >
             <option value="MARKET">Market Order</option>

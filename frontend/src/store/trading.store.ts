@@ -157,9 +157,11 @@ interface TradingState {
   replayMode: boolean;
   replayIndex: number;
   replayPlaying: boolean;
+  replaySpeed: number;
   setReplayMode: (on: boolean) => void;
   setReplayIndex: (i: number) => void;
   setReplayPlaying: (playing: boolean) => void;
+  setReplaySpeed: (ms: number) => void;
 
   // Object tree
   showObjectTree: boolean;
@@ -386,9 +388,11 @@ export const useTradingStore = create<TradingState>((set, get) => ({
   replayMode: false,
   replayIndex: 50,
   replayPlaying: false,
+  replaySpeed: 500,
   setReplayMode: (replayMode) => set({ replayMode, replayPlaying: false }),
   setReplayIndex: (replayIndex) => set({ replayIndex }),
   setReplayPlaying: (replayPlaying) => set({ replayPlaying }),
+  setReplaySpeed: (replaySpeed) => set({ replaySpeed }),
 
   // Object tree
   showObjectTree: false,
