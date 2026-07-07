@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminSession } from '@/lib/auth'
 import { requireRole } from '@/lib/require-role'
+import { computeClosePnL, computeWalletCloseDeltas } from '@/lib/domain/pnl'
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getAdminSession()
@@ -18,11 +19,19 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   if (!position) return NextResponse.json({ error: 'Position not found' }, { status: 404 })
 
   const closePrice = currentPrice ?? Number(position.currentPrice)
-  const priceDiff = closePrice - Number(position.entryPrice)
-  const pnl = position.side === 'BUY'
-    ? priceDiff * position.quantity * position.leverage
-    : -priceDiff * position.quantity * position.leverage
   const posMargin = Number(position.margin)
+
+  // Canonical close math (mirror of backend) — must match user-initiated close exactly.
+  const { pnl, closeCommission } = computeClosePnL({
+    side: position.side as 'BUY' | 'SELL',
+    entryPrice: Number(position.entryPrice),
+    closePrice,
+    quantity: position.quantity,
+    leverage: position.leverage,
+    openCommission: Number(position.commission),
+    assetCommissionRate: Number(position.asset.commission),
+  })
+  const deltas = computeWalletCloseDeltas(posMargin, pnl, closeCommission)
 
   await prisma.$transaction([
     prisma.position.update({
@@ -38,9 +47,9 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     prisma.wallet.update({
       where: { userId },
       data: {
-        balance: { increment: posMargin + pnl },
-        margin: { decrement: posMargin },
-        freeMargin: { increment: posMargin + pnl },
+        balance: { increment: deltas.balanceDelta },
+        margin: { increment: deltas.marginDelta },
+        freeMargin: { increment: deltas.freeMarginDelta },
       },
     }),
     prisma.trade.create({
@@ -53,7 +62,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
         quantity: position.quantity,
         price: closePrice,
         pnl,
-        commission: position.commission,
+        commission: closeCommission,
       },
     }),
     prisma.adminAction.create({

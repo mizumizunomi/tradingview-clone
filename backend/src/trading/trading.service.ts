@@ -7,6 +7,7 @@ import { MarketDataService } from '../market-data/market-data.service';
 import { PlanService } from '../plan/plan.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PlaceOrderDto } from './dto/place-order.dto';
+import { computeClosePnL, computeWalletCloseDeltas } from '../domain/pnl';
 
 @Injectable()
 export class TradingService implements OnModuleInit {
@@ -462,12 +463,15 @@ export class TradingService implements OnModuleInit {
     });
     if (!position) throw new NotFoundException('Position not found');
 
-    const priceDiff = position.side === 'BUY'
-      ? closePrice - Number(position.entryPrice)
-      : Number(position.entryPrice) - closePrice;
-
-    const pnl = priceDiff * position.quantity * position.leverage - Number(position.commission);
-    const closeCommission = closePrice * position.quantity * Number(position.asset.commission);
+    const { pnl, closeCommission } = computeClosePnL({
+      side: position.side as 'BUY' | 'SELL',
+      entryPrice: Number(position.entryPrice),
+      closePrice,
+      quantity: position.quantity,
+      leverage: position.leverage,
+      openCommission: Number(position.commission),
+      assetCommissionRate: Number(position.asset.commission),
+    });
 
     await this.prisma.position.update({
       where: { id: positionId },
@@ -486,12 +490,13 @@ export class TradingService implements OnModuleInit {
       },
     });
 
+    const deltas = computeWalletCloseDeltas(Number(position.margin), pnl, closeCommission);
     await this.prisma.wallet.update({
       where: { userId },
       data: {
-        margin: { decrement: Number(position.margin) },
-        freeMargin: { increment: Number(position.margin) + pnl - closeCommission },
-        balance: { increment: pnl - closeCommission },
+        margin: { increment: deltas.marginDelta },
+        freeMargin: { increment: deltas.freeMarginDelta },
+        balance: { increment: deltas.balanceDelta },
       },
     });
 

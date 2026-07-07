@@ -1,42 +1,10 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PaymentMethod, TransactionType, TransactionStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { TierName } from '../plan/constants/tier-config';
+import { determineTier, tierToPlanString, getTierThreshold, nextTierUp } from '../domain/tier';
 
-type PlanTier = 'NONE' | 'DEFAULT' | 'SILVER' | 'GOLD' | 'PLATINUM';
-
-const TIER_THRESHOLDS: { tier: PlanTier; threshold: number }[] = [
-  { tier: 'PLATINUM', threshold: 50000 },
-  { tier: 'GOLD', threshold: 10000 },
-  { tier: 'SILVER', threshold: 2500 },
-  { tier: 'DEFAULT', threshold: 250 },
-];
-
-function determineTier(totalDeposited: number): PlanTier {
-  for (const { tier, threshold } of TIER_THRESHOLDS) {
-    if (totalDeposited >= threshold) return tier;
-  }
-  return 'NONE';
-}
-
-function tierToPlanString(tier: PlanTier): string {
-  switch (tier) {
-    case 'PLATINUM': return 'platinum';
-    case 'GOLD': return 'gold';
-    case 'SILVER': return 'silver';
-    case 'DEFAULT': return 'default';
-    default: return 'none';
-  }
-}
-
-function getTierThreshold(tier: PlanTier): number {
-  switch (tier) {
-    case 'PLATINUM': return 50000;
-    case 'GOLD': return 10000;
-    case 'SILVER': return 2500;
-    case 'DEFAULT': return 250;
-    default: return 0;
-  }
-}
+type PlanTier = TierName;
 
 @Injectable()
 export class WalletService {
@@ -335,8 +303,7 @@ export class WalletService {
     if (!subscription) throw new NotFoundException('Subscription not found');
 
     const tier = subscription.tier as PlanTier;
-    const nextTierIndex = TIER_THRESHOLDS.findIndex((t) => t.tier === tier);
-    const nextTier = nextTierIndex > 0 ? TIER_THRESHOLDS[nextTierIndex - 1] : null;
+    const nextTier = nextTierUp(tier);
 
     return {
       subscription,
