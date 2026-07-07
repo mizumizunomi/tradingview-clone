@@ -1,10 +1,11 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { SideNav } from "@/components/layout/SideNav";
 import { useTradingStore } from "@/store/trading.store";
 import { Asset, AssetCategory } from "@/types";
 import { cn } from "@/lib/utils";
+import { api, endpoints } from "@/lib/api";
 import { Search, ArrowUpDown, ArrowUp, ArrowDown, Filter, TrendingUp } from "lucide-react";
 
 type SortKey = "symbol" | "name" | "price" | "change" | "changePercent" | "spread" | "leverage";
@@ -21,12 +22,27 @@ const CHANGE_FILTERS = [
 
 export default function ScreenerPage() {
   const router = useRouter();
-  const { assets, prices, setSelectedAsset } = useTradingStore();
+  const { assets, prices, setSelectedAsset, setAssets, updatePrice } = useTradingStore();
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState<AssetCategory | "ALL">("ALL");
   const [changeFilterIdx, setChangeFilterIdx] = useState(0);
   const [sortKey, setSortKey] = useState<SortKey>("changePercent");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+
+  // The screener reads assets/prices from the shared store, which is normally populated by the
+  // trade page. Navigating here directly (without visiting /trade first) left it empty, so load
+  // them on mount when missing.
+  useEffect(() => {
+    if (assets.length === 0) {
+      api.get(endpoints.assets).then((r) => setAssets(r.data)).catch(() => {});
+    }
+    if (Object.keys(prices).length === 0) {
+      api.get(endpoints.prices).then((r) => {
+        (Array.isArray(r.data) ? r.data : []).forEach((p) => updatePrice(p));
+      }).catch(() => {});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) setSortDir((d) => d === "asc" ? "desc" : "asc");
