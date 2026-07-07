@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Post, UseGuards, Request } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { KycService } from './kyc.service';
+import { SubmitKycDto } from './dto/kyc.dto';
 
 type AuthReq = { user: { id: string } };
 
@@ -15,16 +16,7 @@ export class KycController {
   }
 
   @Post('submit')
-  submit(@Request() req: AuthReq, @Body() dto: {
-    fullName: string;
-    dateOfBirth: string;
-    country: string;
-    address: string;
-    documentType: string;
-    documentFront: string;
-    documentBack?: string;
-    selfie?: string;
-  }) {
+  submit(@Request() req: AuthReq, @Body() dto: SubmitKycDto) {
     return this.kycService.submit(req.user.id, dto);
   }
 }

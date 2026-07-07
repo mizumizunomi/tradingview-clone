@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, Post, UseGuards, Request } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { SupportService } from './support.service';
+import { CreateTicketDto } from './dto/support.dto';
 
 type AuthReq = { user: { id: string } };
 
@@ -10,7 +11,7 @@ export class SupportController {
   constructor(private supportService: SupportService) {}
 
   @Post('tickets')
-  createTicket(@Request() req: AuthReq, @Body() dto: { subject: string; message: string; priority?: string }) {
+  createTicket(@Request() req: AuthReq, @Body() dto: CreateTicketDto) {
     return this.supportService.createTicket(req.user.id, dto);
   }
 

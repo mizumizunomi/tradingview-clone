@@ -2,6 +2,7 @@ import { Body, Controller, Get, Post, Patch, UseGuards, Request } from '@nestjs/
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto } from './dto/auth.dto';
+import { UpdateProfileDto, ChangePasswordDto } from './dto/profile.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 
 type AuthReq = { user: { id: string } };
@@ -30,13 +31,13 @@ export class AuthController {
 
   @Patch('profile')
   @UseGuards(JwtAuthGuard)
-  updateProfile(@Request() req: AuthReq, @Body() body: { firstName?: string; lastName?: string; bio?: string; avatar?: string }) {
+  updateProfile(@Request() req: AuthReq, @Body() body: UpdateProfileDto) {
     return this.authService.updateProfile(req.user.id, body);
   }
 
   @Patch('change-password')
   @UseGuards(JwtAuthGuard)
-  changePassword(@Request() req: AuthReq, @Body() body: { currentPassword: string; newPassword: string }) {
+  changePassword(@Request() req: AuthReq, @Body() body: ChangePasswordDto) {
     return this.authService.changePassword(req.user.id, body.currentPassword, body.newPassword);
   }
 }

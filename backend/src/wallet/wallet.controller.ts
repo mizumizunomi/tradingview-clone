@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Post, Query, UseGuards, Request } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
-import { PaymentMethod } from '@prisma/client';
 import { WalletService } from './wallet.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { DepositDto, WithdrawDto } from './dto/wallet.dto';
 
 type AuthReq = { user: { id: string } };
 
@@ -18,13 +18,13 @@ export class WalletController {
 
   @Post('deposit')
   @Throttle({ short: { ttl: 60000, limit: 5 } })
-  deposit(@Request() req: AuthReq, @Body() dto: { amount: number; method: PaymentMethod }) {
+  deposit(@Request() req: AuthReq, @Body() dto: DepositDto) {
     return this.walletService.deposit(req.user.id, dto);
   }
 
   @Post('withdraw')
   @Throttle({ short: { ttl: 60000, limit: 3 } })
-  withdraw(@Request() req: AuthReq, @Body() dto: { amount: number; method: PaymentMethod }) {
+  withdraw(@Request() req: AuthReq, @Body() dto: WithdrawDto) {
     return this.walletService.withdraw(req.user.id, dto);
   }
 
