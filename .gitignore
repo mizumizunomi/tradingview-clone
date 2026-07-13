@@ -24,5 +24,8 @@ Thumbs.db
 .vscode/
 .idea/
 
+# Agent-local permissions and machine-specific commands
+.claude/settings.local.json
+
 # Prisma generated client (regenerated via prisma generate)
 backend/node_modules/.prisma/
